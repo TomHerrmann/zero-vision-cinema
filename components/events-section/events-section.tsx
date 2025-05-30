@@ -9,7 +9,7 @@ const rubikGlitchFont = Rubik_Glitch({
   subsets: ['latin'],
 });
 
-type Props = { events: {}[] };
+type Props = { events: FakeEvent[] };
 
 export default function EventsSection({ events }: Props) {
   return (
@@ -25,7 +25,7 @@ export default function EventsSection({ events }: Props) {
         </h2>
       </div>
       <div className="flex flex-wrap justify-evenly gap-4 md:gap-6 lg:gap-8 mb-12">
-        {/* {events
+        {events
           ?.slice(0, 3)
           .map(
             (
@@ -53,7 +53,7 @@ export default function EventsSection({ events }: Props) {
                 }}
               />
             )
-          )} */}
+          )}
       </div>
       {events.length > 3 && (
         <Button

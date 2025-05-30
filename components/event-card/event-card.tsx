@@ -11,13 +11,13 @@ import {
 import Image from 'next/image';
 
 type Props = {
-  event: {};
+  event: FakeEvent;
 };
 
 const EventCard = ({ event }: Props) => {
   return (
     <Card>
-      {/* <CardHeader>
+      <CardHeader>
         <CardTitle className="text-center">{event.title}</CardTitle>
         <CardDescription className="text-center">
           {event?.description}
@@ -37,7 +37,7 @@ const EventCard = ({ event }: Props) => {
         <Button asChild>
           <Link href={event.ticketLink}>{'Buy Tickets'}</Link>
         </Button>
-      </CardFooter> */}
+      </CardFooter>
     </Card>
   );
 };
