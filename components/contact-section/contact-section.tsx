@@ -115,7 +115,7 @@ const ContactSection = () => {
         </Card>
       </Container>
       <Container>
-        <h2 className="text-black">Contact Us</h2>
+        <h2 className="text-stone-950">Contact Us</h2>
       </Container>
     </Section>
   );

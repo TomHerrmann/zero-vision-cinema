@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
-import { domain } from './contsants/constants';
+import { domain } from '../contsants/constants';
 import { cn } from '@/lib/utils';
 import Nav from '@/components/nav/nav';
 import Footer from '@/components/footer/footer';

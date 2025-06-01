@@ -11,12 +11,12 @@ export default function Hero() {
   return (
     <section className="relative top-0 w-full md:h-[500px] sm:h-[300px] h-[275px] overflow-hidden z-10">
       <Image
-        src="/projector_blue.png"
+        src="https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/projector_blue-2qGh6Js0PtJrtSc4yVgfY7HBmgDw2W.png"
         alt="Hero Image"
         fill
         className="object-cover -z-10"
       />
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-white w-full px-5">
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-yellow-50 w-full px-5">
         <h1
           className={cn(
             'text-[3rem] mb-2.5 md:text-[6rem] pt-8',
@@ -25,7 +25,6 @@ export default function Hero() {
         >
           ZERO VISION CINEMA
         </h1>
-        <p className="text-[1.5rem] md:text-[3rem]">Pop-up Screenings in NYC</p>
       </div>
     </section>
   );

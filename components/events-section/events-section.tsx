@@ -1,8 +1,13 @@
-import Link from 'next/link';
 import EventCard from '../event-card/event-card';
-import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
 import { Rubik_Glitch } from 'next/font/google';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
 
 const rubikGlitchFont = Rubik_Glitch({
   weight: '400',
@@ -12,58 +17,39 @@ const rubikGlitchFont = Rubik_Glitch({
 type Props = { events: FakeEvent[] };
 
 export default function EventsSection({ events }: Props) {
+  const carouselContainerClass = events.length < 3 ? 'justify-center' : '';
   return (
-    <section id="events" className="flex flex-col">
+    <section id="events" className="flex flex-col py-12">
       <div className="text-center">
         <h2
           className={cn(
-            'text-[2.5rem] md:text-[4rem] text-black font-semibold mb-12',
+            'text-[2.5rem] md:text-[4rem] font-semibold mb-12',
             rubikGlitchFont.className
           )}
         >
           Upcoming Screenings
         </h2>
       </div>
-      <div className="flex flex-wrap justify-evenly gap-4 md:gap-6 lg:gap-8 mb-12">
-        {events
-          ?.slice(0, 3)
-          .map(
-            (
-              {
-                title,
-                description,
-                datetime,
-                location,
-                price,
-                ticketLink,
-                imageUrl,
-              },
-              i
-            ) => (
-              <EventCard
-                key={datetime + title + i}
-                event={{
-                  title,
-                  description,
-                  datetime,
-                  location,
-                  price,
-                  ticketLink,
-                  imageUrl,
-                }}
-              />
-            )
-          )}
-      </div>
-      {events.length > 3 && (
-        <Button
-          variant="outline"
-          asChild
-          className="md:w-fit w-[90%] md:self-end self-center md:mr-12"
-        >
-          <Link href="/events">View More Screenings</Link>
-        </Button>
-      )}
+      <Carousel className="w-4/5 md:w-3/5 self-center">
+        <CarouselContent className={`${carouselContainerClass}`}>
+          {events.map((event, i) => (
+            <CarouselItem
+              key={event.datetime.toDateString() + event.title + i}
+              className="md:basis-1/2 lg:basis-1/3 px-4"
+            >
+              <div className="p-1">
+                <EventCard {...event} />
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        {events.length > 3 && (
+          <>
+            <CarouselPrevious className="mx-3" variant="default" />
+            <CarouselNext className="mx-3" variant="default" />
+          </>
+        )}
+      </Carousel>
     </section>
   );
 }
