@@ -32,9 +32,9 @@ const _baw: FakeEvent = {
   ticketLink: 'https://buy.stripe.com/14AfZh5RifCb2HX0WUfIs02',
   imageUrl:
     'https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/bloodyaxwound_poster',
-  price: 0,
+  price: 10,
   datetime: new Date(2025, 5, 29, 19, 0, 0),
-  location: '',
+  location: 'Focal Point Beer Co.',
 };
 
 export default async function Home() {
