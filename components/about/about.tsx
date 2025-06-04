@@ -25,8 +25,8 @@ export default function About() {
       <div className="flex justify-center text-center">
         <p className="md:w-1/2 text-xl px-8">
           Zero Vision Cinema screens films at venues throughout NYC, from bars
-          and breweires to block parties. We curate a selection of niche movies,
-          genre films, and old favorties. See our upcoming events to find out
+          and breweries to block parties. We curate a selection of niche movies,
+          genre films, and old favorites. See our upcoming events to find out
           what's playing. Contact us to request a quote for a screening at your
           business or event.
         </p>
