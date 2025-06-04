@@ -8,6 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const rubikGlitchFont = Rubik_Glitch({
   weight: '400',
@@ -30,7 +31,19 @@ export default function EventsSection({ events }: Props) {
           Upcoming Screenings
         </h2>
       </div>
-      <Carousel className="w-4/5 md:w-3/5 self-center">
+      <ScrollArea className="md:hidden">
+        {events.map((event, i) => (
+          <div
+            key={event.datetime.toDateString() + event.title + i}
+            className="md:basis-1/2 lg:basis-1/3 p-4"
+          >
+            <div className="p-1">
+              <EventCard {...event} />
+            </div>
+          </div>
+        ))}
+      </ScrollArea>
+      <Carousel className="w-4/5 md:w-3/5 self-center hidden md:grid">
         <CarouselContent className={`${carouselContainerClass}`}>
           {events.map((event, i) => (
             <CarouselItem
