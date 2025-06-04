@@ -14,18 +14,6 @@ const _f13 = {
   location: 'Grove 34',
 };
 
-const _28dl: FakeEvent = {
-  title: '28 Days Later',
-  description:
-    'Zero Vision Cinema presents one of the definitive horror films of the last 25 years. “28 Days Later” explores the darker side of human nature in a post apocalyptic world. See how Director Danny Boyle (Trainspotting, Slumdog Millionaire) and writer Alex Garland (Ex Machina, Annihilation) redefined zombie films before seeing the duo return for the upcoming “28 Years Later”.',
-  ticketLink: 'https://buy.stripe.com/5kQdR9gvWfCb5U96hefIs00',
-  imageUrl:
-    'https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/28dayslater_poster',
-  price: 10,
-  datetime: new Date(2025, 5, 4, 19, 0, 0),
-  location: 'Single Cut',
-};
-
 const _baw: FakeEvent = {
   title: 'Bloody Axe Wound | Director Q&A',
   description: '',
@@ -41,7 +29,7 @@ export default async function Home() {
   // console.log(data);
   return (
     <>
-      <EventsSection events={[_28dl, _f13, _baw]} />
+      <EventsSection events={[_f13, _baw]} />
       <About />
     </>
   );
