@@ -3,4 +3,5 @@ export const mainMenu = {
   home: '/#top',
   events: '#events',
   about: '#about',
+  newsletter: '#newsletter',
 };

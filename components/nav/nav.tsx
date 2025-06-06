@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { Button } from '../ui/button';
 import { MobileNav } from './mobile-nav';
 import { mainMenu } from '@/menu.config';
 import { Rubik_Glitch } from 'next/font/google';
