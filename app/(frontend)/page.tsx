@@ -14,6 +14,17 @@ const _f13 = {
   location: 'Grove 34',
 };
 
+const _bnd: FakeEvent = {
+  title: 'Bound',
+  description: '',
+  ticketLink: 'https://buy.stripe.com/5kQcN57ZqfCb2HXdJGfIs03',
+  imageUrl:
+    'https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/boundposter-H38HzhrVVr3kczL2AGwlrDP4hZXOdB.jpg',
+  price: 10,
+  datetime: new Date(2025, 5, 25, 19, 30, 0),
+  location: 'Single Cut',
+};
+
 const _baw: FakeEvent = {
   title: 'Bloody Axe Wound | Director Q&A',
   description: '',
@@ -26,10 +37,9 @@ const _baw: FakeEvent = {
 };
 
 export default async function Home() {
-  // console.log(data);
   return (
     <>
-      <EventsSection events={[_f13, _baw]} />
+      <EventsSection events={[_f13, _bnd, _baw]} />
       <About />
     </>
   );
