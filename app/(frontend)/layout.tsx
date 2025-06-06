@@ -8,6 +8,7 @@ import Nav from '@/components/nav/nav';
 import Footer from '@/components/footer/footer';
 import Hero from '@/components/hero/hero';
 import { ThemeProvider } from '@/components/theme/theme-provider';
+import { Toaster } from '@/components/ui/sonner';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -49,9 +50,9 @@ export default function RootLayout({
             <Nav />
             <Hero />
           </header>
-
           {children}
           <Footer />
+          <Toaster richColors />
         </ThemeProvider>
         <Analytics />
       </body>

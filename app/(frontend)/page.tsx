@@ -1,6 +1,7 @@
 import { Section } from '@/components/ds';
 import About from '@/components/about/about';
 import EventsSection from '@/components/events-section/events-section';
+import { NewsletterSignup } from '@/components/newsletter-signup/newsletter-signup';
 
 const _f13 = {
   title: 'Friday the 13th | 45th Anniversary',
@@ -41,6 +42,7 @@ export default async function Home() {
     <>
       <EventsSection events={[_f13, _bnd, _baw]} />
       <About />
+      <NewsletterSignup />
     </>
   );
 }

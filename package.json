@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
+    "@mailerlite/mailerlite-nodejs": "^1.4.0",
     "@payloadcms/db-vercel-postgres": "^3.40.0",
     "@payloadcms/email-resend": "^3.40.0",
     "@payloadcms/next": "^3.40.0",
@@ -36,6 +37,7 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.56.4",
     "sharp": "^0.34.2",
+    "sonner": "^2.0.5",
     "stripe": "^18.2.0",
     "tailwind-merge": "^3.3.0",
     "tailwindcss-animate": "^1.0.7",
