@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 import MailerLite from '@mailerlite/mailerlite-nodejs';
 import subscribeSchema from '../../(schemas)/subscribeSchema';
@@ -7,8 +7,7 @@ const mailerlite = new MailerLite({
   api_key: process.env.MAILER_LITE_ACCESS_TOKEN!,
 });
 
-export async function POST(request: Request) {
-  console.log('running');
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = subscribeSchema.parse(body);
