@@ -46,6 +46,8 @@ export default function ContactSection() {
     resolver: zodResolver(contactEmailSchema),
     defaultValues: {
       email: '',
+      name: '',
+      message: '',
     },
   });
 
@@ -64,8 +66,8 @@ export default function ContactSection() {
         toast.error('Email failed to send. Please try again later.');
       }
 
-      toast.success('Your message was sent!');
       form.reset();
+      toast.success('Your message was sent!');
     } catch (error) {
       toast.error('Email failed to send. Please try again later.');
     }
