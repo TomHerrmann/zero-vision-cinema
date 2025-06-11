@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       from: emailAddress,
       subject: `New Message From ${validatedData.name}`,
       to: emailAddress,
-      text: `Message from ${validatedData.message} <${validatedData.email} | ${validatedData.message}`,
+      text: `Message from ${validatedData.name} <${validatedData.email}> | ${validatedData.message}`,
     });
 
     if (response.error) {
