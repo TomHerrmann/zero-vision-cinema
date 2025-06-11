@@ -23,7 +23,7 @@ export default function About() {
         </h2>
       </div>
       <div className="flex justify-center text-center">
-        <p className="md:w-1/2 text-xl px-8">
+        <p className="md:w-1/2 text-xl md:px-8">
           Zero Vision Cinema screens films at venues throughout NYC, from bars
           and breweries to block parties. We curate a selection of niche movies,
           genre films, and old favorites. See our upcoming events to find out

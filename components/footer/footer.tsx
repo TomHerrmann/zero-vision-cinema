@@ -13,8 +13,8 @@ const Footer = () => {
   return (
     <footer>
       <Separator />
-      <section className="w-full my-8 p-12 text-lg">
-        <div className="flex flex-wrap justify-between gap-8 px-3 py-4">
+      <section className="w-full my-8 p-8 md:p-12 text-lg">
+        <div className="flex flex-wrap justify-between gap-8 md:px-3 py-4">
           <div className="w-full md:w-[29%] flex flex-col text-center">
             <h5 className="text-2xl font-semibold leading-none tracking-tight pb-6">
               Site Map

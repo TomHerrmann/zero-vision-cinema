@@ -137,3 +137,7 @@
     /* Firefox */
   }
 }
+
+a:hover {
+  color: oklch(0.685 0.169 237.323);
+}
