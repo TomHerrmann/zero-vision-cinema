@@ -68,10 +68,13 @@ export default function ContactSection() {
 
       form.reset();
       toast.success('Your message was sent!');
+      setInFlight(false);
+      return;
     } catch (error) {
       toast.error('Email failed to send. Please try again later.');
+      setInFlight(false);
+      return;
     }
-    setInFlight(false);
   }
 
   return (
