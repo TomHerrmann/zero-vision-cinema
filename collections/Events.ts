@@ -8,8 +8,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2022-08-01',
 });
 
-const DEFAULT_TICKET_LIMIT = 5;
-
 interface Location {
   id: string;
   name: string;
@@ -57,7 +55,6 @@ export const Events: CollectionConfig = {
           }
 
           const formattedDescription = formatEventDescription(
-            data.name,
             data.datetime,
             data.description,
             { name: locationDoc.name as string }
