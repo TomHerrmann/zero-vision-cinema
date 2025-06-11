@@ -102,7 +102,7 @@ export default function ContactSection() {
           </li>
           <li className="flex">
             <Projector className="mx-3" />
-            Private Events and Public Screenings
+            You Want to Host Private Events or Public Screenings
           </li>
         </ul>
       </div>
