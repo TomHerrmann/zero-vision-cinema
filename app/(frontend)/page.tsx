@@ -41,7 +41,7 @@ const _baw: FakeEvent = {
 export default async function Home() {
   return (
     <>
-      <EventsSection events={[_f13, _bnd, _baw]} />
+      <EventsSection events={[_bnd, _baw]} />
       <About />
       <NewsletterSignup />
       <ContactSection />
