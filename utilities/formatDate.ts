@@ -23,5 +23,5 @@ export const formatEventDateTime = (isoDateString: string) => {
 
 export const formatEventDescription = (name: string, datetime: string, description?: { root?: { children?: Array<{ children?: Array<{ text?: string }> }> } }) => {
   const { formattedDate, formattedTime } = formatEventDateTime(datetime);
-  return `${name} | ${formattedDate} | ${formattedTime} | ${description?.root?.children?.[0]?.children?.[0]?.text}`;
+  return `${formattedDate} | ${formattedTime} | ${description?.root?.children?.[0]?.children?.[0]?.text}`;
 }; 
