@@ -50,7 +50,11 @@ export const Events: CollectionConfig = {
             id: data.location,
           });
 
-          if (!locationDoc || typeof locationDoc !== 'object' || !('name' in locationDoc)) {
+          if (
+            !locationDoc ||
+            typeof locationDoc !== 'object' ||
+            !('name' in locationDoc)
+          ) {
             throw new Error('Location not found or missing name');
           }
 
@@ -61,27 +65,34 @@ export const Events: CollectionConfig = {
           );
 
           // Check if we already have a Stripe payment link
-          if (data.ticketUrl) {
-            const paymentLinkId = data.ticketUrl.split('/').pop() || '';
-            const paymentLink = await stripe.paymentLinks.retrieve(paymentLinkId);
-            
+          if (data.paymentLink) {
+            const paymentLinkId = data.paymentLink.split('/').pop() || '';
+            const paymentLink =
+              await stripe.paymentLinks.retrieve(paymentLinkId);
+
             const lineItems = paymentLink.line_items?.data || [];
             if (lineItems.length === 0) {
               throw new Error('No line items found in payment link');
             }
-            
-            const lineItem = lineItems[0] as { price: { id: string }, quantity: number };
+
+            const lineItem = lineItems[0] as {
+              price: { id: string };
+              quantity: number;
+            };
             const priceId = lineItem.price?.id;
             if (!priceId) {
               throw new Error('No price ID found in line item');
             }
-            
+
             const price = await stripe.prices.retrieve(priceId);
-            const productId = typeof price.product === 'string' ? price.product : price.product.id;
+            const productId =
+              typeof price.product === 'string'
+                ? price.product
+                : price.product.id;
             if (!productId) {
               throw new Error('No product ID found in price');
             }
-            
+
             await stripe.products.update(productId, {
               name: data.name,
               description: formattedDescription,
@@ -137,7 +148,8 @@ export const Events: CollectionConfig = {
               ],
             });
 
-            data.ticketUrl = paymentLink.url;
+            data.productId = product.id;
+            data.paymentLink = paymentLink.url;
           }
         } catch (error) {
           console.error('Error handling Stripe payment link:', error);
@@ -168,14 +180,27 @@ export const Events: CollectionConfig = {
       },
     },
     {
-      name: 'ticketUrl',
+      name: 'paymentLink',
       type: 'text',
       label: 'Stripe Payment Link',
       required: false,
       admin: {
         readOnly: true,
-        condition: (data) => Boolean(data.ticketUrl),
-        description: 'This link is automatically generated when the event is published'
+        condition: (data) => Boolean(data.paymentLink),
+        description:
+          'This link is automatically generated when the event is published',
+      },
+    },
+    {
+      name: 'productId',
+      type: 'text',
+      label: 'Stripe Product ID',
+      required: false,
+      admin: {
+        readOnly: true,
+        condition: (data) => Boolean(data.paymentLink),
+        description:
+          'This id is automatically generated when the event is published',
       },
     },
     {
@@ -196,6 +221,12 @@ export const Events: CollectionConfig = {
         }
         return true;
       },
+    },
+    {
+      name: 'ticketsSold',
+      type: 'number',
+      defaultValue: 0,
+      admin: { readOnly: true },
     },
   ],
 };
