@@ -6,10 +6,14 @@ export const Purchases: CollectionConfig = {
     useAsTitle: 'id',
   },
   fields: [
-    { name: 'customerId', type: 'text', admin: { readOnly: true } },
-    { name: 'amountPaid', type: 'number', admin: { readOnly: true } },
-    { name: 'currency', type: 'text', admin: { readOnly: true } },
-    { name: 'createdAt', type: 'text', admin: { readOnly: true } },
+    { name: 'productId', type: 'text', required: true },
+    { name: 'price', type: 'number', required: true },
+    { name: 'amountPaid', type: 'number', required: true },
+    { name: 'quantity', type: 'number', required: true },
+    { name: 'status', type: 'text', required: true },
+    { name: 'customerId', type: 'text', required: true },
+    { name: 'transactionDate', type: 'date', required: true },
+    { name: 'receiptUrl', type: 'text', required: true },
     {
       name: 'item',
       type: 'relationship',
