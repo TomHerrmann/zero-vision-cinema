@@ -222,6 +222,7 @@ export interface Event {
  */
 export interface Purchase {
   id: number;
+  checkoutSessionId: string;
   productId: string;
   price: number;
   amountPaid: number;
@@ -400,6 +401,7 @@ export interface EventsSelect<T extends boolean = true> {
  * via the `definition` "purchases_select".
  */
 export interface PurchasesSelect<T extends boolean = true> {
+  checkoutSessionId?: T;
   productId?: T;
   price?: T;
   amountPaid?: T;

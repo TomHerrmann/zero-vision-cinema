@@ -42,6 +42,7 @@ export const Purchases: CollectionConfig = {
     ],
   },
   fields: [
+    { name: 'checkoutSessionId', type: 'text', required: true },
     { name: 'productId', type: 'text', required: true },
     { name: 'price', type: 'number', required: true },
     { name: 'amountPaid', type: 'number', required: true },
