@@ -64,6 +64,13 @@ export default function EventsSection({ events }: Props) {
           </>
         )}
       </Carousel>
+      {events.length === 0 && (
+        <div className="text-center">
+          <h3 className={cn('text-[1rem] md:text-[2rem] font-semibold mb-12')}>
+            We don't have any events coming up. Check back soon!
+          </h3>
+        </div>
+      )}
     </section>
   );
 }
