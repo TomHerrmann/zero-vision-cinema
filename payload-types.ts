@@ -227,7 +227,6 @@ export interface Purchase {
   price: number;
   amountPaid: number;
   quantity: number;
-  customerId: string;
   transactionDate: string;
   receiptUrl: string;
   item:
@@ -406,7 +405,6 @@ export interface PurchasesSelect<T extends boolean = true> {
   price?: T;
   amountPaid?: T;
   quantity?: T;
-  customerId?: T;
   transactionDate?: T;
   receiptUrl?: T;
   item?: T;

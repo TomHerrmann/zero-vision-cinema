@@ -33,10 +33,6 @@ export async function POST(req: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
 
         if (session.payment_status === 'paid') {
-          const customerId =
-            typeof session.customer === 'string'
-              ? session.customer
-              : session.customer?.id;
           const amountPaid = session.amount_total;
           const transactionDate = new Date(
             session.created * 1000
@@ -54,7 +50,7 @@ export async function POST(req: Request) {
 
           const receiptUrl = paymentIntent?.charges?.data?.[0]?.receipt_url;
 
-          if (!customerId || !amountPaid || !receiptUrl) {
+          if (!amountPaid || !receiptUrl) {
             return NextResponse.json(
               {
                 error:
@@ -133,7 +129,6 @@ export async function POST(req: Request) {
               collection: 'purchases',
               data: {
                 checkoutSessionId: session.id,
-                customerId,
                 amountPaid,
                 transactionDate,
                 productId,

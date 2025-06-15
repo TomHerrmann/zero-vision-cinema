@@ -47,7 +47,6 @@ export const Purchases: CollectionConfig = {
     { name: 'price', type: 'number', required: true },
     { name: 'amountPaid', type: 'number', required: true },
     { name: 'quantity', type: 'number', required: true },
-    { name: 'customerId', type: 'text', required: true },
     { name: 'transactionDate', type: 'date', required: true },
     { name: 'receiptUrl', type: 'text', required: true },
     {
