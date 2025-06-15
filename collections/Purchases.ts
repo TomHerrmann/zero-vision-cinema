@@ -12,7 +12,7 @@ export const Purchases: CollectionConfig = {
     { name: 'quantity', type: 'number', required: true },
     { name: 'status', type: 'text', required: true },
     { name: 'customerId', type: 'text', required: true },
-    { name: 'transactionDate', type: 'date', required: true },
+    { name: 'createdAt', type: 'date', required: true },
     { name: 'receiptUrl', type: 'text', required: true },
     {
       name: 'item',

@@ -222,10 +222,14 @@ export interface Event {
  */
 export interface Purchase {
   id: number;
-  customerId?: string | null;
-  amountPaid?: number | null;
-  currency?: string | null;
+  productId: string;
+  price: number;
+  amountPaid: number;
+  quantity: number;
+  status: string;
+  customerId: string;
   createdAt: string;
+  receiptUrl: string;
   item:
     | {
         relationTo: 'events';
@@ -396,10 +400,14 @@ export interface EventsSelect<T extends boolean = true> {
  * via the `definition` "purchases_select".
  */
 export interface PurchasesSelect<T extends boolean = true> {
-  customerId?: T;
+  productId?: T;
+  price?: T;
   amountPaid?: T;
-  currency?: T;
+  quantity?: T;
+  status?: T;
+  customerId?: T;
   createdAt?: T;
+  receiptUrl?: T;
   item?: T;
   updatedAt?: T;
 }
