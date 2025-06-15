@@ -38,16 +38,41 @@ export async function POST(req: Request) {
               ? session.customer
               : session.customer?.id;
           const amountPaid = session.amount_total;
-          const currency = session.currency;
-          const createdAt = new Date(session.created * 1000).toISOString();
+          const transactionDate = new Date(
+            session.created * 1000
+          ).toISOString();
 
           const lineItems = await stripe.checkout.sessions.listLineItems(
             session.id!
           );
 
-          for (const { product, quantity = 0 } of lineItems.data) {
+          const paymentIntent = session.payment_intent
+            ? await stripe.paymentIntents.retrieve(
+                session.payment_intent.toString()
+              )
+            : null;
+
+          const receiptUrl = paymentIntent?.charges?.data?.[0]?.receipt_url;
+
+          if (!customerId || !amountPaid || !receiptUrl) {
+            return NextResponse.json(
+              {
+                error:
+                  'Failed to find stripe data. Check stripe for session ID: ' +
+                  session.id,
+              },
+              { status: 404 }
+            );
+          }
+
+          for (const { product, quantity, price } of lineItems.data) {
+            if (!product || !quantity || !price?.unit_amount) {
+              console.error('Failed to find stripe product data');
+              continue;
+            }
+
             const productId =
-              typeof product === 'string' ? product : product?.id;
+              typeof product === 'string' ? product : (product?.id ?? '');
 
             const eventDocs = await payload.find({
               collection: 'events',
@@ -109,8 +134,11 @@ export async function POST(req: Request) {
               data: {
                 customerId,
                 amountPaid,
-                currency,
-                createdAt,
+                transactionDate,
+                productId,
+                receiptUrl,
+                quantity,
+                price: price.unit_amount / 100,
                 item,
               },
             });

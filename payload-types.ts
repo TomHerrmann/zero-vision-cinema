@@ -226,9 +226,8 @@ export interface Purchase {
   price: number;
   amountPaid: number;
   quantity: number;
-  status: string;
   customerId: string;
-  createdAt: string;
+  transactionDate: string;
   receiptUrl: string;
   item:
     | {
@@ -240,6 +239,7 @@ export interface Purchase {
         value: number | Merch;
       };
   updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -404,12 +404,12 @@ export interface PurchasesSelect<T extends boolean = true> {
   price?: T;
   amountPaid?: T;
   quantity?: T;
-  status?: T;
   customerId?: T;
-  createdAt?: T;
+  transactionDate?: T;
   receiptUrl?: T;
   item?: T;
   updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

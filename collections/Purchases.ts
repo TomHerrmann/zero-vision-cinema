@@ -5,14 +5,49 @@ export const Purchases: CollectionConfig = {
   admin: {
     useAsTitle: 'id',
   },
+  hooks: {
+    beforeValidate: [
+      async ({ data, req }) => {
+        if (!data?.productId || data.item) return data;
+
+        const eventResult = await req.payload.find({
+          collection: 'events',
+          where: { productId: { equals: data.productId } },
+        });
+
+        if (eventResult.docs.length > 0) {
+          const event = eventResult.docs[0];
+          data.item = {
+            relationTo: 'events',
+            value: event.id,
+          };
+          return data;
+        }
+
+        const merchResult = await req.payload.find({
+          collection: 'merch',
+          where: { productId: { equals: data.productId } },
+        });
+
+        if (merchResult.docs.length > 0) {
+          const merch = merchResult.docs[0];
+          data.item = {
+            relationTo: 'merch',
+            value: merch.id,
+          };
+        }
+
+        return data;
+      },
+    ],
+  },
   fields: [
     { name: 'productId', type: 'text', required: true },
     { name: 'price', type: 'number', required: true },
     { name: 'amountPaid', type: 'number', required: true },
     { name: 'quantity', type: 'number', required: true },
-    { name: 'status', type: 'text', required: true },
     { name: 'customerId', type: 'text', required: true },
-    { name: 'createdAt', type: 'date', required: true },
+    { name: 'transactionDate', type: 'date', required: true },
     { name: 'receiptUrl', type: 'text', required: true },
     {
       name: 'item',
