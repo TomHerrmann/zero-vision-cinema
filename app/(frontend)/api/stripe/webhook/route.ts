@@ -132,6 +132,7 @@ export async function POST(req: Request) {
             payload.create({
               collection: 'purchases',
               data: {
+                checkoutSessionId: session.id,
                 customerId,
                 amountPaid,
                 transactionDate,
