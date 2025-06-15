@@ -26,7 +26,7 @@ const EventCard = ({
 }: Event) => {
   const date = new Date(datetime);
 
-  if (!image || typeof image === 'number' || !image?.url) {
+  if (!image || typeof image === 'number' || !image?.url || !paymentLink) {
     return null;
   }
 
