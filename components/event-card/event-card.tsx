@@ -3,7 +3,6 @@ import Image from 'next/image';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -11,10 +10,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, DollarSign } from 'lucide-react';
 import { Event, Location, Media } from '@/payload-types';
-import payloadConfig from '@/payload.config';
-import { getPayload } from 'payload';
-
-const payload = await getPayload({ config: payloadConfig });
 
 const EventCard = ({
   name,
