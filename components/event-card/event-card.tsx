@@ -48,6 +48,7 @@ const EventCard = ({
             {date.toLocaleString(undefined, {
               dateStyle: 'medium',
               timeStyle: 'short',
+              timeZone: 'America/New_York',
             })}
           </div>
           <div className="flex items-center gap-2">
