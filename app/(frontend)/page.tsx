@@ -4,6 +4,7 @@ import { NewsletterSignup } from '@/components/newsletter-signup/newsletter-sign
 import ContactSection from '@/components/contact-section/contact-section';
 import { getPayload } from 'payload';
 import payloadConfig from '@/payload.config';
+import Hero from '@/components/hero/hero';
 
 const payload = await getPayload({ config: payloadConfig });
 
@@ -26,6 +27,7 @@ export default async function Home() {
 
   return (
     <>
+      <Hero />
       <EventsSection events={eventsDocs.docs} />
       <About />
       <NewsletterSignup />

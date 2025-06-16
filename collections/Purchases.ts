@@ -82,6 +82,7 @@ export const Purchases: CollectionConfig = {
       name: 'receiptUrl',
       type: 'text',
       required: true,
+      unique: true,
       admin: { readOnly: true },
     },
     {
