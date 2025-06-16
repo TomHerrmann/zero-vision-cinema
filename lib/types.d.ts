@@ -13,7 +13,7 @@ type EventOrder = 'dsc' | 'asc';
 
 type Attendee = {
   eventName: string;
-  customerName: string | null;
-  customerEmail: string | null;
+  customerName: string;
+  customerEmail: string;
   quantity: number;
 };

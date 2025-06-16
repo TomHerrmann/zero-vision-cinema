@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
 import { cookies } from 'next/headers';
-import { AttendeesTable } from '@/components/attendees-table/attendees-table';
+
 import { PageProps } from '@/.next/types/app/(frontend)/page';
+import { AttendeesTable } from '@/components/attendees-table/attendees-table';
 
 export const metadata: Metadata = {
   title: 'Attendee List',
