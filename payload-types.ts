@@ -73,6 +73,8 @@ export interface Config {
     events: Event;
     purchases: Purchase;
     merch: Merch;
+    emails: Email;
+    audiences: Audience;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -85,6 +87,8 @@ export interface Config {
     events: EventsSelect<false> | EventsSelect<true>;
     purchases: PurchasesSelect<false> | PurchasesSelect<true>;
     merch: MerchSelect<false> | MerchSelect<true>;
+    emails: EmailsSelect<false> | EmailsSelect<true>;
+    audiences: AudiencesSelect<false> | AudiencesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -257,6 +261,64 @@ export interface Merch {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "emails".
+ */
+export interface Email {
+  id: number;
+  subject: string;
+  /**
+   * Optionally link this campaign to an event.
+   */
+  event?: (number | null) | Event;
+  /**
+   * Shown in inboxes after the subject. Keep it concise (35–90 characters).
+   */
+  previewText?: string | null;
+  /**
+   * You can reference fields from the selected event using variables like {{event.name}}, {{event.paymentLink}}, etc.
+   */
+  body: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Set the date/time for automatic sending. You’ll need a cron or webhook to trigger this.
+   */
+  scheduledAt?: string | null;
+  /**
+   * Timestamp of when this email was actually sent.
+   */
+  sentAt?: string | null;
+  resendId?: string | null;
+  audience: number | Audience;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audiences".
+ */
+export interface Audience {
+  id: number;
+  name: string;
+  resendId: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -285,6 +347,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'merch';
         value: number | Merch;
+      } | null)
+    | ({
+        relationTo: 'emails';
+        value: number | Email;
+      } | null)
+    | ({
+        relationTo: 'audiences';
+        value: number | Audience;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -418,6 +488,33 @@ export interface PurchasesSelect<T extends boolean = true> {
 export interface MerchSelect<T extends boolean = true> {
   name?: T;
   productId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "emails_select".
+ */
+export interface EmailsSelect<T extends boolean = true> {
+  subject?: T;
+  event?: T;
+  previewText?: T;
+  body?: T;
+  scheduledAt?: T;
+  sentAt?: T;
+  resendId?: T;
+  audience?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audiences_select".
+ */
+export interface AudiencesSelect<T extends boolean = true> {
+  name?: T;
+  resendId?: T;
   updatedAt?: T;
   createdAt?: T;
 }
