@@ -1,24 +1,22 @@
-// app/attendees/[eventId]/list/page.tsx
-
 import { Metadata } from 'next';
-
-interface AttendeesListPageProps {
-  params: { eventId: string };
-}
+import { cookies } from 'next/headers';
+import { AttendeesTable } from '@/components/attendees-table/attendees-table';
+import { PageProps } from '@/.next/types/app/(frontend)/page';
 
 export const metadata: Metadata = {
   title: 'Attendee List',
 };
 
-export default async function AttendeesListPage({
-  params,
-}: AttendeesListPageProps) {
+export default async function AttendeesListPage({ params }: PageProps) {
   const { eventId } = await params;
+
+  const cookieStore = await cookies();
+  const token = await cookieStore.get('payload-token')?.value;
 
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/attendees?eventId=${eventId}`,
     {
-      cache: 'no-store',
+      headers: { Authorization: `JWT ${token}` },
     }
   );
 
@@ -26,12 +24,9 @@ export default async function AttendeesListPage({
     throw new Error('Failed to fetch attendees');
   }
 
-  const { attendees } = await res.json();
-  console.log('*****', attendees);
-  return (
-    <main className="p-6">
-      <h1 className="text-2xl font-semibold">Attendees for Event: {eventId}</h1>
-      <p className="mt-2 text-stone-100">This page will list attendees.</p>
-    </main>
-  );
+  const data = await res.json();
+  const attendees: Attendee[] = data.attendees;
+  const eventName: string = data.eventName;
+
+  return <AttendeesTable attendees={attendees} eventName={eventName} />;
 }
