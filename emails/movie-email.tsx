@@ -11,7 +11,6 @@ import {
   Text,
   Img,
   Link,
-  Tailwind,
 } from '@react-email/components';
 
 interface EmailTemplateProps {
@@ -44,199 +43,232 @@ export const MovieEvent = ({
 }: EmailTemplateProps) => {
   return (
     <Html lang="en" dir="ltr">
-      <Tailwind>
-        <Head>
-          <title>Zero Vision Cinema - {movieTitle}</title>
-          <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-          />
-          <meta name="x-apple-disable-message-reformatting" />
-        </Head>
+      <Head>
+        <title>Zero Vision Cinema - {movieTitle}</title>
+        <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="x-apple-disable-message-reformatting" />
+      </Head>
 
-        <Preview>Tickets Available: {movieTitle} at Zero Vision Cinema</Preview>
+      <Preview>Tickets Available: {movieTitle} at Zero Vision Cinema</Preview>
 
-        <Body className="bg-sky-800 w-full font-sans mx-auto">
-          <Img
-            src="https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/emailheader-q8z8Wh5QXZgyLDhxjreQ5KyCNH71db.png"
-            alt="Zero Vision Cinema"
-            className="w-[90%] m-auto py-2"
-            style={{ display: 'block', margin: '0 auto 12px', width: '95%' }}
-          />
-          <Container
-            className="w-[85%] mx-auto bg-stone-700 p-5"
-            style={{ backgroundColor: '#44403c', padding: '20px' }}
-          >
-            <Section>
-              <Container align="center">
-                <Text className="text-center text-yellow-50 text-6xl mt-0 font-[Krona One]">
-                  {movieTitle}
-                </Text>
-                <Img
-                  src={moviePosterUrl}
-                  alt={movieTitle}
-                  className="w-[90%] mx-auto"
-                  style={{
-                    width: '90%',
-                    display: 'block',
-                    borderRadius: '8px',
-                    border: 'white solid .5px',
-                    marginBottom: 12,
-                  }}
-                />
-              </Container>
-            </Section>
+      <Body
+        style={{
+          backgroundColor: '#29678f',
+          fontFamily: 'Arial, sans-serif',
+          margin: '0',
+          padding: '0',
+        }}
+      >
+        <Img
+          src="https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/emailheader-q8z8Wh5QXZgyLDhxjreQ5KyCNH71db.png"
+          alt="Zero Vision Cinema"
+          style={{
+            display: 'block',
+            margin: '0 auto 12px',
+            width: '90%',
+            paddingTop: '16px',
+            paddingBottom: '16px',
+          }}
+        />
 
-            <Section
-              className="p-5"
-              style={{ backgroundColor: '#221E1F', padding: '20px' }}
-            >
-              <Text className="text-2xl text-yellow-50 font-[Rubik-Glitch] text-center">
+        <Container
+          style={{
+            width: '85%',
+            margin: '0 auto',
+            backgroundColor: '#44403c',
+            padding: '20px',
+          }}
+        >
+          <Section>
+            <Container align="center">
+              <Text
+                style={{
+                  textAlign: 'center',
+                  color: '#fefce8', // text-yellow-50
+                  fontSize: '36px',
+                  fontWeight: 'bold',
+                  margin: 0,
+                  fontFamily: '"Krona One", Arial, sans-serif',
+                }}
+              >
                 {movieTitle}
               </Text>
-            </Section>
+              <Img
+                src={moviePosterUrl}
+                alt={movieTitle}
+                style={{
+                  width: '90%',
+                  display: 'block',
+                  borderRadius: '8px',
+                  border: '0.5px solid white',
+                  margin: '12px auto',
+                }}
+              />
+            </Container>
+          </Section>
+
+          <Section style={{ backgroundColor: '#221E1F', padding: '20px' }}>
+            <Text
+              style={{
+                fontSize: '24px',
+                textAlign: 'center',
+                color: '#fefce8',
+                fontFamily: '"Rubik Glitch", Arial, sans-serif',
+                margin: 0,
+              }}
+            >
+              {movieTitle}
+            </Text>
+          </Section>
+
+          <Section style={{ backgroundColor: '#f5f5f4', padding: '20px' }}>
+            <Text
+              style={{
+                fontSize: '24px',
+                fontWeight: 'bold',
+                fontFamily: '"Krona One", Arial, sans-serif',
+                marginBottom: '16px',
+              }}
+            >
+              GET YOUR <strong>TICKETS</strong>
+            </Text>
 
             <Section
-              className="p-5 bg-stone-100"
-              style={{ backgroundColor: '#f5f5f4', padding: '20px' }}
+              style={{ borderLeft: '4px solid #0369a1', paddingLeft: '10px' }}
             >
-              <Text className="text-2xl font-[Krona One]">
-                GET YOUR <strong>TICKETS</strong>
-              </Text>
-
-              <Section
-                style={{ borderLeft: '4px solid #0369a1', paddingLeft: '10px' }}
-              >
-                <Row style={{ marginBottom: '8px' }}>
-                  <Column width="24">
-                    <Img
-                      src={dateIcon}
-                      width="16"
-                      height="16"
-                      alt="Calendar"
-                      style={{ display: 'block' }}
-                    />
-                  </Column>
-                  <Column>
-                    <Text style={{ margin: 0 }}>
-                      {eventDate} | {eventTime}
-                    </Text>
-                  </Column>
-                </Row>
-                <Row style={{ marginBottom: '8px' }}>
-                  <Column width="24">
-                    <Img
-                      src={locationIcon}
-                      width="16"
-                      height="16"
-                      alt="Location"
-                      style={{ display: 'block' }}
-                    />
-                  </Column>
-                  <Column>
-                    <Text style={{ margin: 0 }}>{location}</Text>
-                  </Column>
-                </Row>
-                <Row style={{ marginBottom: '8px' }}>
-                  <Column width="24">
-                    <Img
-                      src={priceIcon}
-                      width="16"
-                      height="16"
-                      alt="Price"
-                      style={{ display: 'block' }}
-                    />
-                  </Column>
-                  <Column>
-                    <Text style={{ margin: 0 }}>{price}</Text>
-                  </Column>
-                </Row>
-              </Section>
-
-              <Section
-                className="text-center my-5"
-                style={{ textAlign: 'center', margin: '20px 0' }}
-              >
-                <Link
-                  href={ticketUrl}
-                  className="text-yellow-50 no-underline font-bold inline-block"
-                  style={{
-                    backgroundColor: '#0284c7',
-                    padding: '12px 24px',
-                    textDecoration: 'none',
-                    borderRadius: '8px',
-                    display: 'inline-block',
-                  }}
-                >
-                  BUY TICKETS
-                </Link>
-              </Section>
-
-              <Text className="text-center text-lg italic">
-                Limited seating available
-              </Text>
-            </Section>
-          </Container>
-
-          <Section className="text-center py-5">
-            <Section className="text-center my-2">
-              <Row style={{ marginBlock: '8px', justifyContent: 'center' }}>
-                <Column align="center">
-                  <Link
-                    href="https://www.instagram.com/zerovisioncinema/"
-                    target="_blank"
-                    style={{
-                      display: 'inline-block',
-                    }}
-                  >
-                    <Row
-                      style={{ display: 'inline-flex', alignItems: 'center' }}
-                    >
-                      <Column width="24">
-                        <Img
-                          height={24}
-                          width={24}
-                          alt="Instagram"
-                          src="https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/Instagram_Glyph_Gradient-cytRhDzf7XqHFRst9K38AotJg5pZ4i-acvkd6WqNAueeDECSqXGXbojnbEaCP.svg"
-                          style={{ display: 'block' }}
-                        />
-                      </Column>
-                      <Column>
-                        <Text
-                          className="text-yellow-50"
-                          style={{
-                            margin: '0 0 0 8px',
-                            fontSize: '14px',
-                            lineHeight: '24px',
-                            display: 'inline-block',
-                          }}
-                        >
-                          Follow Us On Instagram
-                        </Text>
-                      </Column>
-                    </Row>
-                  </Link>
+              <Row style={{ marginBottom: '8px' }}>
+                <Column width="24">
+                  <Img
+                    src={dateIcon}
+                    width="16"
+                    height="16"
+                    alt="Calendar"
+                    style={{ display: 'block' }}
+                  />
+                </Column>
+                <Column>
+                  <Text style={{ margin: 0 }}>
+                    {eventDate} | {eventTime}
+                  </Text>
+                </Column>
+              </Row>
+              <Row style={{ marginBottom: '8px' }}>
+                <Column width="24">
+                  <Img
+                    src={locationIcon}
+                    width="16"
+                    height="16"
+                    alt="Location"
+                    style={{ display: 'block' }}
+                  />
+                </Column>
+                <Column>
+                  <Text style={{ margin: 0 }}>{location}</Text>
+                </Column>
+              </Row>
+              <Row style={{ marginBottom: '8px' }}>
+                <Column width="24">
+                  <Img
+                    src={priceIcon}
+                    width="16"
+                    height="16"
+                    alt="Price"
+                    style={{ display: 'block' }}
+                  />
+                </Column>
+                <Column>
+                  <Text style={{ margin: 0 }}>{price}</Text>
                 </Column>
               </Row>
             </Section>
 
-            <Text className="text-yellow-50 text-xs">
-              Zero Vision Cinema LLC
-            </Text>
-            <Text className="text-yellow-50 text-xs my-0">{addressLine1}</Text>
-            <Text className="text-yellow-50 text-xs my-0">{addressLine2}</Text>
-            <Text className="text-yellow-50 text-xs mt-5">
+            <Section style={{ textAlign: 'center', margin: '20px 0' }}>
               <Link
-                href="https://zerovisioncinema.com/unsubscribe"
-                className="text-yellow-50"
+                href={ticketUrl}
+                style={{
+                  backgroundColor: '#0284c7',
+                  color: '#fefce8',
+                  padding: '12px 24px',
+                  textDecoration: 'none',
+                  borderRadius: '8px',
+                  fontWeight: 'bold',
+                  display: 'inline-block',
+                }}
               >
-                Unsubscribe
+                BUY TICKETS
               </Link>
+            </Section>
+
+            <Text
+              style={{
+                textAlign: 'center',
+                fontSize: '16px',
+                fontStyle: 'italic',
+              }}
+            >
+              Limited seating available
             </Text>
           </Section>
-        </Body>
-      </Tailwind>
+        </Container>
+
+        <Section style={{ textAlign: 'center', padding: '20px' }}>
+          <Row style={{ justifyContent: 'center', marginBottom: '8px' }}>
+            <Column align="center">
+              <Link
+                href="https://www.instagram.com/zerovisioncinema/"
+                target="_blank"
+                style={{ display: 'inline-block', textDecoration: 'none' }}
+              >
+                <Row style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <Column width="24">
+                    <Img
+                      height={24}
+                      width={24}
+                      alt="Instagram"
+                      src="https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/Instagram_Glyph_Gradient-cytRhDzf7XqHFRst9K38AotJg5pZ4i-acvkd6WqNAueeDECSqXGXbojnbEaCP.svg"
+                      style={{ display: 'block' }}
+                    />
+                  </Column>
+                  <Column>
+                    <Text
+                      style={{
+                        margin: '0 0 0 8px',
+                        fontSize: '14px',
+                        lineHeight: '24px',
+                        display: 'inline-block',
+                        color: '#fefce8',
+                      }}
+                    >
+                      Follow Us On Instagram
+                    </Text>
+                  </Column>
+                </Row>
+              </Link>
+            </Column>
+          </Row>
+
+          <Text style={{ color: '#fefce8', fontSize: '12px', margin: '8px 0' }}>
+            Zero Vision Cinema LLC
+          </Text>
+          <Text style={{ color: '#fefce8', fontSize: '12px', margin: '0' }}>
+            {addressLine1}
+          </Text>
+          <Text style={{ color: '#fefce8', fontSize: '12px', margin: '0' }}>
+            {addressLine2}
+          </Text>
+          <Text
+            style={{ color: '#fefce8', fontSize: '12px', marginTop: '20px' }}
+          >
+            <Link
+              href="https://zerovisioncinema.com/unsubscribe"
+              style={{ color: '#fefce8', textDecoration: 'underline' }}
+            >
+              Unsubscribe
+            </Link>
+          </Text>
+        </Section>
+      </Body>
     </Html>
   );
 };

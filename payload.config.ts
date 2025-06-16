@@ -3,7 +3,7 @@ import { vercelPostgresAdapter } from '@payloadcms/db-vercel-postgres';
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud';
 import { lexicalEditor } from '@payloadcms/richtext-lexical';
 import path from 'path';
-import { buildConfig } from 'payload';
+import { buildConfig, PayloadRequest } from 'payload';
 import { fileURLToPath } from 'url';
 import sharp from 'sharp';
 import { resendAdapter } from '@payloadcms/email-resend';
@@ -14,6 +14,8 @@ import { Users } from './collections/Users';
 import { Media } from './collections/Media';
 import { Events } from './collections/Events';
 import { Locations } from './collections/Locations';
+import { Purchases } from './collections/Purchases';
+import { Merch } from './collections/Merch';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -25,7 +27,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Locations, Events],
+  collections: [Users, Media, Locations, Events, Purchases, Merch],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

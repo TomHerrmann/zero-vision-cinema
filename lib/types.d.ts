@@ -7,3 +7,13 @@ type FakeEvent = {
   datetime: Date;
   location: string;
 };
+
+type EventSelection = 'future' | 'past' | 'all';
+type EventOrder = 'dsc' | 'asc';
+
+type Attendee = {
+  eventName: string;
+  customerName: string | null;
+  customerEmail: string | null;
+  quantity: number;
+};

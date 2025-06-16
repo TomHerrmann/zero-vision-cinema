@@ -9,13 +9,14 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Event } from '@/payload-types';
 
 const rubikGlitchFont = Rubik_Glitch({
   weight: '400',
   subsets: ['latin'],
 });
 
-type Props = { events: FakeEvent[] };
+type Props = { events: Event[] };
 
 export default function EventsSection({ events }: Props) {
   const carouselContainerClass = events.length < 3 ? 'justify-center' : '';
@@ -32,9 +33,9 @@ export default function EventsSection({ events }: Props) {
         </h2>
       </div>
       <ScrollArea className="md:hidden">
-        {events.map((event, i) => (
+        {events.map((event) => (
           <div
-            key={event.datetime.toDateString() + event.title + i}
+            key={event.id + '_scroll'}
             className="md:basis-1/2 lg:basis-1/3 p-4"
           >
             <div className="p-1">
@@ -43,11 +44,11 @@ export default function EventsSection({ events }: Props) {
           </div>
         ))}
       </ScrollArea>
-      <Carousel className="w-4/5 md:w-3/5 self-center hidden md:grid">
+      <Carousel className="w-4/5 self-center hidden md:grid">
         <CarouselContent className={`${carouselContainerClass}`}>
-          {events.map((event, i) => (
+          {events.map((event) => (
             <CarouselItem
-              key={event.datetime.toDateString() + event.title + i}
+              key={event.id + '_carousel'}
               className="md:basis-1/2 lg:basis-1/3 px-4"
             >
               <div className="p-1">
@@ -63,6 +64,13 @@ export default function EventsSection({ events }: Props) {
           </>
         )}
       </Carousel>
+      {events.length === 0 && (
+        <div className="text-center">
+          <h3 className={cn('text-[1rem] md:text-[2rem] font-semibold mb-12')}>
+            We don't have any events coming up. Check back soon!
+          </h3>
+        </div>
+      )}
     </section>
   );
 }
