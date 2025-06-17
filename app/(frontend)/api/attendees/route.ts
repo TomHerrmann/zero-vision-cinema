@@ -9,7 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function GET(req: NextRequest) {
   try {
-    const token = req.headers.get('authorization');
+    const token = req.headers.get('payload-token');
 
     if (!token) {
       console.error('Unauthorized');
