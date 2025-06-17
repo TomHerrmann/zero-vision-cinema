@@ -9,16 +9,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function GET(req: NextRequest) {
   try {
-    const token = req.cookies.get('payload-token');
-
-    if (!token) {
-      console.error('Unauthorized');
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
-
     const searchParams = req.nextUrl.searchParams;
     const eventId = searchParams.get('eventId');
-    console.log({ eventId });
 
     if (!eventId) {
       console.error('Missing eventId');
@@ -92,7 +84,11 @@ export async function GET(req: NextRequest) {
       }
     }
     attendees.sort((a, b) => a.customerName.localeCompare(b.customerName));
-    return NextResponse.json({ attendees, eventName });
+    return NextResponse.json({
+      success: true,
+      status: 200,
+      data: { attendees, eventName },
+    });
   } catch (err: any) {
     console.error(err);
     return NextResponse.json(
