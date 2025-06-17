@@ -8,6 +8,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2022-08-01',
 });
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export async function POST(req: Request) {
   try {
     const sig = (await headers()).get('stripe-signature');
@@ -147,7 +153,10 @@ export async function POST(req: Request) {
     }
   } catch (err) {
     console.error('Stripe webhook failed.', err);
-    return NextResponse.json({ error: 'Webhook Error' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Stripe webhook failed.', err },
+      { status: 400 }
+    );
   }
 
   return NextResponse.json({ received: true }, { status: 200 });
