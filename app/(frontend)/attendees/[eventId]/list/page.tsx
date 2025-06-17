@@ -18,6 +18,7 @@ export default async function AttendeesListPage({ params }: PageProps) {
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/attendees?eventId=${eventId}`,
     {
       headers: { Authorization: `JWT ${token}` },
+      cache: 'no-store',
     }
   );
 

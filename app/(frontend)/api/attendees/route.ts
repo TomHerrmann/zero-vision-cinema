@@ -1,5 +1,3 @@
-// app/api/attendees/route.ts
-
 import payloadConfig from '@/payload.config';
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayload } from 'payload';
