@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
-import contactEmailSchema from '../../(schemas)/contactEmailSchema';
+import contactEmailSchema from '../../(frontend)/(schemas)/contactEmailSchema';
 import { Resend } from 'resend';
 import { emailAddress } from '@/app/contsants/constants';
 

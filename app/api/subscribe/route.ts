@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import MailerLite from '@mailerlite/mailerlite-nodejs';
-import subscribeSchema from '../../(schemas)/subscribeSchema';
+import subscribeSchema from '../../(frontend)/(schemas)/subscribeSchema';
 
 const mailerlite = new MailerLite({
   api_key: process.env.MAILER_LITE_ACCESS_TOKEN!,
