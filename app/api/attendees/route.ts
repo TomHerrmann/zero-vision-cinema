@@ -25,7 +25,11 @@ export async function GET(req: NextRequest) {
     });
 
     if (!productId) {
-      return NextResponse.json({ error: 'Missing productId' }, { status: 500 });
+      console.error('Missing productId on event with eventId: ', eventId);
+      return NextResponse.json(
+        { error: 'Missing productId on event with eventId: ', eventId },
+        { status: 500 }
+      );
     }
 
     const { docs: purchases } = await payload.find({
@@ -34,8 +38,9 @@ export async function GET(req: NextRequest) {
     });
 
     if (purchases.length === 0) {
+      console.error('Could not find purchases for product id: ', productId);
       return NextResponse.json(
-        { error: 'Could not find purchases' },
+        { error: 'Could not find purchases for product id: ', productId },
         { status: 500 }
       );
     }
@@ -65,7 +70,7 @@ export async function GET(req: NextRequest) {
         const price = item.price;
         const product =
           typeof price?.product === 'string' ? null : price?.product;
-        console.log('product?.id !== productId -> ', product?.id !== productId);
+
         if (product?.id !== productId) continue;
 
         const customerName = session.customer_details?.name ?? null;
