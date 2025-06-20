@@ -47,6 +47,7 @@ export const Purchases: CollectionConfig = {
       type: 'text',
       required: true,
       admin: { readOnly: true },
+      unique: true,
     },
     {
       name: 'productId',

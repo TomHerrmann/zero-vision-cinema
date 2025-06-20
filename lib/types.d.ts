@@ -15,5 +15,5 @@ type Attendee = {
   eventName: string;
   customerName: string;
   customerEmail: string;
-  quantity: number;
+  createdAt: string;
 };

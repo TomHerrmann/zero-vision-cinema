@@ -10,7 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
-    const eventId = searchParams.get('eventId');
+    const eventId = searchParams.get('eventid');
 
     if (!eventId) {
       console.error('Missing eventId');
@@ -47,12 +47,9 @@ export async function GET(req: NextRequest) {
 
     const attendees: Attendee[] = [];
 
-    const sessionIds = purchases.map(
-      ({ checkoutSessionId }) => checkoutSessionId
-    );
-
-    for (const sessionId of sessionIds) {
-      const session = await stripe.checkout.sessions.retrieve(sessionId);
+    for (const { checkoutSessionId, createdAt } of purchases) {
+      const session =
+        await stripe.checkout.sessions.retrieve(checkoutSessionId);
 
       if (session.payment_status !== 'paid') {
         continue;
@@ -82,7 +79,7 @@ export async function GET(req: NextRequest) {
             eventName,
             customerName,
             customerEmail,
-            quantity: 1,
+            createdAt,
           });
           quantity--;
         }
@@ -92,7 +89,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       status: 200,
-      data: { attendees, eventName },
+      attendees,
+      eventName,
     });
   } catch (err: any) {
     console.error(err);

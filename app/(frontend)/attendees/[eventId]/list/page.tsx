@@ -9,15 +9,18 @@ export const metadata: Metadata = {
 };
 
 export default async function AttendeesListPage({ params }: PageProps) {
-  const { eventId } = await params;
+  const { eventid } = await params;
 
   const cookieStore = await cookies();
   const token = await cookieStore.get('payload-token')?.value;
 
-  const res = await fetch(`/api/attendees?eventId=${eventId}`, {
-    headers: { Authorization: `JWT ${token}` },
-    cache: 'no-store',
-  });
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/attendees?eventid=${eventid}`,
+    {
+      headers: { Authorization: `JWT ${token}` },
+      cache: 'no-store',
+    }
+  );
 
   if (!res.ok) {
     throw new Error('Failed to fetch attendees');

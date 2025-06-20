@@ -21,5 +21,5 @@ export default function middleware(req: NextRequest) {
 
 // Optionally apply it only to certain paths
 export const config = {
-  matcher: ['/api/attendees/:path*'],
+  matcher: ['/api/attendees/:eventid*'],
 };

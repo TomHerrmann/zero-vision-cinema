@@ -1,6 +1,6 @@
 'use client';
 
-import { Checkbox } from '@radix-ui/react-checkbox';
+import { Checkbox } from '../ui/checkbox';
 import {
   Table,
   TableBody,
@@ -31,16 +31,16 @@ export const AttendeesTable = ({ attendees, eventName }: Props) => {
           <TableCaption>{`${eventName} Attendees`}</TableCaption>
           <TableHeader>
             <TableRow>
-              <TableHead>Checked In</TableHead>
+              <TableHead>Checked</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead className="text-right">Quantity</TableHead>
+              <TableHead>Purchased</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {attendees.map(({ customerName, customerEmail, quantity }, i) => (
+            {attendees.map(({ customerName, customerEmail, createdAt }, i) => (
               <TableRow key={`${customerEmail}_${i}_attendee`}>
-                <TableCell>
+                <TableCell className="flex justify-center">
                   <Checkbox
                     checked={checkIns.has(i)}
                     onCheckedChange={() => {
@@ -52,16 +52,32 @@ export const AttendeesTable = ({ attendees, eventName }: Props) => {
                     }}
                   />
                 </TableCell>
-                <TableCell className="font-bold">{customerName}</TableCell>
-                <TableCell>{customerEmail}</TableCell>
-                <TableCell className="text-right">{quantity}</TableCell>
+                <TableCell
+                  className={`font-bold ${checkIns.has(i) ? 'line-through' : ''}`}
+                >
+                  {customerName}
+                </TableCell>
+                <TableCell
+                  className={`${checkIns.has(i) ? 'line-through' : ''}`}
+                >
+                  {customerEmail}
+                </TableCell>
+                <TableCell
+                  className={`${checkIns.has(i) ? 'line-through' : ''}`}
+                >
+                  {new Date(createdAt).toLocaleString('en-US', {
+                    dateStyle: 'long',
+                    timeStyle: 'short',
+                    timeZone: 'America/New_York',
+                  })}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
           <TableFooter>
             <TableRow>
               <TableCell colSpan={3}>Total</TableCell>
-              <TableCell className="text-right">0</TableCell>
+              <TableCell className="text-right">{attendees.length}</TableCell>
             </TableRow>
           </TableFooter>
         </Table>
