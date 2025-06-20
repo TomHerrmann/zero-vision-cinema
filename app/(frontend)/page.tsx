@@ -25,6 +25,8 @@ export default async function Home() {
     depth: 1,
   });
 
+  console.log('****', eventsDocs);
+
   return (
     <>
       <Hero />
