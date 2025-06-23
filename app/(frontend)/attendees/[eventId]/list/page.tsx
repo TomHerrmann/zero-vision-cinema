@@ -19,6 +19,7 @@ export default async function AttendeesListPage({ params }: PageProps) {
     {
       headers: { Authorization: `JWT ${token}` },
       cache: 'no-store',
+      credentials: 'include',
     }
   );
 
