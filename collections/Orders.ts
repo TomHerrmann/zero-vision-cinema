@@ -62,6 +62,12 @@ export const Orders: CollectionConfig = {
       admin: { readOnly: true },
     },
     {
+      name: 'customerId',
+      type: 'text',
+      required: true,
+      admin: { readOnly: true },
+    },
+    {
       name: 'price',
       type: 'number',
       required: true,

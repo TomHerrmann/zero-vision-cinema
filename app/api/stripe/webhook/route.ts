@@ -39,6 +39,26 @@ export async function POST(req: Request) {
         const payload = await getPayload({ config: payloadConfig });
         const session = event.data.object as Stripe.Checkout.Session;
 
+        let customerId: string | null = null;
+        if (!session.customer) {
+          const customerName = session.customer_details?.name ?? undefined;
+          const customerEmail = session.customer_details?.email ?? undefined;
+
+          if (customerName || customerEmail) {
+            const newCustomer = await stripe.customers.create({
+              name: session.customer_details?.name ?? undefined,
+              email: session.customer_details?.email ?? undefined,
+            });
+            console.log('Created customer: ', newCustomer);
+            customerId = newCustomer.id;
+          }
+        } else {
+          customerId =
+            typeof session.customer === 'string'
+              ? session.customer
+              : session.customer.id;
+        }
+
         if (session.payment_status === 'paid') {
           const amountPaid = session.amount_total;
           const transactionDate = new Date(
@@ -68,14 +88,16 @@ export async function POST(req: Request) {
             );
           }
 
-          for (const { product, quantity, price } of lineItems.data) {
-            if (!product || !quantity || !price?.unit_amount) {
+          for (const { quantity, price } of lineItems.data) {
+            if (!quantity || !price?.unit_amount || !price.product) {
               console.error('Failed to find stripe product data');
               continue;
             }
 
             const productId =
-              typeof product === 'string' ? product : (product?.id ?? '');
+              typeof price.product === 'string'
+                ? price.product
+                : (price.product?.id ?? null);
 
             const eventDocs = await payload.find({
               collection: 'events',
@@ -138,10 +160,11 @@ export async function POST(req: Request) {
               }
             }
 
-            payload.create({
+            await payload.create({
               collection: 'orders',
               data: {
                 checkoutSessionId: session.id,
+                customerId: customerId ?? '',
                 amountPaid,
                 transactionDate,
                 productId,

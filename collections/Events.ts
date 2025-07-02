@@ -124,6 +124,7 @@ export const Events: CollectionConfig = {
             });
 
             const paymentLink = await stripe.paymentLinks.create({
+              customer_creation: 'always',
               line_items: [
                 {
                   price: price.id,
