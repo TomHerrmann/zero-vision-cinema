@@ -32,22 +32,22 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const { docs: purchases } = await payload.find({
-      collection: 'purchases',
+    const { docs: orders } = await payload.find({
+      collection: 'orders',
       where: { productId: { equals: productId } },
     });
 
-    if (purchases.length === 0) {
-      console.error('Could not find purchases for product id: ', productId);
+    if (orders.length === 0) {
+      console.error('Could not find orders for product id: ', productId);
       return NextResponse.json(
-        { error: 'Could not find purchases for product id: ', productId },
+        { error: 'Could not find orders for product id: ', productId },
         { status: 500 }
       );
     }
 
     const attendees: Attendee[] = [];
 
-    for (const { checkoutSessionId, createdAt } of purchases) {
+    for (const { checkoutSessionId, createdAt } of orders) {
       const session =
         await stripe.checkout.sessions.retrieve(checkoutSessionId);
 

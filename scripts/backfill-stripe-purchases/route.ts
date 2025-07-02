@@ -116,7 +116,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
           }
 
           await payload.create({
-            collection: 'purchases',
+            collection: 'orders',
             data: {
               checkoutSessionId: session.id,
               productId,

@@ -34,7 +34,7 @@ export const AttendeesTable = ({ attendees, eventName }: Props) => {
               <TableHead>Checked</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Purchased</TableHead>
+              <TableHead>Orders</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
