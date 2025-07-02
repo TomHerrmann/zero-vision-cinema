@@ -45,6 +45,26 @@ export async function GET(req: NextRequest, res: NextResponse) {
           continue;
         }
 
+        let customerId: string | null = null;
+        if (!session.customer) {
+          const customerName = session.customer_details?.name ?? undefined;
+          const customerEmail = session.customer_details?.email ?? undefined;
+
+          if (customerName || customerEmail) {
+            const newCustomer = await stripe.customers.create({
+              name: session.customer_details?.name ?? undefined,
+              email: session.customer_details?.email ?? undefined,
+            });
+            console.log('Created customer: ', newCustomer);
+            customerId = newCustomer.id;
+          }
+        } else {
+          customerId =
+            typeof session.customer === 'string'
+              ? session.customer
+              : session.customer.id;
+        }
+
         const paymentIntent = await stripe.paymentIntents.retrieve(
           session.payment_intent!.toString()
         );
@@ -119,6 +139,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
             collection: 'orders',
             data: {
               checkoutSessionId: session.id,
+              customerId: customerId ?? '',
               productId,
               price: price.unit_amount / 100,
               amountPaid: item.amount_total / 100,
