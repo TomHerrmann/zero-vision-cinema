@@ -1,9 +1,15 @@
 import type { CollectionConfig } from 'payload';
 
-export const Purchases: CollectionConfig = {
-  slug: 'purchases',
+export const Orders: CollectionConfig = {
+  slug: 'orders',
   admin: {
     useAsTitle: 'id',
+  },
+  access: {
+    create: () => false,
+    delete: () => false,
+    read: () => true,
+    update: () => false,
   },
   hooks: {
     beforeValidate: [

@@ -8,17 +8,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2022-08-01',
 });
 
-interface Location {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  zip: number;
-  url: string;
-  logo?: string;
-}
-
 export const Events: CollectionConfig = {
   slug: 'events',
   admin: {
@@ -184,6 +173,7 @@ export const Events: CollectionConfig = {
       type: 'text',
       label: 'Stripe Payment Link',
       required: false,
+      unique: true,
       admin: {
         readOnly: true,
         condition: (data) => Boolean(data.paymentLink),
@@ -196,6 +186,7 @@ export const Events: CollectionConfig = {
       type: 'text',
       label: 'Stripe Product ID',
       required: false,
+      unique: true,
       admin: {
         readOnly: true,
         condition: (data) => Boolean(data.paymentLink),

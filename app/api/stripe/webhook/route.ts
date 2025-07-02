@@ -110,7 +110,13 @@ export async function POST(req: Request) {
               const merch = merchDocs.docs[0];
 
               if (merch?.id) {
-                // update merch quantity sold
+                await payload.update({
+                  collection: 'merch',
+                  id: merch.id,
+                  data: {
+                    merchSold: (merch.merchSold ?? 0) + (quantity ?? 0),
+                  },
+                });
                 item = {
                   relationTo: 'merch' as const,
                   value: merch.id,
@@ -133,7 +139,7 @@ export async function POST(req: Request) {
             }
 
             payload.create({
-              collection: 'purchases',
+              collection: 'orders',
               data: {
                 checkoutSessionId: session.id,
                 amountPaid,

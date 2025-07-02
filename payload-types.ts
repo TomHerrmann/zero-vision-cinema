@@ -71,8 +71,8 @@ export interface Config {
     media: Media;
     locations: Location;
     events: Event;
-    purchases: Purchase;
     merch: Merch;
+    orders: Order;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -83,8 +83,8 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     locations: LocationsSelect<false> | LocationsSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
-    purchases: PurchasesSelect<false> | PurchasesSelect<true>;
     merch: MerchSelect<false> | MerchSelect<true>;
+    orders: OrdersSelect<false> | OrdersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -218,9 +218,28 @@ export interface Event {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "purchases".
+ * via the `definition` "merch".
  */
-export interface Purchase {
+export interface Merch {
+  id: number;
+  name?: string | null;
+  /**
+   * This id is automatically generated when the event is published
+   */
+  productId?: string | null;
+  /**
+   * Maximum number of tickets that can be sold for this event
+   */
+  merchLimit?: number | null;
+  merchSold?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
   id: number;
   checkoutSessionId: string;
   productId: string;
@@ -238,20 +257,6 @@ export interface Purchase {
         relationTo: 'merch';
         value: number | Merch;
       };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "merch".
- */
-export interface Merch {
-  id: number;
-  name?: string | null;
-  /**
-   * This id is automatically generated when the event is published
-   */
-  productId?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -279,12 +284,12 @@ export interface PayloadLockedDocument {
         value: number | Event;
       } | null)
     | ({
-        relationTo: 'purchases';
-        value: number | Purchase;
-      } | null)
-    | ({
         relationTo: 'merch';
         value: number | Merch;
+      } | null)
+    | ({
+        relationTo: 'orders';
+        value: number | Order;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -397,9 +402,21 @@ export interface EventsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "purchases_select".
+ * via the `definition` "merch_select".
  */
-export interface PurchasesSelect<T extends boolean = true> {
+export interface MerchSelect<T extends boolean = true> {
+  name?: T;
+  productId?: T;
+  merchLimit?: T;
+  merchSold?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
   checkoutSessionId?: T;
   productId?: T;
   price?: T;
@@ -408,16 +425,6 @@ export interface PurchasesSelect<T extends boolean = true> {
   transactionDate?: T;
   receiptUrl?: T;
   item?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "merch_select".
- */
-export interface MerchSelect<T extends boolean = true> {
-  name?: T;
-  productId?: T;
   updatedAt?: T;
   createdAt?: T;
 }
