@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export default function middleware(req: NextRequest) {
-  const token = req.headers.get('payload-token');
+  const token = req.headers.get('Authorization');
 
   if (!token) {
     console.error('Unauthorized');
