@@ -52,7 +52,7 @@ export function NewsletterSignup() {
 
       toast.success('You have been subscribed to our newsletter.');
       form.reset();
-    } catch (error) {
+    } catch (err) {
       toast.error('Failed to subscribe. Please try again later.');
     }
     setInFlight(false);

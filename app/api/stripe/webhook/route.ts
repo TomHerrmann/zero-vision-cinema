@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { getPayload } from 'payload';
 import payloadConfig from '@payload-config';
 import { headers } from 'next/headers';
+import { logtail } from '@/lib/logtail';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2022-08-01',
@@ -19,7 +20,10 @@ export async function POST(req: Request) {
     const sig = (await headers()).get('stripe-signature');
 
     if (!sig) {
-      console.error('Stripe webhook failed. Missing Stripe signature');
+      await logtail.error(`API /stripe/webhook Missing Stripe signature`, {
+        method: 'POST',
+        timestamp: new Date().toISOString(),
+      });
       return NextResponse.json(
         { error: 'Missing Stripe signature' },
         { status: 400 }
@@ -49,7 +53,7 @@ export async function POST(req: Request) {
               name: session.customer_details?.name ?? undefined,
               email: session.customer_details?.email ?? undefined,
             });
-            console.log('Created customer: ', newCustomer);
+
             customerId = newCustomer.id;
           }
         } else {
@@ -90,7 +94,13 @@ export async function POST(req: Request) {
 
           for (const { quantity, price } of lineItems.data) {
             if (!quantity || !price?.unit_amount || !price.product) {
-              console.error('Failed to find stripe product data');
+              await logtail.error(
+                `API /stripe/webhook Failed to find stripe product data`,
+                {
+                  method: 'POST',
+                  timestamp: new Date().toISOString(),
+                }
+              );
               continue;
             }
 
@@ -144,10 +154,12 @@ export async function POST(req: Request) {
                   value: merch.id,
                 };
               } else {
-                // no event or merch found - throw an error
-                console.error(
-                  'Failed to find event or merch. Check stripe for product ID: ' +
-                    productId
+                await logtail.error(
+                  `API /stripe/webhook failed to find event or merch. Check stripe for product ID: ${productId}`,
+                  {
+                    method: 'POST',
+                    timestamp: new Date().toISOString(),
+                  }
                 );
                 return NextResponse.json(
                   {
@@ -181,7 +193,10 @@ export async function POST(req: Request) {
       }
     }
   } catch (err) {
-    console.error('Stripe webhook failed.', err);
+    await logtail.error(`API /stripe/webhook failed: ${err}`, {
+      method: 'POST',
+      timestamp: new Date().toISOString(),
+    });
     return NextResponse.json(
       { error: 'Stripe webhook failed.', err },
       { status: 400 }

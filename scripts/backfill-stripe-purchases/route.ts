@@ -2,6 +2,7 @@ import { getPayload } from 'payload';
 import Stripe from 'stripe';
 import payloadConfig from '@/payload.config';
 import { NextRequest, NextResponse } from 'next/server';
+import { logtail } from '@/lib/logtail';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2022-08-01',
@@ -166,7 +167,10 @@ export async function GET(req: NextRequest, res: NextResponse) {
       { status: 201 }
     );
   } catch (err) {
-    console.error('The backfill failed: ', err);
+    await logtail.error(`The backfill failed: : ${err}`, {
+      method: 'POST',
+      timestamp: new Date().toISOString(),
+    });
     return NextResponse.json(
       { error: 'The backfill failed: ' + err },
       { status: 400 }

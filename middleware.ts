@@ -6,7 +6,6 @@ export default function middleware(req: NextRequest) {
   const token = req.headers.get('Authorization');
 
   if (!token) {
-    console.error('Unauthorized');
     return (
       NextResponse.json({ message: 'Unauthorized' }),
       {

@@ -71,7 +71,7 @@ export default function ContactSection() {
       toast.success('Your message was sent!');
       setInFlight(false);
       return;
-    } catch (error) {
+    } catch (err) {
       toast.error('Email failed to send. Please try again later.');
       setInFlight(false);
       return;

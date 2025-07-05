@@ -1,3 +1,4 @@
+import { logtail } from '@/lib/logtail';
 import payloadConfig from '@/payload.config';
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayload } from 'payload';
@@ -13,7 +14,10 @@ export async function GET(req: NextRequest) {
     const eventId = searchParams.get('eventid');
 
     if (!eventId) {
-      console.error('Missing eventId');
+      await logtail.error(' API /attendees missing eventId', {
+        method: 'GET',
+        timestamp: new Date().toISOString(),
+      });
       return NextResponse.json({ error: 'Missing eventId' }, { status: 400 });
     }
 
@@ -25,7 +29,13 @@ export async function GET(req: NextRequest) {
     });
 
     if (!productId) {
-      console.error('Missing productId on event with eventId: ', eventId);
+      await logtail.error(
+        `API /attendees productId on event with eventId: ${eventId}`,
+        {
+          method: 'GET',
+          timestamp: new Date().toISOString(),
+        }
+      );
       return NextResponse.json(
         { error: 'Missing productId on event with eventId: ', eventId },
         { status: 500 }
@@ -38,7 +48,13 @@ export async function GET(req: NextRequest) {
     });
 
     if (orders.length === 0) {
-      console.error('Could not find orders for product id: ', productId);
+      await logtail.error(
+        `API /attendees Could not find orders for product id: ${productId}`,
+        {
+          method: 'GET',
+          timestamp: new Date().toISOString(),
+        }
+      );
       return NextResponse.json(
         { error: 'Could not find orders for product id: ', productId },
         { status: 500 }
@@ -74,10 +90,10 @@ export async function GET(req: NextRequest) {
         const customerEmail = session.customer_details?.email ?? null;
 
         let quantity = item.quantity ?? 1;
-        while (quantity > 0 && !!customerEmail && !!customerName) {
+        while (quantity > 0 && !!customerEmail) {
           attendees.push({
             eventName,
-            customerName,
+            customerName: customerName ?? 'N/A',
             customerEmail,
             createdAt,
           });
@@ -93,7 +109,10 @@ export async function GET(req: NextRequest) {
       eventName,
     });
   } catch (err: any) {
-    console.error(err);
+    await logtail.error(`API /attendees Internal server error ${err}`, {
+      method: 'GET',
+      timestamp: new Date().toISOString(),
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

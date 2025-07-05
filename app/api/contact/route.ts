@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import contactEmailSchema from '../../(frontend)/(schemas)/contactEmailSchema';
 import { Resend } from 'resend';
 import { emailAddress } from '@/app/contsants/constants';
+import { logtail } from '@/lib/logtail';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -18,7 +19,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (response.error) {
-      console.error(response.error);
+      await logtail.error(`API /contact error: ${response.error.message}`, {
+        method: 'POST',
+        timestamp: new Date().toISOString(),
+      });
       return NextResponse.json(
         { error: response.error.message },
         { status: 500 }
@@ -26,8 +30,11 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true }, { status: 201 });
-  } catch (error) {
-    console.error('Email error:', error);
+  } catch (err) {
+    await logtail.error(`API /contact email error: ${err}`, {
+      method: 'POST',
+      timestamp: new Date().toISOString(),
+    });
     return NextResponse.json(
       { error: 'Failed to send contact email' },
       { status: 500 }

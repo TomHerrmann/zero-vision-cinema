@@ -2,6 +2,7 @@ import { CollectionConfig, CollectionSlug } from 'payload';
 import Stripe from 'stripe';
 import { formatEventDescription } from '../utilities/formatDate';
 import { domain } from '../app/contsants/constants';
+import { logtail } from '@/lib/logtail';
 
 // Initialize Stripe with your secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
@@ -141,8 +142,14 @@ export const Events: CollectionConfig = {
             data.productId = product.id;
             data.paymentLink = paymentLink.url;
           }
-        } catch (error) {
-          console.error('Error handling Stripe payment link:', error);
+        } catch (err) {
+          await logtail.error(
+            `Event creation error handling Stripe payment link: ${err}`,
+            {
+              method: 'POST',
+              timestamp: new Date().toISOString(),
+            }
+          );
         }
         return data;
       },

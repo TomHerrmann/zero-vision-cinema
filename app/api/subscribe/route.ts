@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import MailerLite from '@mailerlite/mailerlite-nodejs';
 import subscribeSchema from '../../(frontend)/(schemas)/subscribeSchema';
+import { logtail } from '@/lib/logtail';
 
 const mailerlite = new MailerLite({
   api_key: process.env.MAILER_LITE_ACCESS_TOKEN!,
@@ -22,8 +23,11 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error) {
-    console.error('Newsletter subscription error:', error);
+  } catch (err) {
+    await logtail.error(`API /subscribe failed: ${err}`, {
+      method: 'POST',
+      timestamp: new Date().toISOString(),
+    });
     return NextResponse.json({ error: 'Failed to subscribe' }, { status: 500 });
   }
 }
