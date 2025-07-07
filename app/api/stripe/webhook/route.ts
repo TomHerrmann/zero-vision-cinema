@@ -174,7 +174,7 @@ export async function POST(req: Request) {
               data: {
                 checkoutSessionId: session.id,
                 customerId: customerId ?? '',
-                amountPaid,
+                amountPaid: amountPaid / 100,
                 transactionDate,
                 productId,
                 receiptUrl,
