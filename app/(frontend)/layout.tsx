@@ -3,7 +3,7 @@ import { Geist } from 'next/font/google';
 import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
 import { domain } from '../contsants/constants';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/utils';
 import Nav from '@/components/nav/nav';
 import Footer from '@/components/footer/footer';
 import { ThemeProvider } from '@/components/theme/theme-provider';

@@ -4,10 +4,7 @@ import { getPayload } from 'payload';
 import payloadConfig from '@payload-config';
 import { headers } from 'next/headers';
 import { logtail } from '@/lib/logtail';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2022-08-01',
-});
+import { stripe } from '@/lib/stripe';
 
 export const config = {
   api: {

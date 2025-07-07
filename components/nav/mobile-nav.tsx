@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 // Utility Imports
 import { Menu, ArrowRightSquare } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/utils';
 
 // Component Imports
 import { Button } from '@/components/ui/button';

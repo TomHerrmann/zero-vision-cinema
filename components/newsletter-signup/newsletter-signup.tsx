@@ -15,7 +15,7 @@ import {
 import { toast } from 'sonner';
 import subscribeSchema from '@/app/(frontend)/(schemas)/subscribeSchema';
 import { Rubik_Glitch } from 'next/font/google';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/utils';
 import { useState } from 'react';
 import { Loader2Icon } from 'lucide-react';
 

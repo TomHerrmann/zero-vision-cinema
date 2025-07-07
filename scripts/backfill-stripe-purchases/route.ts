@@ -3,10 +3,7 @@ import Stripe from 'stripe';
 import payloadConfig from '@/payload.config';
 import { NextRequest, NextResponse } from 'next/server';
 import { logtail } from '@/lib/logtail';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2022-08-01',
-});
+import { stripe } from '@/lib/stripe';
 
 type RelatedItem =
   | { relationTo: 'events'; value: number }

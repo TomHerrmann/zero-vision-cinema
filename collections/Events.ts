@@ -1,13 +1,9 @@
 import { CollectionConfig, CollectionSlug } from 'payload';
 import Stripe from 'stripe';
-import { formatEventDescription } from '../utilities/formatDate';
+import { formatEventDescription } from '../utils/formatDate';
 import { domain } from '../app/contsants/constants';
 import { logtail } from '@/lib/logtail';
-
-// Initialize Stripe with your secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2022-08-01',
-});
+import { stripe } from '@/lib/stripe';
 
 export const Events: CollectionConfig = {
   slug: 'events',

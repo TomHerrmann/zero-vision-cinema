@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/utils';
 import { Rubik_Glitch } from 'next/font/google';
 
 const rubikGlitchFont = Rubik_Glitch({

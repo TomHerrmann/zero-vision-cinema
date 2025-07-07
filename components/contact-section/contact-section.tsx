@@ -19,7 +19,7 @@ import {
   Video,
 } from 'lucide-react';
 import { Rubik_Glitch } from 'next/font/google';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/utils';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import z from 'zod';

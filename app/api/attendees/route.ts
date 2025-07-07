@@ -1,12 +1,8 @@
 import { logtail } from '@/lib/logtail';
+import { stripe } from '@/lib/stripe';
 import payloadConfig from '@/payload.config';
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayload } from 'payload';
-import Stripe from 'stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2022-08-01',
-});
 
 export async function GET(req: NextRequest) {
   try {

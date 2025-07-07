@@ -1,5 +1,5 @@
 import EventCard from '../event-card/event-card';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils/utils';
 import { Rubik_Glitch } from 'next/font/google';
 import {
   Carousel,
