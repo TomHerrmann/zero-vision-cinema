@@ -70,6 +70,8 @@ export const Events: CollectionConfig = {
               throw new Error('No price ID found in line item');
             }
 
+            data.priceId = priceId;
+
             const price = await stripe.prices.retrieve(priceId);
             const productId =
               typeof price.product === 'string'
@@ -93,6 +95,7 @@ export const Events: CollectionConfig = {
               });
 
               await stripe.paymentLinks.update(paymentLinkId, {
+                customer_creation: 'always',
                 line_items: [
                   {
                     price: newPrice.id,
@@ -107,7 +110,7 @@ export const Events: CollectionConfig = {
               });
             }
           } else {
-            // Create new Stripe product and payment link
+            // Create new Stripe product, price and payment link
             const product = await stripe.products.create({
               name: data.name,
               description: formattedDescription,
@@ -137,6 +140,7 @@ export const Events: CollectionConfig = {
 
             data.productId = product.id;
             data.paymentLink = paymentLink.url;
+            data.priceId = price.id;
           }
         } catch (err) {
           await logtail.error(
@@ -190,6 +194,19 @@ export const Events: CollectionConfig = {
       type: 'text',
       label: 'Stripe Product ID',
       required: false,
+      unique: true,
+      admin: {
+        readOnly: true,
+        condition: (data) => Boolean(data.paymentLink),
+        description:
+          'This id is automatically generated when the event is published',
+      },
+    },
+    {
+      name: 'priceId',
+      type: 'text',
+      label: 'Stripe Price ID',
+      required: true,
       unique: true,
       admin: {
         readOnly: true,

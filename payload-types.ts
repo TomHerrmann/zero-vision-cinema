@@ -208,6 +208,10 @@ export interface Event {
    */
   productId?: string | null;
   /**
+   * This id is automatically generated when the event is published
+   */
+  priceId?: string | null;
+  /**
    * Maximum number of tickets that can be sold for this event
    */
   ticketLimit?: number | null;
@@ -395,6 +399,7 @@ export interface EventsSelect<T extends boolean = true> {
   datetime?: T;
   paymentLink?: T;
   productId?: T;
+  priceId?: T;
   ticketLimit?: T;
   ticketsSold?: T;
   updatedAt?: T;
