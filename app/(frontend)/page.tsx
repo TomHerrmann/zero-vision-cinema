@@ -11,9 +11,7 @@ export default async function Home() {
   return (
     <>
       <Hero />
-      <EventsSection
-        events={[...events, ...events, ...events, ...events, ...events]}
-      />
+      <EventsSection events={events} />
       <About />
       <NewsletterSignup />
       <ContactSection />
