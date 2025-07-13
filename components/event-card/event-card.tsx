@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, DollarSign } from 'lucide-react';
 import { Event, Location, Media } from '@/payload-types';
 
+type Props = Event;
+
 const EventCard = ({
   name,
   paymentLink,
@@ -18,7 +20,7 @@ const EventCard = ({
   price,
   datetime,
   location,
-}: Event) => {
+}: Props) => {
   const date = new Date(datetime);
 
   if (!image || typeof image === 'number' || !image?.url || !paymentLink) {
