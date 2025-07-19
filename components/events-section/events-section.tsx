@@ -54,11 +54,11 @@ export default function EventsSection({ events }: Props) {
       ) : (
         <>
           <div
-            className={cn('w-full max-w-5xl mx-auto', {
+            className={cn('w-[80%] md:max-w-[80%] mx-auto', {
               'overflow-y-auto md:max-h-[900px]': shouldScroll,
             })}
           >
-            <div className={cn('grid grid-cols-1 md:grid-cols-3 gap-8')}>
+            <div className={cn('grid grid-cols-1 md:grid-cols-3 gap-8 w-full')}>
               {displayedEvents.map((event, idx) => (
                 <div key={idx} className="p-4">
                   <EventCard {...event} />
