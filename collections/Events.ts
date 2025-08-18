@@ -1,5 +1,4 @@
 import { CollectionConfig, CollectionSlug } from 'payload';
-import Stripe from 'stripe';
 import { formatEventDescription } from '../utils/formatDate';
 import { domain } from '../app/contsants/constants';
 import { logtail } from '@/lib/logtail';
