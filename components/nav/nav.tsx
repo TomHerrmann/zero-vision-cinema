@@ -56,9 +56,9 @@ export default function Nav() {
               <Link
                 key={href}
                 href={href}
-                className="text-[1.7rem] hover:underline pr-4"
+                className="text-[1.7rem] font-bold hover:underline pr-4 capitalize drop-shadow-[0_6px_6px_rgba(0,0,0,0.8)]"
               >
-                {key.charAt(0).toUpperCase() + key.slice(1)}
+                {key}
               </Link>
             ))}
           </div>

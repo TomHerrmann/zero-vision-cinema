@@ -11,7 +11,7 @@ export default function Hero() {
   return (
     <section className="relative top-0 w-full md:h-[500px] sm:h-[300px] h-[275px] overflow-hidden z-10">
       <Image
-        src="https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/projectorblue_hero"
+        src="https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/zvc_blank_header.png"
         alt="Hero Image"
         fill
         className="object-cover -z-10"

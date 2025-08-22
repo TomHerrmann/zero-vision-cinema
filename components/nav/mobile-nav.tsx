@@ -1,12 +1,11 @@
 'use client';
 
 // React and Next Imports
-import * as React from 'react';
 import Link, { LinkProps } from 'next/link';
 import { useRouter } from 'next/navigation';
 
 // Utility Imports
-import { Menu, ArrowRightSquare } from 'lucide-react';
+import { ArrowRightSquare, Menu } from 'lucide-react';
 import { cn } from '@/utils/utils';
 
 // Component Imports
@@ -25,6 +24,7 @@ import { mainMenu } from '@/menu.config';
 import { siteName } from '@/app/contsants/constants';
 
 import { Rubik_Glitch } from 'next/font/google';
+import { useState } from 'react';
 
 const rubikGlitchFont = Rubik_Glitch({
   weight: '400',
@@ -32,14 +32,14 @@ const rubikGlitchFont = Rubik_Glitch({
 });
 
 export function MobileNav() {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button
-          variant="ghost"
-          className="px-0 border w-10 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
+          variant="secondary"
+          className="px-0 border text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
         >
           <Menu />
           <span className="sr-only">Toggle Menu</span>
