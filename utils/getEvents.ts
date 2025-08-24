@@ -3,7 +3,7 @@ import { getPayload } from 'payload';
 
 const payload = await getPayload({ config: payloadConfig });
 
-const nowPlus1Hour = new Date(Date.now() + 1 * 60 * 60 * 1000).toISOString();
+const nowMinus30Minutes = new Date(Date.now() - 30 * 60 * 1000).toISOString();
 const now = new Date().toISOString();
 
 export const getUpcomingEvents = async () => {
@@ -14,7 +14,7 @@ export const getUpcomingEvents = async () => {
         equals: 'published',
       },
       datetime: {
-        greater_than: nowPlus1Hour,
+        greater_than: nowMinus30Minutes,
       },
     },
     sort: ['datetime'],
