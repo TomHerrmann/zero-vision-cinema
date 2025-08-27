@@ -15,7 +15,11 @@ export const DISCORD_ICON_SVG_URL =
 export const DISCORD_ICON_PNG_URL =
   'https://fzuxxxhgqwm9izz9.public.blob.vercel-storage.com/Discord-Symbol-Blurple-qVbi073hnRjxESi2xu6BLwspIzEs5g.png';
 
+export const AHC_DISCORD_URL =
+  'https://discord.com/invite/x35BPgmPyb?fbclid=PAZXh0bgNhZW0CMTEAAafUzenp36jVZ_O95VA30EZDlPtO0qxHgeSHCdU4X8jTzwm9hwtHxXKwUDw0hg_aem_38kZ29hr4jhaISSUtC8IXA';
+
 export const AHC_INSTAGRAM_URL = 'https://www.instagram.com/astoriahorrorclub/';
+export const ZVC_INSTAGRAM_URL = 'https://www.instagram.com/zerovisioncinema/';
 
 export const AHC_LOGO_PNG_URL =
   'https://fzuxxxhgqwm9izz9.public.blob.vercel-storage.com/ahc_logo_transparent_yellow-SITE.png';
