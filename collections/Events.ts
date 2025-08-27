@@ -1,6 +1,6 @@
 import { CollectionConfig, CollectionSlug } from 'payload';
 import { formatEventDescription } from '../utils/formatDate';
-import { domain } from '../app/contsants/constants';
+import { ZVC_SITE_URL } from '../app/contsants/constants';
 import { logtail } from '@/lib/logtail';
 import { stripe } from '@/lib/stripe';
 
@@ -25,8 +25,8 @@ export const Events: CollectionConfig = {
               collection: 'media',
               id: data.image,
             });
-            // Use the domain constant for the full URL
-            imageUrl = `${domain}${mediaDoc.url}`;
+            // Use the ZVC_SITE_URL constant for the full URL
+            imageUrl = `${ZVC_SITE_URL}${mediaDoc.url}`;
           }
 
           // Get the full location document

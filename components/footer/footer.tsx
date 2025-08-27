@@ -1,10 +1,10 @@
 import { mainMenu } from '@/menu.config';
 import Link from 'next/link';
 import {
-  addressLine1,
-  addressLine2,
-  emailAddress,
-  llcName,
+  ADDRESS_LINE_1,
+  ADDRESS_LINE_2,
+  ZVC_EMAIL_ADDRESS,
+  LLC_NAME,
 } from '@/app/contsants/constants';
 import { Separator } from '../ui/separator';
 import Image from 'next/image';
@@ -53,8 +53,8 @@ const Footer = () => {
                 </Link>
               </div>
               <strong>
-                <Link href={`mailto:${emailAddress}`} target="_blank">
-                  {emailAddress}
+                <Link href={`mailto:${ZVC_EMAIL_ADDRESS}`} target="_blank">
+                  {ZVC_EMAIL_ADDRESS}
                 </Link>
               </strong>
             </div>
@@ -64,10 +64,13 @@ const Footer = () => {
               Address
             </h5>
             <address className="not-italic text-md">
-              <strong>{llcName}</strong>
-              <p>{addressLine1}</p>
-              <p>{addressLine2}</p>
+              <strong>{LLC_NAME}</strong>
+              <p>{ADDRESS_LINE_1}</p>
+              <p>{ADDRESS_LINE_2}</p>
             </address>
+            <p className="pt-8 text-neutral-500">
+              &copy; {new Date().getFullYear()} {LLC_NAME}
+            </p>
           </div>
         </div>
       </section>

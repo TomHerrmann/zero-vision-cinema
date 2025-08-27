@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import contactEmailSchema from '../../(frontend)/(schemas)/contactEmailSchema';
 import { Resend } from 'resend';
-import { emailAddress } from '@/app/contsants/constants';
+import { ZVC_EMAIL_ADDRESS } from '@/app/contsants/constants';
 import { logtail } from '@/lib/logtail';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -12,9 +12,9 @@ export async function POST(request: NextRequest) {
     const validatedData = contactEmailSchema.parse(body);
 
     const response = await resend.emails.send({
-      from: emailAddress,
+      from: ZVC_EMAIL_ADDRESS,
       subject: `New Message From ${validatedData.name}`,
-      to: emailAddress,
+      to: ZVC_EMAIL_ADDRESS,
       text: `Message from ${validatedData.name} <${validatedData.email}> | ${validatedData.message}`,
     });
 
