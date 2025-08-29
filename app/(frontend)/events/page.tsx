@@ -13,7 +13,7 @@ export default async function EventsPage() {
   const events = await getUpcomingEvents();
 
   return (
-    <main className="flex flex-col w-full m-0 p-2 pt-12 md:px-12 md:pt-20 items-center justify-center">
+    <main className="flex flex-col w-full m-0 p-2 pt-12 pb-8 md:px-12 md:pt-20 items-center justify-center">
       <h1
         className={cn(
           'text-5xl font-bold mb-8 text-center',
