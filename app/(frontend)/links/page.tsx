@@ -68,13 +68,13 @@ export default async function TreeLinkPage() {
             <Button
               asChild
               key={`${link.title}-link`}
-              className="w-full py-3 h-auto text-base sm:text-lg font-semibold rounded-md border border-stone-500 bg-gradient-to-r from-sky-800 via-sky-100 to-stone-300 text-black shadow hover:from-sky-500 hover:to-stone-100 hover:shadow-md transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
+              className="w-full py-3 h-auto text-sm sm:text-base md:text-lg font-semibold rounded-md border border-stone-500 bg-gradient-to-r from-sky-800 via-sky-100 to-stone-300 text-black shadow hover:from-sky-500 hover:to-stone-100 hover:shadow-md transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
             >
               <Link
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2 truncate text-[clamp(0.95rem,2vw,1.25rem)] w-full"
               >
                 {link.title}
               </Link>
