@@ -35,7 +35,7 @@ export default async function AstoriaHorrorClubPage() {
           </h2>
         </div>
         <div className="flex justify-center text-center">
-          <p className="text-xl md:px-8">
+          <p className="text-xl md:px-8 max-w-[45em]">
             Astoria Horror Club builds community through a shared love of scary
             movies and books. AHC was started in 2021 with a reddit post to
             r/astoria with the goal of finding other horror fans in the

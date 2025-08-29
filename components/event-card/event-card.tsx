@@ -38,14 +38,14 @@ const EventCard = ({
 
   if (orientation === 'horz') {
     return (
-      <Card className="flex flex-row h-full rounded-2xl shadow-md hover:shadow-lg transition bg-sky-900 overflow-hidden p-[8px] gap-0 md:gap-4 m-0">
-        <div className="relative w-40 min-w-40 aspect-[2/3] md:w-56 md:min-w-56">
+      <Card className="flex flex-row h-full rounded-2xl shadow-md hover:shadow-lg transition bg-sky-900 overflow-hidden p-[8px] gap-0 md:gap-4 m-0 max-w-[48em]">
+        <div className="relative aspect-[2/3] md:w-56 md:min-w-56">
           <Image
             src={image.url}
             alt={image.alt}
             fill
-            className="object-cover rounded-[10px]"
-            sizes="(max-width: 768px) 160px, 224px"
+            className="object-contain rounded-[10px]"
+            sizes="(max-width: 768px)"
           />
         </div>
         <div className="flex flex-col flex-1">

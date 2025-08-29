@@ -1,19 +1,33 @@
 import { getUpcomingEvents } from '@/utils/getEvents';
 import EventCard from '@/components/event-card/event-card';
 import '../globals.css';
+import { Rubik_Glitch } from 'next/font/google';
+import { cn } from '@/utils/utils';
+
+const rubikGlitchFont = Rubik_Glitch({
+  weight: '400',
+  subsets: ['latin'],
+});
 
 export default async function EventsPage() {
   const events = await getUpcomingEvents();
 
   return (
-    <main className="max-w-5xl md:m-12 m-0 mt-12 p-2 md:p-12 items-center">
-      <h1 className="text-3xl font-bold mb-8 text-center">Upcoming Events</h1>
+    <main className="flex flex-col w-full m-0 p-2 pt-12 md:px-12 md:pt-20 items-center justify-center">
+      <h1
+        className={cn(
+          'text-5xl font-bold mb-8 text-center',
+          rubikGlitchFont.className
+        )}
+      >
+        Upcoming Events
+      </h1>
       {events.length === 0 ? (
         <p className="text-center text-lg text-zinc-400">
           No upcoming events at this time.
         </p>
       ) : (
-        <div className="flex flex-col gap-8 justify-center align-center">
+        <div className="flex flex-col w-4/5 gap-8 self-center items-center">
           {events.map((event) => (
             <EventCard key={event.id} {...event} orientation="horz" />
           ))}
