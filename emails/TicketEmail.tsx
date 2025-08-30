@@ -43,12 +43,13 @@ export default function TicketEmail({
         <Container align="center" style={container}>
           <Section style={coverSection}>
             <Section style={imageSection}>
-              {/* <Img
-                src={`${baseUrl}/static/aws-logo.png`}
-                width="75"
-                height="45"
-                alt="AWS's Logo"
-              /> */}
+              <Img
+                src={
+                  'https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/zvc_email_header.png'
+                }
+                width={'100%'}
+                alt="Zero Vision Cinema Logo"
+              />
             </Section>
             <Section style={upperSection}>
               <Heading style={h1}>
@@ -143,11 +144,9 @@ const main = {
 };
 
 const container = {
-  paddingTop: '20px',
-  paddingRight: '20px',
-  paddingBottom: '20px',
-  paddingLeft: '20px',
-  backgroundColor: '#eeeeee',
+  padding: '15px',
+  backgroundColor: '#e4e4e7',
+  maxWidth: '600px',
 };
 
 const h1 = {
@@ -178,9 +177,6 @@ const text = {
 };
 
 const imageSection = {
-  backgroundColor: '#0c4a6e',
-  paddingTop: '20px',
-  paddingBottom: '20px',
   textAlign: 'center' as const,
 };
 
@@ -206,14 +202,15 @@ const footerText = {
 };
 
 const ticketSection = {
-  backgroundColor: '#f0f0f0',
+  backgroundColor: '#e4e4e7',
   paddingTop: '5px',
   paddingRight: '50px',
   paddingBottom: '5px',
   paddingLeft: '50px',
   marginTop: '18px',
   marginBottom: '18px',
-  width: '350px',
+  maxWidth: '350px',
+  width: '60%',
   borderRadius: '8px',
   textAlign: 'center' as const,
 };

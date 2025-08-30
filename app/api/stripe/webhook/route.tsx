@@ -5,6 +5,12 @@ import payloadConfig from '@payload-config';
 import { headers } from 'next/headers';
 import { logtail } from '@/lib/logtail';
 import { stripe } from '@/lib/stripe';
+import { Resend } from 'resend';
+import { ZVC_EMAIL_ADDRESS } from '@/app/contsants/constants';
+import TicketEmail from '@/emails/TicketEmail';
+import { Location } from '@/payload-types';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const config = {
   api: {
@@ -169,7 +175,7 @@ export async function POST(req: Request) {
               }
             }
 
-            await payload.create({
+            const newOrder = await payload.create({
               collection: 'orders',
               data: {
                 checkoutSessionId: session.id,
@@ -183,6 +189,31 @@ export async function POST(req: Request) {
                 item,
               },
             });
+
+            if (newOrder.id) {
+              const eventImage =
+                typeof event.image === 'object'
+                  ? event.image
+                  : await payload.findByID({
+                      collection: 'media',
+                      id: event.image ?? 0,
+                    });
+
+              await resend.emails.send({
+                from: ZVC_EMAIL_ADDRESS,
+                subject: `Your ZVC Ticket: ${event.name}`,
+                to: '',
+                react: (
+                  <TicketEmail
+                    eventName={event.name}
+                    eventImage={eventImage?.url || ''}
+                    eventDate={event.datetime}
+                    eventLocation={(event.location as Location).name}
+                    quantity={quantity}
+                  />
+                ),
+              });
+            }
           }
         }
 
