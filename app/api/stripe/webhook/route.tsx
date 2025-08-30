@@ -55,7 +55,10 @@ export async function POST(req: Request) {
           },
         });
 
-        if (existingOrders.length === 0) {
+        if (existingOrders.length > 0) {
+          await logtail.info(
+            `API /stripe/webhook: Duplicate checkout session ${session.id} received. Ignoring.`
+          );
           return NextResponse.json({ received: true }, { status: 200 });
         }
 
@@ -98,13 +101,16 @@ export async function POST(req: Request) {
           const receiptUrl = paymentIntent?.charges?.data?.[0]?.receipt_url;
 
           if (!amountPaid || !receiptUrl) {
+            await logtail.error(
+              `API /stripe/webhook: Failed to find Stripe data. Session ID: ${session.id}`
+            );
             return NextResponse.json(
               {
                 error:
                   'Failed to find stripe data. Check stripe for session ID: ' +
                   session.id,
               },
-              { status: 404 }
+              { status: 400 }
             );
           }
 
@@ -183,7 +189,7 @@ export async function POST(req: Request) {
                       'Failed to find event or merch. Check stripe for product ID: ' +
                       productId,
                   },
-                  { status: 404 }
+                  { status: 400 }
                 );
               }
             }
@@ -228,20 +234,30 @@ export async function POST(req: Request) {
                 return;
               }
 
-              await resend.emails.send({
-                from: ZVC_EMAIL_ADDRESS,
-                subject: `Your ZVC Ticket: ${event.name}`,
-                to: email,
-                react: (
-                  <TicketEmail
-                    eventName={event.name}
-                    eventImage={eventImage?.url || ''}
-                    eventDate={event.datetime}
-                    eventLocation={(event.location as Location).name}
-                    quantity={quantity}
-                  />
-                ),
-              });
+              try {
+                await resend.emails.send({
+                  from: ZVC_EMAIL_ADDRESS,
+                  subject: `Your ZVC Ticket: ${event.name}`,
+                  to: email,
+                  react: (
+                    <TicketEmail
+                      eventName={event.name}
+                      eventImage={eventImage?.url || ''}
+                      eventDate={event.datetime}
+                      eventLocation={(event.location as Location).name}
+                      quantity={quantity}
+                    />
+                  ),
+                });
+              } catch (emailError) {
+                await logtail.error(
+                  `API /stripe/webhook: Failed to send ticket email for order ${newOrder.id}: ${emailError}`,
+                  {
+                    method: 'POST',
+                    timestamp: new Date().toISOString(),
+                  }
+                );
+              }
             }
           }
         }
