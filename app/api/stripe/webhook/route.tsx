@@ -46,6 +46,19 @@ export async function POST(req: Request) {
         const payload = await getPayload({ config: payloadConfig });
         const session = event.data.object as Stripe.Checkout.Session;
 
+        const { docs: existingOrders } = await payload.find({
+          collection: 'orders',
+          where: {
+            checkoutSessionId: {
+              equals: session.id,
+            },
+          },
+        });
+
+        if (existingOrders.length === 0) {
+          return NextResponse.json({ received: true }, { status: 200 });
+        }
+
         let customerId: string | null = null;
         if (!session.customer) {
           const customerName = session.customer_details?.name ?? undefined;
@@ -191,6 +204,18 @@ export async function POST(req: Request) {
             });
 
             if (newOrder.id) {
+              let email = null;
+              if (session.customer_details?.email) {
+                email = session.customer_details.email;
+              } else if (customerId) {
+                const customer = await stripe.customers.retrieve(customerId);
+                if (customer && 'email' in customer) {
+                  if (customer.email) {
+                    email = customer.email;
+                  }
+                }
+              }
+
               const eventImage =
                 typeof event.image === 'object'
                   ? event.image
@@ -199,10 +224,14 @@ export async function POST(req: Request) {
                       id: event.image ?? 0,
                     });
 
+              if (!email) {
+                return;
+              }
+
               await resend.emails.send({
                 from: ZVC_EMAIL_ADDRESS,
                 subject: `Your ZVC Ticket: ${event.name}`,
-                to: '',
+                to: email,
                 react: (
                   <TicketEmail
                     eventName={event.name}
