@@ -20,10 +20,6 @@ interface Props {
   quantity: number;
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : '';
-
 export default function TicketEmail({
   eventName,
   quantity = 1,
