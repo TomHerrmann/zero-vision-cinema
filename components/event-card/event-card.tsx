@@ -21,6 +21,7 @@ type Props = Event & {
 };
 
 const EventCard = ({
+  id,
   name,
   description,
   paymentLink,
@@ -83,7 +84,11 @@ const EventCard = ({
           </CardContent>
           <CardFooter className="mt-[1.5rem] mb-[.5rem]">
             <Button asChild className="w-full px-[.5rem]">
-              <Link target="_blank" href={paymentLink} className="text-md">
+              <Link
+                target="_blank"
+                href={`/checkout/${id}`}
+                className="text-md"
+              >
                 Buy Tickets
               </Link>
             </Button>
