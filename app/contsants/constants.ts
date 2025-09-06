@@ -1,6 +1,7 @@
 export const SITE_NAME = 'Zero Vision Cinema';
 export const LLC_NAME = 'Zero Vision Cinema LLC';
 export const ZVC_SITE_URL = 'https://zerovisioncinema.com';
+export const ZVC_NEWSLETTER_URL = `${ZVC_SITE_URL}#newsletter`;
 export const ZVC_EMAIL_ADDRESS = 'info@zerovisioncinema.com';
 export const ADDRESS_LINE_1 = '418 Broadway Ste N';
 export const ADDRESS_LINE_2 = 'Albany, Albany County, NY 12207 US';
