@@ -13,6 +13,12 @@ import { Event, Location } from '@/payload-types';
 import { RichText } from '@payloadcms/richtext-lexical/react';
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical';
 import { Separator } from '../ui/separator';
+import { Rubik_Glitch } from 'next/font/google';
+
+const rubikGlitchFont = Rubik_Glitch({
+  weight: '400',
+  subsets: ['latin'],
+});
 
 type Orientation = 'vert' | 'horz';
 
@@ -51,7 +57,7 @@ const EventCard = ({
           />
           {isSoldOut && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-red-600 text-4xl font-black transform -rotate-45 whitespace-nowrap tracking-widest opacity-90">
+              <div className={`text-red-600 text-4xl font-black transform -rotate-45 whitespace-nowrap tracking-widest opacity-90 ${rubikGlitchFont.className}`}>
                 SOLD OUT!
               </div>
             </div>
@@ -123,7 +129,7 @@ const EventCard = ({
           />
           {isSoldOut && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-red-600 text-4xl font-black transform -rotate-45 whitespace-nowrap tracking-widest opacity-90">
+              <div className={`text-red-600 text-4xl font-black transform -rotate-45 whitespace-nowrap tracking-widest opacity-90 ${rubikGlitchFont.className}`}>
                 SOLD OUT!
               </div>
             </div>
