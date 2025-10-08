@@ -18,6 +18,7 @@ type Orientation = 'vert' | 'horz';
 
 type Props = Event & {
   orientation?: Orientation;
+  isSoldOut?: boolean;
 };
 
 const EventCard = ({
@@ -29,6 +30,7 @@ const EventCard = ({
   datetime,
   location,
   orientation = 'vert',
+  isSoldOut,
 }: Props) => {
   const date = new Date(datetime);
 
@@ -44,9 +46,16 @@ const EventCard = ({
             src={image.url}
             alt={image.alt}
             fill
-            className="object-contain rounded-[10px]"
+            className={`object-contain rounded-[10px] ${isSoldOut ? 'grayscale opacity-40' : ''}`}
             sizes="(max-width: 768px)"
           />
+          {isSoldOut && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-red-600 text-4xl font-black transform -rotate-45 whitespace-nowrap tracking-widest opacity-90">
+                SOLD OUT!
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex flex-col flex-1">
           <CardHeader className="pb-4 md:pb-2 px-2">
@@ -82,11 +91,17 @@ const EventCard = ({
             </div>
           </CardContent>
           <CardFooter className="mt-[1.5rem] mb-[.5rem]">
-            <Button asChild className="w-full px-[.5rem]">
-              <Link target="_blank" href={paymentLink} className="text-md">
-                Buy Tickets
-              </Link>
-            </Button>
+            {isSoldOut ? (
+              <Button className="w-full px-[.5rem]" disabled>
+                Sold Out
+              </Button>
+            ) : (
+              <Button asChild className="w-full px-[.5rem]">
+                <Link target="_blank" href={paymentLink} className="text-md">
+                  Buy Tickets
+                </Link>
+              </Button>
+            )}
           </CardFooter>
         </div>
       </Card>
@@ -104,8 +119,15 @@ const EventCard = ({
             src={image.url}
             alt={image.alt}
             fill
-            className="object-cover"
+            className={`object-cover ${isSoldOut ? 'grayscale opacity-40' : ''}`}
           />
+          {isSoldOut && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-red-600 text-4xl font-black transform -rotate-45 whitespace-nowrap tracking-widest opacity-90">
+                SOLD OUT!
+              </div>
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 flex-1 text-col">
@@ -128,11 +150,17 @@ const EventCard = ({
         </div>
       </CardContent>
       <CardFooter className="mt-auto">
-        <Button asChild className="w-full">
-          <Link target="_blank" href={paymentLink}>
-            Buy Tickets
-          </Link>
-        </Button>
+        {isSoldOut ? (
+          <Button className="w-full" disabled>
+            Sold Out
+          </Button>
+        ) : (
+          <Button asChild className="w-full">
+            <Link target="_blank" href={paymentLink}>
+              Buy Tickets
+            </Link>
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

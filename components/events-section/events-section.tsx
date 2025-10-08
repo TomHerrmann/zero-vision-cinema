@@ -38,7 +38,14 @@ export default function EventsSection({ events }: Props) {
             <div className={cn('grid grid-cols-1 md:grid-cols-3 gap-8')}>
               {events.slice(0, 3).map((event, idx) => (
                 <div key={idx} className="p-4">
-                  <EventCard {...event} />
+                  <EventCard
+                    {...event}
+                    isSoldOut={
+                      !!event.ticketLimit &&
+                      !!event.ticketsSold &&
+                      event.ticketsSold >= event.ticketLimit
+                    }
+                  />
                 </div>
               ))}
             </div>

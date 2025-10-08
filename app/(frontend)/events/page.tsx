@@ -31,7 +31,16 @@ export default async function EventsPage() {
       ) : (
         <div className="flex flex-col w-4/5 gap-8 self-center items-center">
           {events.map((event) => (
-            <EventCard key={event.id} {...event} orientation="horz" />
+            <EventCard
+              key={event.id}
+              {...event}
+              orientation="horz"
+              isSoldOut={
+                !!event.ticketLimit &&
+                !!event.ticketsSold &&
+                event.ticketsSold >= event.ticketLimit
+              }
+            />
           ))}
         </div>
       )}
