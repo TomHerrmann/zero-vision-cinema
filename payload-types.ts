@@ -195,7 +195,7 @@ export interface Event {
     };
     [k: string]: unknown;
   };
-  image?: (number | null) | Media;
+  image: number | Media;
   price: number;
   location: number | Location;
   datetime: string;

@@ -157,7 +157,7 @@ export const Events: CollectionConfig = {
   fields: [
     { name: 'name', type: 'text', required: true },
     { name: 'description', type: 'richText', required: true },
-    { name: 'image', type: 'upload', relationTo: 'media', required: false },
+    { name: 'image', type: 'upload', relationTo: 'media', required: true },
     { name: 'price', type: 'number', required: true },
     {
       name: 'location',

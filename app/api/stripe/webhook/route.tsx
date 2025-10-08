@@ -227,10 +227,10 @@ export async function POST(req: Request) {
                   ? event.image
                   : await payload.findByID({
                       collection: 'media',
-                      id: event.image ?? 0,
+                      id: event.image,
                     });
 
-              if (!email) {
+              if (!email || !eventImage.filename) {
                 return;
               }
 
@@ -242,10 +242,14 @@ export async function POST(req: Request) {
                   react: (
                     <TicketEmail
                       eventName={event.name}
-                      eventImage={eventImage?.url || ''}
+                      eventImage={`${process.env.VERCEL_BLOB_URL}${eventImage.filename}`}
                       eventDate={event.datetime}
                       eventLocation={(event.location as Location).name}
                       quantity={quantity}
+                      eventDescription={event.description}
+                      eventAddress={(event.location as Location).address}
+                      totalAmount={amountPaid / 100}
+                      purchaseDate={transactionDate}
                     />
                   ),
                 });
