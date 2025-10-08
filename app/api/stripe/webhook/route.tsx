@@ -5,6 +5,12 @@ import payloadConfig from '@payload-config';
 import { headers } from 'next/headers';
 import { logtail } from '@/lib/logtail';
 import { stripe } from '@/lib/stripe';
+import { Resend } from 'resend';
+import { ZVC_EMAIL_ADDRESS } from '@/app/contsants/constants';
+import TicketEmail from '@/emails/TicketEmail';
+import { Location } from '@/payload-types';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const config = {
   api: {
@@ -39,6 +45,22 @@ export async function POST(req: Request) {
       case 'checkout.session.completed': {
         const payload = await getPayload({ config: payloadConfig });
         const session = event.data.object as Stripe.Checkout.Session;
+
+        const { docs: existingOrders } = await payload.find({
+          collection: 'orders',
+          where: {
+            checkoutSessionId: {
+              equals: session.id,
+            },
+          },
+        });
+
+        if (existingOrders.length > 0) {
+          await logtail.info(
+            `API /stripe/webhook: Duplicate checkout session ${session.id} received. Ignoring.`
+          );
+          return NextResponse.json({ received: true }, { status: 200 });
+        }
 
         let customerId: string | null = null;
         if (!session.customer) {
@@ -79,13 +101,16 @@ export async function POST(req: Request) {
           const receiptUrl = paymentIntent?.charges?.data?.[0]?.receipt_url;
 
           if (!amountPaid || !receiptUrl) {
+            await logtail.error(
+              `API /stripe/webhook: Failed to find Stripe data. Session ID: ${session.id}`
+            );
             return NextResponse.json(
               {
                 error:
                   'Failed to find stripe data. Check stripe for session ID: ' +
                   session.id,
               },
-              { status: 404 }
+              { status: 400 }
             );
           }
 
@@ -164,12 +189,12 @@ export async function POST(req: Request) {
                       'Failed to find event or merch. Check stripe for product ID: ' +
                       productId,
                   },
-                  { status: 404 }
+                  { status: 400 }
                 );
               }
             }
 
-            await payload.create({
+            const newOrder = await payload.create({
               collection: 'orders',
               data: {
                 checkoutSessionId: session.id,
@@ -183,6 +208,61 @@ export async function POST(req: Request) {
                 item,
               },
             });
+
+            if (newOrder.id) {
+              let email = null;
+              if (session.customer_details?.email) {
+                email = session.customer_details.email;
+              } else if (customerId) {
+                const customer = await stripe.customers.retrieve(customerId);
+                if (customer && 'email' in customer) {
+                  if (customer.email) {
+                    email = customer.email;
+                  }
+                }
+              }
+
+              const eventImage =
+                typeof event.image === 'object'
+                  ? event.image
+                  : await payload.findByID({
+                      collection: 'media',
+                      id: event.image,
+                    });
+
+              if (!email || !eventImage.filename) {
+                return;
+              }
+
+              try {
+                await resend.emails.send({
+                  from: ZVC_EMAIL_ADDRESS,
+                  subject: `Your ZVC Ticket: ${event.name}`,
+                  to: email,
+                  react: (
+                    <TicketEmail
+                      eventName={event.name}
+                      eventImage={`${process.env.VERCEL_BLOB_URL}${eventImage.filename}`}
+                      eventDate={event.datetime}
+                      eventLocation={(event.location as Location).name}
+                      quantity={quantity}
+                      eventDescription={event.description}
+                      eventAddress={(event.location as Location).address}
+                      totalAmount={amountPaid / 100}
+                      purchaseDate={transactionDate}
+                    />
+                  ),
+                });
+              } catch (emailError) {
+                await logtail.error(
+                  `API /stripe/webhook: Failed to send ticket email for order ${newOrder.id}: ${emailError}`,
+                  {
+                    method: 'POST',
+                    timestamp: new Date().toISOString(),
+                  }
+                );
+              }
+            }
           }
         }
 
