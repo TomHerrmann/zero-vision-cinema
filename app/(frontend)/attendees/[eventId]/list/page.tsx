@@ -1,14 +1,18 @@
 import { Metadata } from 'next';
 import { cookies } from 'next/headers';
-
-import { PageProps } from '@/.next/types/app/(frontend)/page';
 import { AttendeesTable } from '@/components/attendees-table/attendees-table';
 
 export const metadata: Metadata = {
   title: 'Attendee List',
 };
 
-export default async function AttendeesListPage({ params }: PageProps) {
+type Props = {
+  params: {
+    eventid: string;
+  };
+};
+
+export default async function AttendeesListPage({ params }: Props) {
   const { eventid } = await params;
 
   const cookieStore = await cookies();

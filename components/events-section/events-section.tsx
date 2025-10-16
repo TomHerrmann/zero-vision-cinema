@@ -1,10 +1,9 @@
-'use client';
-
 import EventCard from '../event-card/event-card';
 import { Event } from '@/payload-types';
 import { cn } from '@/utils/utils';
 import { Rubik_Glitch } from 'next/font/google';
-import { useState, useMemo } from 'react';
+import { Button } from '../ui/button';
+import Link from 'next/link';
 
 const rubikGlitchFont = Rubik_Glitch({
   weight: '400',
@@ -14,24 +13,6 @@ const rubikGlitchFont = Rubik_Glitch({
 type Props = { events: Event[] };
 
 export default function EventsSection({ events }: Props) {
-  const [expanded, setExpanded] = useState(false);
-
-  const initialShowCount = 3;
-  const expandedShowCount = 9;
-
-  const displayedEvents = useMemo(() => {
-    if (expanded) {
-      return events.slice(0, expandedShowCount);
-    }
-    return events.slice(0, initialShowCount);
-  }, [events, expanded, initialShowCount, expandedShowCount]);
-
-  const showMoreButton = !expanded && events.length > initialShowCount;
-
-  const showLessButton = expanded && events.length > initialShowCount;
-
-  const shouldScroll = expanded && events.length > expandedShowCount;
-
   return (
     <section id="events" className="flex flex-col py-12">
       <div className="text-center">
@@ -53,38 +34,34 @@ export default function EventsSection({ events }: Props) {
         </div>
       ) : (
         <>
-          <div
-            className={cn('w-full max-w-5xl mx-auto', {
-              'overflow-y-auto md:max-h-[900px]': shouldScroll,
-            })}
-          >
+          <div className={cn('w-full max-w-5xl mx-auto')}>
             <div className={cn('grid grid-cols-1 md:grid-cols-3 gap-8')}>
-              {displayedEvents.map((event, idx) => (
+              {events.slice(0, 3).map((event, idx) => (
                 <div key={idx} className="p-4">
-                  <EventCard {...event} />
+                  <EventCard
+                    {...event}
+                    isSoldOut={
+                      !!event.ticketLimit &&
+                      !!event.ticketsSold &&
+                      event.ticketsSold >= event.ticketLimit
+                    }
+                  />
                 </div>
               ))}
             </div>
           </div>
-
-          <div className="flex justify-center mt-8">
-            {showMoreButton && (
-              <button
-                className="px-6 py-2 bg-sky-900 text-yellow-50 rounded-lg shadow hover:bg-sky-600 transition duration-200"
-                onClick={() => setExpanded(true)}
+          {events.length > 3 && (
+            <div className="flex justify-center mt-8 mx-[5rem]">
+              <Button
+                asChild
+                className="w-full md:w-1/4 px-8 py-6 bg-sky-900 text-yellow-50 rounded-lg shadow hover:bg-yellow-50 transition duration-200"
               >
-                Show More Events
-              </button>
-            )}
-            {showLessButton && (
-              <button
-                className="px-6 py-2 bg-sky-900 text-yellow-50 rounded-lg shadow hover:bg-sky-600 transition duration-200"
-                onClick={() => setExpanded(false)}
-              >
-                Show Less Events
-              </button>
-            )}
-          </div>
+                <Link target="_blank" href="/events" className="text-2xl">
+                  See More Events
+                </Link>
+              </Button>
+            </div>
+          )}
         </>
       )}
     </section>
