@@ -106,7 +106,11 @@ const EventCard = ({
               </Button>
             ) : (
               <Button asChild className="w-full px-[.5rem]">
-                <Link target="_blank" href={paymentLink} className="text-md">
+                <Link
+                  target="_blank"
+                  href={`/checkout/${id}`}
+                  className="text-md"
+                >
                   Buy Tickets
                 </Link>
               </Button>
@@ -167,7 +171,7 @@ const EventCard = ({
           </Button>
         ) : (
           <Button asChild className="w-full">
-            <Link target="_blank" href={paymentLink}>
+            <Link target="_blank" href={`/checkout/${id}`} className="text-md">
               Buy Tickets
             </Link>
           </Button>
