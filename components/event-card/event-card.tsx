@@ -28,6 +28,7 @@ type Props = Event & {
 };
 
 const EventCard = ({
+  id,
   name,
   description,
   paymentLink,
@@ -57,7 +58,9 @@ const EventCard = ({
           />
           {isSoldOut && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className={`text-red-600 text-4xl font-black transform -rotate-45 whitespace-nowrap tracking-widest opacity-90 ${rubikGlitchFont.className}`}>
+              <div
+                className={`text-red-600 text-4xl font-black transform -rotate-45 whitespace-nowrap tracking-widest opacity-90 ${rubikGlitchFont.className}`}
+              >
                 SOLD OUT!
               </div>
             </div>
@@ -103,7 +106,11 @@ const EventCard = ({
               </Button>
             ) : (
               <Button asChild className="w-full px-[.5rem]">
-                <Link target="_blank" href={paymentLink} className="text-md">
+                <Link
+                  target="_blank"
+                  href={`/checkout/${id}`}
+                  className="text-md"
+                >
                   Buy Tickets
                 </Link>
               </Button>
@@ -129,7 +136,9 @@ const EventCard = ({
           />
           {isSoldOut && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className={`text-red-600 text-4xl font-black transform -rotate-45 whitespace-nowrap tracking-widest opacity-90 ${rubikGlitchFont.className}`}>
+              <div
+                className={`text-red-600 text-4xl font-black transform -rotate-45 whitespace-nowrap tracking-widest opacity-90 ${rubikGlitchFont.className}`}
+              >
                 SOLD OUT!
               </div>
             </div>
@@ -162,7 +171,7 @@ const EventCard = ({
           </Button>
         ) : (
           <Button asChild className="w-full">
-            <Link target="_blank" href={paymentLink}>
+            <Link target="_blank" href={`/checkout/${id}`} className="text-md">
               Buy Tickets
             </Link>
           </Button>

@@ -56,3 +56,13 @@ export const getPastEvents = async () => {
 
   return docs;
 };
+
+export const getEventById = async (eventId: string) => {
+  const event = await payload.findByID({
+    collection: 'events',
+    id: eventId,
+    depth: 2,
+  });
+
+  return event;
+};
