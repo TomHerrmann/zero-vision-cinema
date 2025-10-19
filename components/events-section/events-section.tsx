@@ -162,7 +162,11 @@ export default function EventsSection({ events }: Props) {
           </div>
         </div>
         <div className={cn('w-full max-w-7xl mx-auto px-4')}>
-          <div className={cn('grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 [&>*:last-child:nth-child(3n+1)]:lg:col-start-2')}>
+          <div
+            className={cn(
+              'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 [&>*:last-child:nth-child(3n+1)]:lg:col-start-2'
+            )}
+          >
             {staticEvents.map((event, idx) => (
               <StaticEventCard key={idx} event={event} />
             ))}

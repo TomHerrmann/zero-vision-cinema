@@ -7,9 +7,9 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  params: {
+  params: Promise<{
     eventid: string;
-  };
+  }>;
 };
 
 export default async function AttendeesListPage({ params }: Props) {
