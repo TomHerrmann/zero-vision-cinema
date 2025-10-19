@@ -1,4 +1,5 @@
 import EventCard from '../event-card/event-card';
+import StaticEventCard from '../static-event-card/static-event-card';
 import { Event } from '@/payload-types';
 import { cn } from '@/utils/utils';
 import { Rubik_Glitch } from 'next/font/google';
@@ -9,6 +10,65 @@ const rubikGlitchFont = Rubik_Glitch({
   weight: '400',
   subsets: ['latin'],
 });
+
+const staticEvents = [
+  {
+    date: 'Saturday Oct 25',
+    location: 'Culture Lab LIC',
+    eventName: 'Party Right Here - Vol. 13',
+    time: '8pm - 3am',
+    image:
+      'https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/partyrighthere.png',
+  },
+  {
+    date: 'Sunday Oct 26',
+    location: '31 Ave & 34th St',
+    eventName: 'Scary Streets - Halloweentown',
+    time: '5pm',
+    image:
+      'https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/Spooky%20Streets%20%28Instagram%20Post%20%2845%29%29%20%281%29.png',
+  },
+  {
+    date: 'Monday Oct 27',
+    location: 'Heart of Gold',
+    eventName: 'Astoria Horror Club - Halloween Resurrection',
+    time: '7pm',
+    image:
+      'https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/horror%20club.png',
+  },
+  {
+    date: 'Tuesday Oct 28',
+    location: 'Heart of Gold',
+    eventName: 'Astoria Horror Book Club - The Mean Ones',
+    time: '7pm',
+    image:
+      'https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/book%20club.png',
+  },
+  {
+    date: 'Wednesday Oct 29',
+    location: 'Single Cut',
+    eventName: 'Spooky Sounds',
+    time: '6pm',
+    image:
+      'https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/spookysounds.png',
+  },
+  {
+    date: 'Thursday Oct 30',
+    location: 'The Local',
+    eventName: 'BrewScares Standup Comedy Show',
+    time: '7:30pm',
+    image:
+      'https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/brewscares.png',
+  },
+  {
+    date: 'Friday Oct 31',
+    location: 'Focal Point Beer Co.',
+    eventName: 'Halloween Party',
+    time: '8pm',
+    image:
+      'https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/halloweenparty2025_social.png',
+  },
+];
 
 type Props = { events: Event[] };
 
@@ -64,6 +124,31 @@ export default function EventsSection({ events }: Props) {
           )}
         </>
       )}
+
+      {/* Static Halloween Week Events */}
+      <div className="mt-16">
+        <div className="text-center mb-8">
+          <h3
+            className={cn(
+              'text-[2rem] md:text-[3rem] font-semibold',
+              rubikGlitchFont.className
+            )}
+          >
+            Halloween Week Events
+          </h3>
+        </div>
+        <div className={cn('w-full max-w-7xl mx-auto px-4')}>
+          <div
+            className={cn(
+              'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+            )}
+          >
+            {staticEvents.map((event, idx) => (
+              <StaticEventCard key={idx} event={event} />
+            ))}
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
