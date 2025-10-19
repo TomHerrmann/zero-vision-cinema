@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, MapPin, Clock } from 'lucide-react';
 import Image from 'next/image';
 
@@ -12,6 +7,7 @@ type StaticEvent = {
   location: string;
   eventName?: string;
   time?: string;
+  description?: string;
   image?: string;
 };
 
@@ -30,20 +26,25 @@ const StaticEventCard = ({ event }: Props) => {
         )}
       </CardHeader>
       {event.image && (
-        <div className="relative w-full aspect-[4/5] px-4 pb-2">
-          <div className="relative w-full h-full rounded-lg overflow-hidden">
+        <div className="relative w-full aspect-[4/5] pb-2">
+          <div className="relative w-full h-full overflow-hidden">
             <Image
               src={event.image}
               alt={event.eventName || 'Event image'}
               fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           </div>
         </div>
       )}
       <CardContent className="flex flex-col gap-3 flex-1">
-        <div className="flex flex-col gap-2 text-sm">
+        {event.description && (
+          <p className="text-base leading-relaxed line-clamp-3">
+            {event.description}
+          </p>
+        )}
+        <div className="flex flex-col gap-2 text-md mt-auto">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             <span>{event.date}</span>
