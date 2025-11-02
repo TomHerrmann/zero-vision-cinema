@@ -1,4 +1,4 @@
-export const SITE_NAME = 'Zero Vision Cinema';
+export const ZVC_NAME = 'Zero Vision Cinema';
 export const LLC_NAME = 'Zero Vision Cinema LLC';
 export const ZVC_SITE_URL = 'https://zerovisioncinema.com';
 export const ZVC_NEWSLETTER_URL = `${ZVC_SITE_URL}#newsletter`;

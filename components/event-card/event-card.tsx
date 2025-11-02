@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -14,6 +16,7 @@ import { RichText } from '@payloadcms/richtext-lexical/react';
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical';
 import { Separator } from '../ui/separator';
 import { Rubik_Glitch } from 'next/font/google';
+import AddToCalendar from '../add-to-calendar/add-to-calendar';
 
 const rubikGlitchFont = Rubik_Glitch({
   weight: '400',
@@ -39,6 +42,23 @@ const EventCard = ({
   isSoldOut,
 }: Props) => {
   const date = new Date(datetime);
+
+  // Format date and time for Add to Calendar
+  const formatDateForCalendar = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const formatTimeForCalendar = (date: Date) => {
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
+  // Calculate end time (2 hours after start)
+  const endDate = new Date(date.getTime() + 2 * 60 * 60 * 1000);
 
   if (!image || typeof image === 'number' || !image?.url || !paymentLink) {
     return null;
@@ -96,7 +116,7 @@ const EventCard = ({
               </div>
             </div>
           </CardContent>
-          <CardFooter className="mt-[1.5rem] mb-[.5rem]">
+          <CardFooter className="mt-[1.5rem] mb-[.5rem] flex flex-col gap-2">
             {isSoldOut ? (
               <Button className="w-full px-[.5rem]" disabled>
                 Sold Out
@@ -108,6 +128,15 @@ const EventCard = ({
                 </Link>
               </Button>
             )}
+            <AddToCalendar
+              name={name}
+              startDate={formatDateForCalendar(date)}
+              startTime={formatTimeForCalendar(date)}
+              endDate={formatDateForCalendar(endDate)}
+              endTime={formatTimeForCalendar(endDate)}
+              location={(location as Location).name}
+              description={`${name} - $${price.toFixed(2)}`}
+            />
           </CardFooter>
         </div>
       </Card>
@@ -155,7 +184,7 @@ const EventCard = ({
           </div>
         </div>
       </CardContent>
-      <CardFooter className="mt-auto">
+      <CardFooter className="mt-auto flex flex-col gap-2">
         {isSoldOut ? (
           <Button className="w-full" disabled>
             Sold Out
@@ -167,6 +196,15 @@ const EventCard = ({
             </Link>
           </Button>
         )}
+        <AddToCalendar
+          name={name}
+          startDate={formatDateForCalendar(date)}
+          startTime={formatTimeForCalendar(date)}
+          endDate={formatDateForCalendar(endDate)}
+          endTime={formatTimeForCalendar(endDate)}
+          location={(location as Location).name}
+          description={`${name} - $${price.toFixed(2)}`}
+        />
       </CardFooter>
     </Card>
   );

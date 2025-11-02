@@ -21,7 +21,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 
 import { mainMenu } from '@/menu.config';
-import { SITE_NAME } from '@/app/contsants/constants';
+import { ZVC_NAME } from '@/app/contsants/constants';
 
 import { Rubik_Glitch } from 'next/font/google';
 import { useState } from 'react';
@@ -54,7 +54,7 @@ export function MobileNav() {
               onOpenChange={setOpen}
             >
               <ArrowRightSquare className="mr-2 h-4 w-4" />
-              <span className={rubikGlitchFont.className}>{SITE_NAME}</span>
+              <span className={rubikGlitchFont.className}>{ZVC_NAME}</span>
             </MobileLink>
           </SheetTitle>
         </SheetHeader>
