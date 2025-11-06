@@ -68,8 +68,7 @@ const Footer = () => {
               <p>{ADDRESS_LINE_1}</p>
               <p>{ADDRESS_LINE_2}</p>
             </address>
-            {/* TAILWINDCOLOR text-neutral-500: Medium neutral gray text color for copyright text */}
-            <p className="pt-8 text-neutral-500">
+            <p className="pt-8 text-neutral">
               &copy; {new Date().getFullYear()} {LLC_NAME}
             </p>
           </div>

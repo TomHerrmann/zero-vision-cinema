@@ -16,8 +16,7 @@ export default function Hero() {
         fill
         className="object-cover -z-10"
       />
-      {/* TAILWINDCOLOR text-yellow-50: Primary text color - lightest yellow for hero heading */}
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-yellow-50 w-full px-5">
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-foreground w-full px-5">
         <h1
           className={cn(
             'text-[3rem] mb-2.5 md:text-[6rem] pt-8',

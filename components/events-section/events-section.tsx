@@ -53,12 +53,9 @@ export default function EventsSection({ events }: Props) {
           </div>
           {events.length > 3 && (
             <div className="flex justify-center mt-8 mx-[5rem]">
-              {/* TAILWINDCOLOR bg-sky-900: Dark blue background color for "See More Events" button */}
-              {/* TAILWINDCOLOR text-yellow-50: Light yellow text color for button text */}
-              {/* TAILWINDCOLOR hover:bg-yellow-50: Light yellow hover background color */}
               <Button
                 asChild
-                className="w-full md:w-1/4 px-8 py-6 bg-sky-900 text-yellow-50 rounded-lg shadow hover:bg-yellow-50 transition duration-200"
+                className="w-full md:w-1/4 px-8 py-6 bg-accent-color text-foreground rounded-lg shadow hover:bg-foreground transition duration-200"
               >
                 <Link target="_blank" href="/events" className="text-2xl">
                   See More Events

@@ -8,11 +8,9 @@ const rubikGlitchFont = Rubik_Glitch({
 
 export default function About() {
   return (
-    // TAILWINDCOLOR bg-yellow-50: Light yellow background color for about section
-    // TAILWINDCOLOR text-stone-900: Dark stone text color for readability on light background
     <section
       id="about"
-      className="flex flex-col justify-center align-center rounded-none border-none bg-yellow-50 text-stone-900 p-12 w-full"
+      className="flex flex-col justify-center align-center rounded-none border-none bg-foreground text-stone-900 p-12 w-full"
     >
       <div className="text-center">
         <h2

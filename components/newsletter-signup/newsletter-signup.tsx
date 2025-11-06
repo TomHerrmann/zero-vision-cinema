@@ -59,10 +59,9 @@ export function NewsletterSignup() {
   }
 
   return (
-    // TAILWINDCOLOR bg-sky-900: Dark blue background color for newsletter section
     <section
       id="newsletter"
-      className="flex flex-col justify-center items-center rounded-none border-none bg-sky-900 p-12 w-full text-center px-8"
+      className="flex flex-col justify-center items-center rounded-none border-none bg-accent-color p-12 w-full text-center px-8"
     >
       <div className="w-full md:w-2/3">
         <h2

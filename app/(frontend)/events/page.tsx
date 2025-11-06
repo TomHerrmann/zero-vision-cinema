@@ -24,11 +24,8 @@ export default async function EventsPage() {
       >
         Upcoming Events
       </h1>
-      {events.length === 0 ? (
-        // TAILWINDCOLOR text-zinc-400: Medium zinc gray text color for empty state message
-        <p className="text-center text-lg text-zinc-400">
-          No upcoming events at this time.
-        </p>
+      {events.length === 0 || true ? (
+        <p className="text-center text-xl">No upcoming events at this time.</p>
       ) : (
         <div className="flex flex-col w-4/5 gap-8 self-center items-center">
           {events.map((event) => (
