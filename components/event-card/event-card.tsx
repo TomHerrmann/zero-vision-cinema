@@ -46,6 +46,7 @@ const EventCard = ({
 
   if (orientation === 'horz') {
     return (
+      // TAILWINDCOLOR bg-sky-900: Dark blue background color for card
       <Card className="flex flex-row h-full rounded-2xl shadow-md hover:shadow-lg transition bg-sky-900 overflow-hidden p-[8px] gap-0 md:gap-4 m-0 max-w-[48em]">
         <div className="relative aspect-[2/3] md:w-56 md:min-w-56">
           <Image
@@ -57,6 +58,7 @@ const EventCard = ({
           />
           {isSoldOut && (
             <div className="absolute inset-0 flex items-center justify-center">
+              {/* TAILWINDCOLOR text-red-600: Red text color for "Sold Out" error state */}
               <div className={`text-red-600 text-4xl font-black transform -rotate-45 whitespace-nowrap tracking-widest opacity-90 ${rubikGlitchFont.className}`}>
                 SOLD OUT!
               </div>
@@ -115,6 +117,7 @@ const EventCard = ({
   }
 
   return (
+    // TAILWINDCOLOR bg-sky-900: Dark blue background color for card
     <Card className="flex flex-col h-full rounded-2xl shadow-md hover:shadow-lg transition bg-sky-900">
       <CardHeader className="pb-2">
         <CardTitle className="text-center text-xl md:text-[1.5rem] font-semibold line-clamp-2 h-[4rem] md:h-[6rem] scale-text">
@@ -129,6 +132,7 @@ const EventCard = ({
           />
           {isSoldOut && (
             <div className="absolute inset-0 flex items-center justify-center">
+              {/* TAILWINDCOLOR text-red-600: Red text color for "Sold Out" error state */}
               <div className={`text-red-600 text-4xl font-black transform -rotate-45 whitespace-nowrap tracking-widest opacity-90 ${rubikGlitchFont.className}`}>
                 SOLD OUT!
               </div>

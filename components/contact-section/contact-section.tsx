@@ -79,6 +79,8 @@ export default function ContactSection() {
   }
 
   return (
+    // TAILWINDCOLOR bg-yellow-50: Light yellow background color for contact section
+    // TAILWINDCOLOR text-stone-900: Dark stone text color for readability on light background
     <section className="flex flex-col md:flex-row md:flex-wrap w-full gap-12 md:gap-20 justify-center items-start rounded-none border-none bg-yellow-50 text-stone-900 p-2 md:p-12">
       <div className="flex flex-col justify-start text-center w-full md:w-1/2">
         <h2

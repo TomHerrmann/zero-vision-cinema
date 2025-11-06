@@ -25,6 +25,7 @@ export default async function EventsPage() {
         Upcoming Events
       </h1>
       {events.length === 0 ? (
+        // TAILWINDCOLOR text-zinc-400: Medium zinc gray text color for empty state message
         <p className="text-center text-lg text-zinc-400">
           No upcoming events at this time.
         </p>

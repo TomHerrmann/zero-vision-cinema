@@ -17,6 +17,7 @@ type Props = {
 
 const StaticEventCard = ({ event }: Props) => {
   return (
+    // TAILWINDCOLOR bg-sky-900: Dark blue background color for static event card
     <Card className="flex flex-col h-full rounded-2xl shadow-md hover:shadow-lg transition bg-sky-900 overflow-hidden">
       <CardHeader className="pb-1 pt-4">
         {event.eventName && (
