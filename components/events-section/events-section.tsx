@@ -35,10 +35,10 @@ export default function EventsSection({ events }: Props) {
         <></>
       ) : (
         <>
-          <div className={cn('w-full max-w-5xl mx-auto')}>
-            <div className={cn('grid grid-cols-1 md:grid-cols-3 gap-8')}>
+          <div className={cn('w-full max-w-7xl mx-auto px-4')}>
+            <div className={cn('flex flex-wrap justify-center gap-8')}>
               {events.slice(0, 3).map((event, idx) => (
-                <div key={idx} className="p-4">
+                <div key={idx} className="w-full md:w-80 lg:w-96">
                   <EventCard
                     {...event}
                     isSoldOut={
