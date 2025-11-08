@@ -45,7 +45,7 @@ export default function Hero() {
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 text-center">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-full px-6 text-center pt-20 pb-32 md:pt-0 md:pb-0">
         {/* Glowing accent line */}
         <div className="w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mb-8 animate-pulse" />
 
@@ -86,7 +86,7 @@ export default function Hero() {
         {/* CTA Buttons */}
         <div
           className={cn(
-            'flex flex-col sm:flex-row gap-4',
+            'flex flex-col sm:flex-row gap-4 mb-20 md:mb-0',
             'animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-700'
           )}
         >
@@ -117,30 +117,30 @@ export default function Hero() {
             Learn More
           </a>
         </div>
+      </div>
 
-        {/* Scroll indicator */}
-        <div
-          className={cn(
-            'absolute bottom-12 left-1/2 -translate-x-1/2',
-            'flex flex-col items-center gap-2',
-            'text-foreground/40 animate-bounce'
-          )}
+      {/* Scroll indicator */}
+      <div
+        className={cn(
+          'hidden md:flex absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 z-20',
+          'flex-col items-center gap-2',
+          'text-foreground/40 animate-bounce'
+        )}
+      >
+        <span className="text-xs uppercase tracking-widest">Scroll</span>
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
-          <span className="text-xs uppercase tracking-widest">Scroll</span>
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 14l-7 7m0 0l-7-7m7 7V3"
-            />
-          </svg>
-        </div>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 14l-7 7m0 0l-7-7m7 7V3"
+          />
+        </svg>
       </div>
 
       {/* Bottom gradient fade */}
