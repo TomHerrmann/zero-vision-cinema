@@ -9,11 +9,22 @@ export default function About() {
     >
       {/* Stylized film strip divider at top */}
       <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-foreground/5 to-transparent">
-        <div className="absolute inset-0 flex items-center justify-between opacity-30">
+        <div className="absolute inset-0 hidden md:flex items-center justify-between opacity-30">
           {Array.from({ length: 80 }).map((_, i) => (
             <div
               key={`top-perf-${i}`}
               className="flex-shrink-0 w-2 h-6 bg-primary/40 rounded-full"
+              style={{
+                transform: `rotate(${Math.random() * 4 - 2}deg)`
+              }}
+            />
+          ))}
+        </div>
+        <div className="absolute inset-0 flex md:hidden items-center justify-between opacity-30 px-1">
+          {Array.from({ length: 30 }).map((_, i) => (
+            <div
+              key={`top-perf-mobile-${i}`}
+              className="flex-shrink-0 w-1.5 h-5 bg-primary/40 rounded-full"
               style={{
                 transform: `rotate(${Math.random() * 4 - 2}deg)`
               }}
@@ -25,11 +36,22 @@ export default function About() {
 
       {/* Stylized film strip divider at bottom */}
       <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-foreground/5 to-transparent">
-        <div className="absolute inset-0 flex items-center justify-between opacity-30">
+        <div className="absolute inset-0 hidden md:flex items-center justify-between opacity-30">
           {Array.from({ length: 80 }).map((_, i) => (
             <div
               key={`bottom-perf-${i}`}
               className="flex-shrink-0 w-2 h-6 bg-primary/40 rounded-full"
+              style={{
+                transform: `rotate(${Math.random() * 4 - 2}deg)`
+              }}
+            />
+          ))}
+        </div>
+        <div className="absolute inset-0 flex md:hidden items-center justify-between opacity-30 px-1">
+          {Array.from({ length: 30 }).map((_, i) => (
+            <div
+              key={`bottom-perf-mobile-${i}`}
+              className="flex-shrink-0 w-1.5 h-5 bg-primary/40 rounded-full"
               style={{
                 transform: `rotate(${Math.random() * 4 - 2}deg)`
               }}
