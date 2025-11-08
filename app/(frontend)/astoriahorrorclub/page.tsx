@@ -27,13 +27,16 @@ export default async function AstoriaHorrorClubPage() {
       <div className="relative z-10 max-w-[1600px] mx-auto px-6 md:px-12 py-24 md:py-32">
         {/* Logo Section */}
         <section className="flex w-full justify-center mb-16 md:mb-20">
-          <div className="relative animate-in fade-in slide-in-from-bottom-8 duration-1000">
+          <div className="relative group animate-in fade-in slide-in-from-bottom-8 duration-1000">
+            {/* Subtle glow effect */}
+            <div className="absolute inset-0 bg-primary/10 blur-[80px] scale-90 group-hover:scale-100 transition-transform duration-700" />
+
             <Image
               src={AHC_LOGO_PNG_URL}
               alt="astoria horror club logo"
               width={500}
               height={500}
-              className="drop-shadow-2xl"
+              className="relative drop-shadow-2xl transition-transform duration-500 group-hover:scale-105"
             />
           </div>
         </section>
