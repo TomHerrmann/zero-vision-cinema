@@ -7,6 +7,38 @@ export default function About() {
       id="about"
       className="relative py-32 md:py-40 overflow-hidden bg-gradient-to-b from-background via-foreground/5 to-background"
     >
+      {/* Stylized film strip divider at top */}
+      <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-foreground/5 to-transparent">
+        <div className="absolute inset-0 flex items-center justify-between opacity-30">
+          {Array.from({ length: 80 }).map((_, i) => (
+            <div
+              key={`top-perf-${i}`}
+              className="flex-shrink-0 w-2 h-6 bg-primary/40 rounded-full"
+              style={{
+                transform: `rotate(${Math.random() * 4 - 2}deg)`
+              }}
+            />
+          ))}
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+      </div>
+
+      {/* Stylized film strip divider at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-foreground/5 to-transparent">
+        <div className="absolute inset-0 flex items-center justify-between opacity-30">
+          {Array.from({ length: 80 }).map((_, i) => (
+            <div
+              key={`bottom-perf-${i}`}
+              className="flex-shrink-0 w-2 h-6 bg-primary/40 rounded-full"
+              style={{
+                transform: `rotate(${Math.random() * 4 - 2}deg)`
+              }}
+            />
+          ))}
+        </div>
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+      </div>
+
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary rounded-full blur-[120px] animate-pulse" />
@@ -39,20 +71,14 @@ export default function About() {
         </div>
 
         <div className="space-y-12">
-          <div className="relative">
-            <div className="absolute -left-4 top-0 text-8xl font-serif text-primary/10">
-              "
-            </div>
-            <p className="text-2xl md:text-3xl lg:text-4xl font-light text-center leading-relaxed text-foreground/90 max-w-4xl mx-auto px-8">
+          <div>
+            <p className="text-2xl md:text-3xl lg:text-4xl font-light text-center leading-relaxed text-foreground/90 max-w-4xl mx-auto">
               Zero Vision Cinema screens films at venues throughout NYC, from
               bars and breweries to block parties. We curate a selection of{' '}
               <span className="text-primary font-normal">niche movies</span>,{' '}
               <span className="text-primary font-normal">genre films</span>, and{' '}
               <span className="text-primary font-normal">cult classics</span>.
             </p>
-            <div className="absolute -right-4 bottom-0 text-8xl font-serif text-primary/10">
-              "
-            </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mt-20">
