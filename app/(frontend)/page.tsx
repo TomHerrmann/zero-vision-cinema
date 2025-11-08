@@ -5,7 +5,8 @@ import ContactSection from '@/components/contact-section/contact-section';
 import Hero from '@/components/hero/hero';
 import { getUpcomingEvents } from '@/utils/getEvents';
 
-export const dynamic = 'force-dynamic';
+// Revalidate every 5 minutes (300 seconds)
+export const revalidate = 300;
 
 export default async function Home() {
   const events = await getUpcomingEvents();

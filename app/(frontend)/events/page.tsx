@@ -9,7 +9,8 @@ const rubikGlitchFont = Rubik_Glitch({
   subsets: ['latin'],
 });
 
-export const dynamic = 'force-dynamic';
+// Revalidate every 5 minutes (300 seconds)
+export const revalidate = 300;
 
 export default async function EventsPage() {
   const events = await getUpcomingEvents();
