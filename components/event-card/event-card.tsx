@@ -41,13 +41,13 @@ const EventCard = ({
     return (
       <Card className="group relative flex flex-col md:flex-row h-full overflow-hidden border-2 border-primary/20 px-2 bg-background/50 backdrop-blur-sm hover:border-primary/40 transition-all duration-500 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
         {/* Image Section */}
-        <div className="relative w-full md:w-80 md:min-w-80 aspect-[16/9] md:aspect-[2/3] overflow-hidden">
+        <div className="relative w-full md:w-80 md:min-w-80 aspect-[2/3] overflow-hidden">
           <Image
             src={image.url}
             alt={image.alt}
             fill
             className={cn(
-              'object-cover transition-all duration-700 group-hover:scale-110',
+              'object-cover object-center transition-all duration-700 group-hover:scale-110',
               isSoldOut ? 'grayscale opacity-30' : 'group-hover:brightness-90'
             )}
             sizes="(max-width: 768px) 100vw, 320px"
@@ -169,26 +169,24 @@ const EventCard = ({
       </Card>
     );
   }
-
-  // OPTION 1: CINEMATIC FILM POSTER
   return (
     <Card className="group relative flex flex-col h-full overflow-hidden border-2 border-primary/20 bg-background/50 backdrop-blur-sm hover:border-primary/40 transition-all duration-500 shadow-xl hover:shadow-2xl hover:shadow-primary/20">
-      {/* Poster Image - Full card background */}
-      <div className="relative w-full aspect-[2/3] overflow-hidden">
+      {/* Poster Image - Reduced height for better balance */}
+      <div className="relative w-full aspect-[3/4] overflow-hidden">
         <Image
           src={image.url}
           alt={image.alt}
           fill
           className={cn(
-            'object-cover transition-all duration-700 group-hover:scale-110',
-            isSoldOut ? 'grayscale opacity-30' : 'group-hover:brightness-75'
+            'object-cover object-top transition-all duration-700 group-hover:scale-105',
+            isSoldOut ? 'grayscale opacity-30' : 'group-hover:brightness-90'
           )}
           sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           loading="lazy"
         />
 
-        {/* Gradient overlay - always visible */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent opacity-90" />
+        {/* Subtle gradient for depth */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/40" />
 
         {/* Sold Out Overlay */}
         {isSoldOut && (
@@ -203,92 +201,96 @@ const EventCard = ({
             </div>
           </div>
         )}
+      </div>
 
-        {/* Title overlay - top */}
-        <div className="absolute top-0 left-0 right-0 p-4 z-10">
-          <div className="backdrop-blur-md bg-background/40 border border-primary/20 p-3 rounded-lg">
-            <CardTitle className="text-lg md:text-xl font-bold text-foreground line-clamp-2 leading-tight">
-              {name}
-            </CardTitle>
+      {/* Content Section - Outside image, more spacious */}
+      <div className="flex flex-col flex-1 p-5">
+        {/* Title */}
+        <CardTitle className="text-xl md:text-2xl font-bold mb-4 line-clamp-2 leading-tight">
+          {name}
+        </CardTitle>
+
+        {/* Event details - cleaner spacing */}
+        <div className="space-y-3 mb-5">
+          <div className="flex items-center gap-3 text-foreground/90">
+            <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+              <Calendar className="w-4 h-4 text-primary" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs uppercase tracking-wide text-foreground/50 font-medium">
+                When
+              </span>
+              <span className="text-sm font-medium">
+                {date.toLocaleString(undefined, {
+                  dateStyle: 'medium',
+                  timeStyle: 'short',
+                  timeZone: 'America/New_York',
+                })}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 text-foreground/90">
+            <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+              <MapPin className="w-4 h-4 text-primary" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs uppercase tracking-wide text-foreground/50 font-medium">
+                Where
+              </span>
+              <span className="text-sm font-medium line-clamp-1">
+                {(location as Location).name}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 text-foreground/90">
+            <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+              <DollarSign className="w-4 h-4 text-primary" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs uppercase tracking-wide text-foreground/50 font-medium">
+                Price
+              </span>
+              <span className="text-base font-bold text-primary">
+                ${price.toFixed(2)}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Info panel - bottom (glass-morphism) */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 z-10 transform translate-y-0 group-hover:translate-y-0 transition-transform duration-300">
-          <div className="backdrop-blur-xl bg-card/80 border border-primary/30 rounded-lg p-4 space-y-3">
-            {/* Event details */}
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2 text-foreground/90">
-                <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                  <Calendar className="w-4 h-4 text-primary" />
-                </div>
-                <span className="font-medium">
-                  {date.toLocaleString(undefined, {
-                    dateStyle: 'medium',
-                    timeStyle: 'short',
-                    timeZone: 'America/New_York',
-                  })}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 text-foreground/90">
-                <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                  <MapPin className="w-4 h-4 text-primary" />
-                </div>
-                <span className="font-medium line-clamp-1">
-                  {(location as Location).name}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 text-foreground/90">
-                <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                  <DollarSign className="w-4 h-4 text-primary" />
-                </div>
-                <span className="text-lg font-bold text-primary">
-                  ${price.toFixed(2)}
-                </span>
-              </div>
-            </div>
-
-            {/* CTA Button */}
-            <div className="pt-2">
-              {isSoldOut ? (
-                <Button
-                  className="w-full"
-                  disabled
-                  variant="secondary"
-                  size="lg"
-                >
-                  Sold Out
-                </Button>
-              ) : (
-                <Button
-                  asChild
-                  className={cn(
-                    'w-full group/btn relative overflow-hidden',
-                    'bg-primary text-primary-foreground',
-                    'hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30',
-                    'transition-all duration-300 border border-primary/20'
-                  )}
-                  size="lg"
-                >
-                  <Link
-                    target="_blank"
-                    href={paymentLink}
-                    className="flex items-center justify-center gap-2"
-                  >
-                    <Ticket className="w-5 h-5 transition-transform group-hover/btn:rotate-12" />
-                    <span className="font-semibold">Get Tickets</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
-                  </Link>
-                </Button>
+        {/* CTA Button - spacer to push to bottom */}
+        <div className="mt-auto pt-2">
+          {isSoldOut ? (
+            <Button className="w-full" disabled variant="secondary" size="lg">
+              Sold Out
+            </Button>
+          ) : (
+            <Button
+              asChild
+              className={cn(
+                'w-full group/btn relative overflow-hidden',
+                'bg-primary text-primary-foreground',
+                'hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30',
+                'transition-all duration-300 border border-primary/20'
               )}
-            </div>
-          </div>
+              size="lg"
+            >
+              <Link
+                target="_blank"
+                href={paymentLink}
+                className="flex items-center justify-center gap-2"
+              >
+                <Ticket className="w-5 h-5 transition-transform group-hover/btn:rotate-12" />
+                <span className="font-semibold">Get Tickets</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Film grain texture overlay (optional cinematic effect) */}
+      {/* Film grain texture overlay */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.015] mix-blend-overlay">
         <div
           className="absolute inset-0"
