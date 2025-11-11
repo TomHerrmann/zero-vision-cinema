@@ -112,7 +112,8 @@ export default function ContactSection() {
           <div className="w-32 h-1 mx-auto bg-gradient-to-r from-transparent via-primary to-transparent mb-8" />
 
           <p className="text-xl md:text-2xl text-foreground/70 max-w-3xl mx-auto">
-            We'd love to hear from you. Whether you have a question, suggestion, or want to collaborate.
+            We'd love to hear from you. Whether you have a question, suggestion,
+            or want to collaborate.
           </p>
         </div>
 
@@ -166,7 +167,8 @@ export default function ContactSection() {
                 Quick Response
               </h4>
               <p className="text-foreground/70 leading-relaxed">
-                We typically respond within 24-48 hours. For urgent inquiries about upcoming events, please mention it in your message.
+                We typically respond within 24-48 hours. For urgent inquiries
+                about upcoming events, please mention it in your message.
               </p>
             </div>
           </div>
@@ -176,12 +178,7 @@ export default function ContactSection() {
             <Card className="border-2 border-primary/20 bg-card/80 backdrop-blur-sm shadow-2xl shadow-primary/5">
               <CardHeader className="pb-6">
                 <CardTitle>
-                  <h3
-                    className={cn(
-                      'font-rubik-glitch text-[2rem] md:text-[3rem]',
-                      'leading-none text-foreground'
-                    )}
-                  >
+                  <h3 className="text-2xl md:text-3xl font-semibold mb-6 text-foreground">
                     Send A Message
                   </h3>
                 </CardTitle>
