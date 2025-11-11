@@ -42,6 +42,161 @@ export async function POST(req: Request) {
     );
 
     switch (event.type) {
+      case 'payment_intent.succeeded': {
+        const payload = await getPayload({ config: payloadConfig });
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+
+        // Check if order already exists to prevent duplicates
+        const { docs: existingOrders } = await payload.find({
+          collection: 'orders',
+          where: {
+            paymentIntentId: {
+              equals: paymentIntent.id,
+            },
+          },
+        });
+
+        if (existingOrders.length > 0) {
+          await logtail.info(
+            `API /stripe/webhook: Duplicate payment intent ${paymentIntent.id} received. Ignoring.`
+          );
+          return NextResponse.json({ received: true }, { status: 200 });
+        }
+
+        const eventId = paymentIntent.metadata.eventId;
+        const quantity = parseInt(paymentIntent.metadata.quantity || '1', 10);
+
+        if (!eventId) {
+          await logtail.error(
+            `API /stripe/webhook: Missing eventId in payment intent metadata. Payment Intent ID: ${paymentIntent.id}`
+          );
+          return NextResponse.json(
+            { error: 'Missing eventId in metadata' },
+            { status: 400 }
+          );
+        }
+
+        // Get customer details
+        let customerId = paymentIntent.customer
+          ? typeof paymentIntent.customer === 'string'
+            ? paymentIntent.customer
+            : paymentIntent.customer.id
+          : null;
+
+        // Get customer email from charge or customer object
+        let customerEmail: string | null = null;
+        let customerName: string | null = null;
+
+        if (paymentIntent.charges?.data?.[0]) {
+          const charge = paymentIntent.charges.data[0];
+          customerEmail = charge.billing_details.email;
+          customerName = charge.billing_details.name;
+        }
+
+        if (!customerId && (customerEmail || customerName)) {
+          const newCustomer = await stripe.customers.create({
+            email: customerEmail ?? undefined,
+            name: customerName ?? undefined,
+          });
+          customerId = newCustomer.id;
+        }
+
+        // Get event details
+        const eventDoc = await payload.findByID({
+          collection: 'events',
+          id: eventId,
+        });
+
+        if (!eventDoc) {
+          await logtail.error(
+            `API /stripe/webhook: Event not found. Event ID: ${eventId}`
+          );
+          return NextResponse.json(
+            { error: 'Event not found' },
+            { status: 404 }
+          );
+        }
+
+        // Update event ticket count
+        await payload.update({
+          collection: 'events',
+          id: eventId,
+          data: {
+            ticketsSold: (eventDoc.ticketsSold ?? 0) + quantity,
+          },
+        });
+
+        // Get receipt URL
+        const receiptUrl = paymentIntent.charges?.data?.[0]?.receipt_url;
+
+        // Create order
+        const newOrder = await payload.create({
+          collection: 'orders',
+          data: {
+            paymentIntentId: paymentIntent.id,
+            customerId: customerId ?? '',
+            amountPaid: paymentIntent.amount / 100,
+            transactionDate: new Date(
+              paymentIntent.created * 1000
+            ).toISOString(),
+            productId: eventDoc.productId || '',
+            receiptUrl: receiptUrl ?? '',
+            quantity,
+            price: paymentIntent.amount / 100 / quantity,
+            item: {
+              relationTo: 'events' as const,
+              value: Number(eventId),
+            },
+          },
+        });
+
+        // Send ticket email
+        if (newOrder.id && customerEmail) {
+          try {
+            const eventImage =
+              typeof eventDoc.image === 'object'
+                ? eventDoc.image
+                : await payload.findByID({
+                    collection: 'media',
+                    id: eventDoc.image,
+                  });
+
+            if (eventImage.filename) {
+              await resend.emails.send({
+                from: ZVC_EMAIL_ADDRESS,
+                subject: `Your ZVC Ticket: ${eventDoc.name}`,
+                to: customerEmail,
+                react: (
+                  <TicketEmail
+                    eventName={eventDoc.name}
+                    eventImage={`${process.env.VERCEL_BLOB_URL}${eventImage.filename}`}
+                    eventDate={eventDoc.datetime}
+                    eventLocation={(eventDoc.location as Location).name}
+                    quantity={quantity}
+                    eventDescription={eventDoc.description}
+                    eventAddress={(eventDoc.location as Location).address}
+                    totalAmount={paymentIntent.amount / 100}
+                    purchaseDate={new Date(
+                      paymentIntent.created * 1000
+                    ).toISOString()}
+                  />
+                ),
+              });
+            }
+          } catch (emailError) {
+            await logtail.error(
+              `API /stripe/webhook: Failed to send ticket email for order ${newOrder.id}: ${emailError}`,
+              {
+                method: 'POST',
+                timestamp: new Date().toISOString(),
+              }
+            );
+          }
+        }
+
+        break;
+      }
+
       case 'checkout.session.completed': {
         const payload = await getPayload({ config: payloadConfig });
         const session = event.data.object as Stripe.Checkout.Session;

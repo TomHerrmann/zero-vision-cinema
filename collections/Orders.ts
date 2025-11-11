@@ -51,7 +51,14 @@ export const Orders: CollectionConfig = {
     {
       name: 'checkoutSessionId',
       type: 'text',
-      required: true,
+      required: false,
+      admin: { readOnly: true },
+      unique: true,
+    },
+    {
+      name: 'paymentIntentId',
+      type: 'text',
+      required: false,
       admin: { readOnly: true },
       unique: true,
     },
@@ -94,8 +101,7 @@ export const Orders: CollectionConfig = {
     {
       name: 'receiptUrl',
       type: 'text',
-      required: true,
-      unique: true,
+      required: false,
       admin: { readOnly: true },
     },
     {

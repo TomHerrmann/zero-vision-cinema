@@ -34,7 +34,7 @@ const EventCard = ({
 }: Props) => {
   const date = new Date(datetime);
 
-  if (!image || typeof image === 'number' || !image?.url || !paymentLink) {
+  if (!image || typeof image === 'number' || !image?.url) {
     return null;
   }
 
@@ -153,8 +153,7 @@ const EventCard = ({
                 size="lg"
               >
                 <Link
-                  target="_blank"
-                  href={paymentLink}
+                  href={`/checkout/${id}`}
                   className="flex items-center justify-center gap-2 text-primary-foreground"
                 >
                   <Ticket className="w-5 h-5 transition-transform group-hover/btn:rotate-12 relative z-10" />
@@ -278,8 +277,7 @@ const EventCard = ({
               size="lg"
             >
               <Link
-                target="_blank"
-                href={paymentLink}
+                href={`/checkout/${id}`}
                 className="flex items-center justify-center gap-2"
               >
                 <Ticket className="w-5 h-5 transition-transform group-hover/btn:rotate-12" />
