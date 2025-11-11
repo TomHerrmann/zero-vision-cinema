@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Geist } from 'next/font/google';
+import { Geist, Rubik_Glitch } from 'next/font/google';
 import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
 import { ZVC_SITE_URL } from '../contsants/constants';
@@ -13,6 +13,12 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
+});
+
+const rubikGlitch = Rubik_Glitch({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-rubik-glitch',
 });
 
 export const metadata: Metadata = {
@@ -34,7 +40,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body
-        className={cn('min-h-screen font-sans antialiased', geistSans.variable)}
+        className={cn('min-h-screen font-sans antialiased', geistSans.variable, rubikGlitch.variable)}
       >
         <ThemeProvider
           attribute="class"
