@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle, Mail, Calendar } from 'lucide-react';
+import { CheckCircle, Mail, Calendar, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function CheckoutSuccessPage() {
@@ -12,9 +12,6 @@ export default function CheckoutSuccessPage() {
     'loading'
   );
   const paymentIntent = searchParams.get('payment_intent');
-  const paymentIntentClientSecret = searchParams.get(
-    'payment_intent_client_secret'
-  );
 
   useEffect(() => {
     if (!paymentIntent) {
@@ -46,10 +43,15 @@ export default function CheckoutSuccessPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-sky-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Confirming your purchase...</p>
+          <div className="relative w-16 h-16 mx-auto mb-6">
+            <div className="absolute inset-0 rounded-full border-4 border-primary/20"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+          </div>
+          <p className="text-foreground/70 text-lg animate-pulse">
+            Confirming your purchase...
+          </p>
         </div>
       </div>
     );
@@ -57,33 +59,21 @@ export default function CheckoutSuccessPage() {
 
   if (status === 'error') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg
-              className="w-8 h-8 text-red-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+      <div className="min-h-screen flex items-center justify-center px-4 py-12">
+        <div className="max-w-md w-full bg-background/50 backdrop-blur-sm rounded-2xl shadow-2xl shadow-destructive/10 border-2 border-destructive/30 p-8 md:p-10 text-center">
+          <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-destructive/30">
+            <XCircle className="w-10 h-10 text-destructive" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Payment Verification Failed
+          <h1 className="font-rubik-glitch text-2xl md:text-3xl mb-3 text-foreground">
+            PAYMENT VERIFICATION FAILED
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-foreground/60 mb-8 leading-relaxed">
             We couldn't verify your payment. If you were charged, please contact
             support.
           </p>
           <div className="space-y-3">
             <Link href="/events">
-              <Button className="w-full bg-sky-900 hover:bg-sky-800">
+              <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 transition-all duration-300">
                 Return to Events
               </Button>
             </Link>
@@ -94,28 +84,28 @@ export default function CheckoutSuccessPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-10 h-10 text-green-600" />
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="max-w-md w-full bg-background/50 backdrop-blur-sm rounded-2xl shadow-2xl shadow-primary/10 border-2 border-primary/20 p-8 md:p-10">
+        <div className="text-center mb-8">
+          <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-500/30 shadow-lg shadow-green-500/20">
+            <CheckCircle className="w-10 h-10 text-green-500" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Purchase Successful!
+          <h1 className="font-rubik-glitch text-2xl md:text-3xl mb-3 text-foreground leading-none">
+            PURCHASE SUCCESSFUL!
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-foreground/60 leading-relaxed">
             Thank you for your purchase. Your tickets have been confirmed.
           </p>
         </div>
 
-        <div className="bg-sky-50 border border-sky-200 rounded-lg p-4 mb-6">
+        <div className="bg-primary/5 border-2 border-primary/20 rounded-xl p-5 mb-5 backdrop-blur-sm shadow-lg shadow-primary/5">
           <div className="flex items-start space-x-3">
-            <Mail className="w-5 h-5 text-sky-600 mt-0.5 flex-shrink-0" />
+            <Mail className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
             <div>
-              <h3 className="font-semibold text-sky-900 mb-1">
+              <h3 className="font-semibold text-foreground mb-2">
                 Check Your Email
               </h3>
-              <p className="text-sm text-sky-700">
+              <p className="text-sm text-foreground/70 leading-relaxed">
                 We've sent your tickets and order confirmation to your email
                 address. Please check your inbox (and spam folder).
               </p>
@@ -123,12 +113,14 @@ export default function CheckoutSuccessPage() {
           </div>
         </div>
 
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+        <div className="bg-background/30 border-2 border-primary/10 rounded-xl p-5 mb-8 backdrop-blur-sm">
           <div className="flex items-start space-x-3">
-            <Calendar className="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" />
+            <Calendar className="w-5 h-5 text-foreground/70 mt-0.5 flex-shrink-0" />
             <div>
-              <h3 className="font-semibold text-gray-900 mb-1">What's Next?</h3>
-              <p className="text-sm text-gray-700">
+              <h3 className="font-semibold text-foreground mb-2">
+                What's Next?
+              </h3>
+              <p className="text-sm text-foreground/70 leading-relaxed">
                 Save your tickets to your phone or print them. Present them at
                 the venue entrance on the day of the event.
               </p>
@@ -137,19 +129,22 @@ export default function CheckoutSuccessPage() {
         </div>
 
         <div className="space-y-3">
-          <Link href="/events">
-            <Button className="w-full bg-sky-900 hover:bg-sky-800">
+          <Link href="/events" className="block">
+            <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 font-semibold">
               Browse More Events
             </Button>
           </Link>
-          <Link href="/">
-            <Button variant="outline" className="w-full">
+          <Link href="/" className="block">
+            <Button
+              variant="outline"
+              className="w-full border-primary/20 hover:bg-primary/10 hover:border-primary/30 text-foreground transition-all duration-300"
+            >
               Return to Home
             </Button>
           </Link>
         </div>
 
-        <p className="text-xs text-gray-500 text-center mt-6">
+        <p className="text-xs text-foreground/40 text-center mt-6 font-mono">
           Payment ID: {paymentIntent?.slice(0, 20)}...
         </p>
       </div>
