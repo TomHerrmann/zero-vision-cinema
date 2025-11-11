@@ -4,14 +4,14 @@ import { getEventById } from '@/utils/getEvents';
 import '../../globals.css';
 
 interface CheckoutProps {
-  params: {
+  params: Promise<{
     eventId: string;
-  };
+  }>;
 }
 
 export default async function CheckoutPage({ params }: CheckoutProps) {
-  await params;
-  const event = await getEventById(params.eventId);
+  const { eventId } = await params;
+  const event = await getEventById(eventId);
   return (
     <div className="min-h-screen py-8 md:py-12 px-4 md:px-6">
       <div className="max-w-7xl mx-auto">
