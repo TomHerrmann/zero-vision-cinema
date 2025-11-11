@@ -60,6 +60,10 @@ export async function GET(req: NextRequest) {
     const attendees: Attendee[] = [];
 
     for (const { checkoutSessionId, createdAt } of orders) {
+      if (!checkoutSessionId) {
+        continue;
+      }
+
       const session =
         await stripe.checkout.sessions.retrieve(checkoutSessionId);
 
