@@ -158,7 +158,7 @@ export default function TicketEmail({
                     <tr>
                       <td style={headerCell}>
                         <Img
-                          src="https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/zvc_email_header.png"
+                          src="https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/email%20header.png"
                           width="100%"
                           alt="Zero Vision Cinema Logo"
                           style={headerImage}
