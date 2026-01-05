@@ -31,6 +31,11 @@ export const AHC_INSTAGRAM_ICON_SVG_URL =
 export const INSTAGRAM_ICON_PNG_URL =
   'https://fzuxxxhgqwm9izz9.public.blob.vercel-storage.com/Instagram_Glyph_Gradient-f1H8nHmWH5InPn0jgDAxscCxtVphBD.png';
 
+export const PARTIFUL_ICON_PNG_URL =
+  'https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/partiful_logo.jpeg';
+
+export const PARTIFUL_URL = 'https://partiful.com/u/GGfjIuDoDw3xgbwzkTmf';
+
 export const STATUS_CODES = {
   Continue: 100,
   SwitchingProtocols: 101,

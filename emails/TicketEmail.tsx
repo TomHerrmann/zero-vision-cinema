@@ -11,6 +11,11 @@ import {
 } from '@react-email/components';
 import { RichText } from '@payloadcms/richtext-lexical/react';
 import { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical';
+import {
+  AHC_DISCORD_URL,
+  PARTIFUL_URL,
+  ZVC_INSTAGRAM_URL,
+} from '@/app/contsants/constants';
 
 interface Props {
   eventName: string;
@@ -229,6 +234,52 @@ export default function TicketEmail({
                                     textAlign: 'center',
                                   }}
                                 >
+                                  {/* Admits Section - Simplified */}
+                                  <table
+                                    width="100%"
+                                    cellPadding="0"
+                                    cellSpacing="0"
+                                  >
+                                    <tr>
+                                      <td
+                                        style={{
+                                          textAlign: 'center',
+                                          borderTop: '1px solid #cccccc',
+                                          paddingTop: '16px',
+                                        }}
+                                      >
+                                        <div style={gmailAdmitLabel}>
+                                          ADMITS
+                                        </div>
+                                        <div style={gmailAdmitNumber}>
+                                          {quantity}
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  </table>
+
+                                  {/* Event Image - Simplified */}
+                                  <table
+                                    width="100%"
+                                    cellPadding="0"
+                                    cellSpacing="0"
+                                  >
+                                    <tr>
+                                      <td
+                                        align="center"
+                                        style={{ padding: '20px 0' }}
+                                      >
+                                        <img
+                                          src={eventImage}
+                                          width="200"
+                                          height="300"
+                                          alt="Event Poster"
+                                          style={gmailEventImageStyle}
+                                        />
+                                      </td>
+                                    </tr>
+                                  </table>
+
                                   {/* Date - Simplified */}
                                   <table
                                     width="100%"
@@ -261,52 +312,6 @@ export default function TicketEmail({
                                             hour12: true,
                                             timeZone: 'America/New_York',
                                           })}
-                                        </div>
-                                      </td>
-                                    </tr>
-                                  </table>
-
-                                  {/* Event Image - Simplified */}
-                                  <table
-                                    width="100%"
-                                    cellPadding="0"
-                                    cellSpacing="0"
-                                  >
-                                    <tr>
-                                      <td
-                                        align="center"
-                                        style={{ padding: '20px 0' }}
-                                      >
-                                        <img
-                                          src={eventImage}
-                                          width="200"
-                                          height="300"
-                                          alt="Event Poster"
-                                          style={gmailEventImageStyle}
-                                        />
-                                      </td>
-                                    </tr>
-                                  </table>
-
-                                  {/* Admits Section - Simplified */}
-                                  <table
-                                    width="100%"
-                                    cellPadding="0"
-                                    cellSpacing="0"
-                                  >
-                                    <tr>
-                                      <td
-                                        style={{
-                                          textAlign: 'center',
-                                          borderTop: '1px solid #cccccc',
-                                          paddingTop: '16px',
-                                        }}
-                                      >
-                                        <div style={gmailAdmitLabel}>
-                                          ADMITS
-                                        </div>
-                                        <div style={gmailAdmitNumber}>
-                                          {quantity}
                                         </div>
                                       </td>
                                     </tr>
@@ -620,6 +625,72 @@ export default function TicketEmail({
                     </tr>
                   </table>
                 )}
+
+                {/* Community Links Section */}
+                <table
+                  width="100%"
+                  cellPadding="0"
+                  cellSpacing="0"
+                  style={section}
+                >
+                  <tr>
+                    <td style={sectionContent} className="gmail-mobile-padding">
+                      <Heading style={sectionTitle} className="gmail-font-fix">
+                        Join the Community
+                      </Heading>
+                      <Text
+                        style={contactDescription}
+                        className="gmail-font-fix"
+                      >
+                        Stay connected and never miss an update!
+                      </Text>
+                      <table width="100%" cellPadding="0" cellSpacing="0">
+                        <tr>
+                          <td align="center">
+                            <Text
+                              style={contactItem}
+                              className="gmail-font-fix"
+                            >
+                              <Link
+                                href={ZVC_INSTAGRAM_URL}
+                                style={contactLink}
+                              >
+                                Follow us on Instagram
+                              </Link>
+                            </Text>
+                            <Text
+                              style={contactItem}
+                              className="gmail-font-fix"
+                            >
+                              <Link href={PARTIFUL_URL} style={contactLink}>
+                                Follow us on Partiful
+                              </Link>
+                            </Text>
+                            <Text
+                              style={contactItem}
+                              className="gmail-font-fix"
+                            >
+                              <Link
+                                href="https://zerovisioncinema.com#newsletter"
+                                style={contactLink}
+                              >
+                                Join our Mailing List
+                              </Link>
+                            </Text>
+                            <Text
+                              style={contactItem}
+                              className="gmail-font-fix"
+                            >
+                              <Link href={AHC_DISCORD_URL} style={contactLink}>
+                                Join our Discord
+                              </Link>
+                            </Text>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
 
                 {/* Contact Section */}
                 <table
