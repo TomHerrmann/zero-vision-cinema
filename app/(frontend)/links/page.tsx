@@ -12,6 +12,9 @@ import { cn } from '@/utils/utils';
 import { Rubik_Glitch } from 'next/font/google';
 import Link from 'next/link';
 
+// Revalidate every 5 minutes (300 seconds)
+export const revalidate = 300;
+
 type LinkItem = {
   title: string;
   url: string;
