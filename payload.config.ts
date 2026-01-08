@@ -16,6 +16,8 @@ import { Events } from './collections/Events';
 import { Locations } from './collections/Locations';
 import { Orders } from './collections/Orders';
 import { Merch } from './collections/Merch';
+import { Authors } from './collections/Authors';
+import { Articles } from './collections/Articles';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -27,7 +29,16 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Locations, Events, Merch, Orders],
+  collections: [
+    Users,
+    Media,
+    Locations,
+    Events,
+    Merch,
+    Orders,
+    Authors,
+    Articles,
+  ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
