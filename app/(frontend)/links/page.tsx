@@ -53,11 +53,15 @@ export default async function TreeLinkPage() {
   const events = await getUpcomingEvents();
 
   const eventLinks = events
+    .filter((event) => {
+      const ticketsSold = event.ticketsSold ?? 0;
+      const capacity = event.ticketLimit ?? 0;
+      return event.paymentLink && ticketsSold < capacity;
+    })
     .map((event) => ({
       title: event.name,
-      url: event.paymentLink ?? null,
-    }))
-    .filter((link) => link.url !== null) as LinkItem[];
+      url: event.paymentLink,
+    })) as LinkItem[];
 
   return (
     <div className="relative min-h-screen bg-background flex flex-col items-center justify-center py-32 md:py-40 px-6 md:px-12">
