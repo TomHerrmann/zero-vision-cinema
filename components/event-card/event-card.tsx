@@ -33,9 +33,11 @@ const EventCard = ({
 }: Props) => {
   const date = new Date(datetime);
 
-  if (!image || typeof image === 'number' || !image?.url || !paymentLink) {
+  if (!image || typeof image === 'number' || !image?.url) {
     return null;
   }
+
+  const showTicketButton = price > 0 && !!paymentLink;
 
   if (orientation === 'horz') {
     return (
@@ -76,7 +78,7 @@ const EventCard = ({
             <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 backdrop-blur-sm rounded-full">
               <DollarSign className="w-4 h-4 text-primary" />
               <span className="text-lg font-bold text-primary">
-                ${price.toFixed(2)}
+                {price === 0 ? 'FREE' : `$${price.toFixed(2)}`}
               </span>
             </div>
           </div>
@@ -140,7 +142,7 @@ const EventCard = ({
               >
                 Sold Out
               </Button>
-            ) : (
+            ) : showTicketButton ? (
               <Button
                 asChild
                 className={cn(
@@ -153,7 +155,7 @@ const EventCard = ({
               >
                 <Link
                   target="_blank"
-                  href={paymentLink}
+                  href={paymentLink!}
                   className="flex items-center justify-center gap-2 text-primary-foreground"
                 >
                   <Ticket className="w-5 h-5 transition-transform group-hover/btn:rotate-12 relative z-10" />
@@ -163,7 +165,7 @@ const EventCard = ({
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
                 </Link>
               </Button>
-            )}
+            ) : null}
           </CardFooter>
         </div>
       </Card>
@@ -253,7 +255,7 @@ const EventCard = ({
                 Price
               </span>
               <span className="text-base font-bold text-primary">
-                ${price.toFixed(2)}
+                {price === 0 ? 'FREE' : `$${price.toFixed(2)}`}
               </span>
             </div>
           </div>
@@ -265,7 +267,7 @@ const EventCard = ({
             <Button className="w-full" disabled variant="secondary" size="lg">
               Sold Out
             </Button>
-          ) : (
+          ) : showTicketButton ? (
             <Button
               asChild
               className={cn(
@@ -278,7 +280,7 @@ const EventCard = ({
             >
               <Link
                 target="_blank"
-                href={paymentLink}
+                href={paymentLink!}
                 className="flex items-center justify-center gap-2"
               >
                 <Ticket className="w-5 h-5 transition-transform group-hover/btn:rotate-12" />
@@ -286,7 +288,7 @@ const EventCard = ({
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
               </Link>
             </Button>
-          )}
+          ) : null}
         </div>
       </div>
 
