@@ -69,6 +69,9 @@ export const getUpcomingEvents = async () => {
 
   if (new Date(staticDoc.datetime) > new Date(nowMinus30Minutes)) {
     docs.push(staticDoc);
+    docs.sort(
+      (a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime()
+    );
   }
 
   return docs;
