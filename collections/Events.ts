@@ -15,7 +15,7 @@ export const Events: CollectionConfig = {
   hooks: {
     beforeChange: [
       async ({ data, operation, originalDoc, req }) => {
-        if (!data.price) return data;
+        if (!(Number(data.price) > 0)) return data;
 
         try {
           // Get the full image URL if an image is attached
@@ -205,7 +205,7 @@ export const Events: CollectionConfig = {
       name: 'priceId',
       type: 'text',
       label: 'Stripe Price ID',
-      required: true,
+      required: false,
       unique: true,
       admin: {
         readOnly: true,
