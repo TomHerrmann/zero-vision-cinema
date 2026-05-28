@@ -32,6 +32,10 @@ const siteLink = {
 
 const socialLins: LinkItem[] = [
   {
+    title: 'Vote for IN RED',
+    url: 'https://www.nukhufoundation.org/nuveestarterfund',
+  },
+  {
     title: 'ZVC on Instagram',
     url: `${ZVC_INSTAGRAM_URL}`,
   },
