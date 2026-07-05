@@ -230,6 +230,14 @@ export interface Event {
    */
   ticketLimit?: number | null;
   ticketsSold?: number | null;
+  /**
+   * Auto-created when the event is published
+   */
+  weekBeforeCampaignId?: string | null;
+  /**
+   * Auto-created when the event is published
+   */
+  dayBeforeCampaignId?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -492,6 +500,8 @@ export interface EventsSelect<T extends boolean = true> {
   priceId?: T;
   ticketLimit?: T;
   ticketsSold?: T;
+  weekBeforeCampaignId?: T;
+  dayBeforeCampaignId?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

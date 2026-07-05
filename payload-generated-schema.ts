@@ -227,6 +227,8 @@ export const events = pgTable(
     priceId: varchar("price_id"),
     ticketLimit: numeric("ticket_limit", { mode: "number" }),
     ticketsSold: numeric("tickets_sold", { mode: "number" }).default(0),
+    weekBeforeCampaignId: varchar("week_before_campaign_id"),
+    dayBeforeCampaignId: varchar("day_before_campaign_id"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -286,6 +288,8 @@ export const _events_v = pgTable(
     version_ticketsSold: numeric("version_tickets_sold", {
       mode: "number",
     }).default(0),
+    version_weekBeforeCampaignId: varchar("version_week_before_campaign_id"),
+    version_dayBeforeCampaignId: varchar("version_day_before_campaign_id"),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,

@@ -3,6 +3,7 @@ import { formatEventDescription } from '../utils/formatDate';
 import { ZVC_SITE_URL } from '../app/contsants/constants';
 import { logtail } from '@/lib/logtail';
 import { stripe } from '@/lib/stripe';
+import { createEventCampaigns, cancelEventCampaigns } from '@/lib/event-campaigns';
 
 export const Events: CollectionConfig = {
   slug: 'events',
@@ -13,6 +14,87 @@ export const Events: CollectionConfig = {
     drafts: true,
   },
   hooks: {
+    afterDelete: [
+      async ({ doc, req }) => {
+        const errors: string[] = [];
+
+        try {
+          await cancelEventCampaigns(doc.weekBeforeCampaignId, doc.dayBeforeCampaignId);
+        } catch (err) {
+          errors.push(`MailerLite: ${err}`);
+        }
+
+        if (doc.paymentLink) {
+          try {
+            const paymentLinkId = doc.paymentLink.split('/').pop() || '';
+            await stripe.paymentLinks.update(paymentLinkId, { active: false });
+          } catch (err) {
+            errors.push(`Stripe: ${err}`);
+          }
+        }
+
+        if (errors.length) {
+          await logtail.error(
+            `Errors during event ${doc.id} deletion cleanup: ${errors.join('; ')}`,
+            { eventId: String(doc.id), timestamp: new Date().toISOString() }
+          );
+        }
+      },
+    ],
+    afterChange: [
+      async ({ doc, req, context }) => {
+        if (context?.campaignUpdateInProgress) return doc;
+        if (doc._status !== 'published') return doc;
+        if (!doc.datetime) return doc;
+
+        try {
+          const locationDoc =
+            typeof doc.location === 'object'
+              ? doc.location
+              : await req.payload.findByID({
+                  collection: 'locations' as CollectionSlug,
+                  id: doc.location,
+                });
+
+          let imageUrl: string | undefined;
+          if (doc.image) {
+            const mediaDoc =
+              typeof doc.image === 'object'
+                ? doc.image
+                : await req.payload.findByID({ collection: 'media', id: doc.image });
+            if (mediaDoc?.url) imageUrl = `${ZVC_SITE_URL}${mediaDoc.url}`;
+          }
+
+          const campaignIds = await createEventCampaigns({
+            id: doc.id,
+            name: doc.name,
+            description: doc.description,
+            datetime: doc.datetime,
+            locationName: (locationDoc as { name: string }).name,
+            imageUrl,
+            paymentLink: doc.paymentLink,
+            price: doc.price,
+            weekBeforeCampaignId: doc.weekBeforeCampaignId,
+            dayBeforeCampaignId: doc.dayBeforeCampaignId,
+          });
+
+          await req.payload.update({
+            collection: 'events',
+            id: doc.id,
+            data: campaignIds,
+            overrideAccess: true,
+            context: { campaignUpdateInProgress: true },
+          });
+        } catch (err) {
+          await logtail.error(`Failed to create MailerLite campaigns for event ${doc.id}: ${err}`, {
+            eventId: String(doc.id),
+            timestamp: new Date().toISOString(),
+          });
+        }
+
+        return doc;
+      },
+    ],
     beforeChange: [
       async ({ data, operation, originalDoc, req }) => {
         if (!(Number(data.price) > 0)) return data;
@@ -238,6 +320,28 @@ export const Events: CollectionConfig = {
       type: 'number',
       defaultValue: 0,
       admin: { readOnly: true },
+    },
+    {
+      name: 'weekBeforeCampaignId',
+      type: 'text',
+      label: 'MailerLite Campaign ID (1 Week Before)',
+      required: false,
+      admin: {
+        readOnly: true,
+        condition: (data) => Boolean(data.weekBeforeCampaignId),
+        description: 'Auto-created when the event is published',
+      },
+    },
+    {
+      name: 'dayBeforeCampaignId',
+      type: 'text',
+      label: 'MailerLite Campaign ID (1 Day Before)',
+      required: false,
+      admin: {
+        readOnly: true,
+        condition: (data) => Boolean(data.dayBeforeCampaignId),
+        description: 'Auto-created when the event is published',
+      },
     },
   ],
 };
