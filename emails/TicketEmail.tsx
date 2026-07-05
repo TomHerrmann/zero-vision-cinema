@@ -22,7 +22,7 @@ interface Props {
   eventImage: string;
   eventDate: string;
   eventLocation: string;
-  eventDescription: SerializedEditorState;
+  eventDescription?: SerializedEditorState;
   eventAddress: string;
   quantity: number;
   customerName?: string;
@@ -269,10 +269,10 @@ export default function TicketEmail({
                                         align="center"
                                         style={{ padding: '20px 0' }}
                                       >
-                                        <img
+                                        <Img
                                           src={eventImage}
-                                          width="200"
-                                          height="300"
+                                          width={200}
+                                          height={300}
                                           alt="Event Poster"
                                           style={gmailEventImageStyle}
                                         />
@@ -810,6 +810,17 @@ export default function TicketEmail({
     </Html>
   );
 }
+
+export const previewProps: Props = {
+  eventName: 'Midnight Madness',
+  eventImage: 'https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/email%20header.png',
+  eventDate: '2025-09-13T20:00:00.000Z',
+  eventLocation: 'The Venue',
+  eventAddress: '418 Broadway Ste N, Albany, NY 12207',
+  quantity: 2,
+  totalAmount: 50.0,
+  purchaseDate: '2025-08-01T00:00:00.000Z',
+};
 
 // Gmail-compatible styles - removed border-radius and simplified fonts
 const main = {

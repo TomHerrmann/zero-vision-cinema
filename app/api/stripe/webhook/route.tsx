@@ -9,6 +9,7 @@ import { Resend } from 'resend';
 import { ZVC_EMAIL_ADDRESS } from '@/app/contsants/constants';
 import TicketEmail from '@/emails/TicketEmail';
 import { Location } from '@/payload-types';
+import sharp from 'sharp';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -235,14 +236,37 @@ export async function POST(req: Request) {
               }
 
               try {
+                const imageUrl = `${process.env.VERCEL_BLOB_URL}${eventImage.filename}`;
+                let emailImageSrc = imageUrl;
+                let emailAttachments: Array<{ filename: string; content: Buffer; content_id: string }> = [];
+
+                try {
+                  const fetchUrl = eventImage.sizes?.emailPoster?.url ?? imageUrl;
+                  const imageResponse = await fetch(fetchUrl);
+                  if (imageResponse.ok) {
+                    let imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+                    if (!eventImage.sizes?.emailPoster?.url) {
+                      imageBuffer = await sharp(imageBuffer)
+                        .resize(200, 300, { fit: 'cover' })
+                        .jpeg({ quality: 75 })
+                        .toBuffer();
+                    }
+                    emailAttachments = [{ filename: 'event-poster.jpg', content: imageBuffer, content_id: 'event-poster' }];
+                    emailImageSrc = 'cid:event-poster';
+                  }
+                } catch (fetchErr) {
+                  await logtail.error(`API /stripe/webhook: Failed to fetch event image for embedding: ${fetchErr}`);
+                }
+
                 await resend.emails.send({
                   from: ZVC_EMAIL_ADDRESS,
                   subject: `Your ZVC Ticket: ${event.name}`,
                   to: email,
+                  attachments: emailAttachments,
                   react: (
                     <TicketEmail
                       eventName={event.name}
-                      eventImage={`${process.env.VERCEL_BLOB_URL}${eventImage.filename}`}
+                      eventImage={emailImageSrc}
                       eventDate={event.datetime}
                       eventLocation={(event.location as Location).name}
                       quantity={quantity}
