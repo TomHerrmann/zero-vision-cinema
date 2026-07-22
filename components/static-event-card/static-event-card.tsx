@@ -17,10 +17,10 @@ type Props = {
 
 const StaticEventCard = ({ event }: Props) => {
   return (
-    <Card className="flex flex-col h-full rounded-2xl shadow-md hover:shadow-lg transition bg-accent-color overflow-hidden">
+    <Card className="group flex flex-col h-full overflow-hidden">
       <CardHeader className="pb-1 pt-4">
         {event.eventName && (
-          <CardTitle className="text-center text-2xl font-bold line-clamp-2 min-h-[4rem]">
+          <CardTitle className="text-center font-display uppercase text-glow text-2xl leading-none line-clamp-2 min-h-[4rem]">
             {event.eventName}
           </CardTitle>
         )}
@@ -40,22 +40,22 @@ const StaticEventCard = ({ event }: Props) => {
       )}
       <CardContent className="flex flex-col gap-3 flex-1">
         {event.description && (
-          <p className="text-base leading-relaxed line-clamp-3">
+          <p className="zvc-body text-base leading-relaxed line-clamp-3">
             {event.description}
           </p>
         )}
-        <div className="flex flex-col gap-2 text-md mt-auto">
+        <div className="flex flex-col gap-2 text-md mt-auto text-glow/90">
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
+            <Calendar className="w-4 h-4 text-blue-light" />
             <span>{event.date}</span>
           </div>
           <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4" />
+            <MapPin className="w-4 h-4 text-blue-light" />
             <span className="line-clamp-2">{event.location}</span>
           </div>
           {event.time && (
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
+              <Clock className="w-4 h-4 text-blue-light" />
               <span>{event.time}</span>
             </div>
           )}

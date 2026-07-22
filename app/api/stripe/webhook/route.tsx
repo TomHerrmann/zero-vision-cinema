@@ -9,6 +9,8 @@ import { Resend } from 'resend';
 import { ZVC_EMAIL_ADDRESS } from '@/app/contsants/constants';
 import TicketEmail from '@/emails/TicketEmail';
 import { Location } from '@/payload-types';
+import { subscribeEmail } from '@/lib/mailerlite';
+import { fetchMovieDataByImdbId } from '@/lib/omdb';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -83,6 +85,20 @@ export async function POST(req: Request) {
         }
 
         if (session.payment_status === 'paid') {
+          // Newsletter opt-in captured on our ticket page (session metadata).
+          if (
+            session.metadata?.newsletter_optin === 'true' &&
+            session.customer_details?.email
+          ) {
+            try {
+              await subscribeEmail(session.customer_details.email);
+            } catch (subErr) {
+              await logtail.error(
+                `API /stripe/webhook: newsletter opt-in failed for ${session.customer_details.email}: ${subErr}`
+              );
+            }
+          }
+
           const amountPaid = session.amount_total;
           const transactionDate = new Date(
             session.created * 1000
@@ -222,16 +238,28 @@ export async function POST(req: Request) {
                 }
               }
 
-              const eventImage =
-                typeof event.image === 'object'
+              if (!email) {
+                return;
+              }
+
+              // image/description are optional on events now — guard both.
+              const eventImage = !event.image
+                ? null
+                : typeof event.image === 'object'
                   ? event.image
                   : await payload.findByID({
                       collection: 'media',
                       id: event.image,
                     });
 
-              if (!email || !eventImage.filename) {
-                return;
+              // Poster: uploaded blob image if present, else the OMDB poster
+              // URL (external URLs are fine in email).
+              let posterUrl = eventImage?.filename
+                ? `${process.env.VERCEL_BLOB_URL}${eventImage.filename}`
+                : undefined;
+              if (!posterUrl && event.imdbId) {
+                const movie = await fetchMovieDataByImdbId(event.imdbId);
+                posterUrl = movie?.poster || undefined;
               }
 
               try {
@@ -242,11 +270,11 @@ export async function POST(req: Request) {
                   react: (
                     <TicketEmail
                       eventName={event.name}
-                      eventImage={`${process.env.VERCEL_BLOB_URL}${eventImage.filename}`}
+                      eventImage={posterUrl}
                       eventDate={event.datetime}
                       eventLocation={(event.location as Location).name}
                       quantity={quantity}
-                      eventDescription={event.description}
+                      eventDescription={event.description ?? undefined}
                       eventAddress={(event.location as Location).address}
                       totalAmount={amountPaid / 100}
                       purchaseDate={transactionDate}

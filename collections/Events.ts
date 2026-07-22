@@ -14,7 +14,7 @@ export const Events: CollectionConfig = {
   },
   hooks: {
     beforeChange: [
-      async ({ data, operation, originalDoc, req }) => {
+      async ({ data, req }) => {
         if (!(Number(data.price) > 0)) return data;
 
         try {
@@ -156,8 +156,32 @@ export const Events: CollectionConfig = {
   },
   fields: [
     { name: 'name', type: 'text', required: true },
-    { name: 'description', type: 'richText', required: true },
-    { name: 'image', type: 'upload', relationTo: 'media', required: true },
+    {
+      name: 'imdbId',
+      type: 'text',
+      label: 'IMDb ID',
+      admin: {
+        description:
+          'Optional. Found on the IMDb movie URL — e.g. tt0082418. When set, movie details (and a fallback poster/summary) are pulled from OMDB.',
+      },
+    },
+    {
+      name: 'description',
+      type: 'richText',
+      admin: {
+        description:
+          'Optional. If left blank and an IMDb ID is set, the OMDB summary is used.',
+      },
+    },
+    {
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description:
+          'Optional. If left blank and an IMDb ID is set, the OMDB poster is used.',
+      },
+    },
     { name: 'price', type: 'number', required: true },
     {
       name: 'location',

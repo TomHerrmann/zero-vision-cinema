@@ -128,6 +128,17 @@
   background: var(--color-blackout); /* match header/footer, covers min-h-screen */
 }
 
+/*
+ * On the AHC page, tint the shared Nav/Footer text to the legacy yellow.
+ * Nav/Footer live in the root layout (outside .ahc-legacy), so re-point their
+ * --foreground token when the AHC legacy body is present. Their text uses
+ * `text-foreground`, so this recolors the white copy without touching accents.
+ */
+body:has(.ahc-legacy) header,
+body:has(.ahc-legacy) footer {
+  --foreground: oklch(0.987 0.026 102.212); /* yellow-50 */
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -164,6 +175,211 @@
   .animate-gradient-shift {
     background-size: 200% 200%;
     animation: gradient-shift 15s ease infinite;
+  }
+}
+
+/* ===========================================================================
+ * ZVC brand system — reusable grindhouse classes (compose these, don't re-derive)
+ * Built on the @theme tokens above. Blue-forward accent; Cult Classic red = danger
+ * only. Distress reads as grit / wear-and-tear (grain, scratches, scanlines,
+ * halftone, worn edges), never paint.
+ * =========================================================================== */
+@layer components {
+  /* --- Type --- */
+  /* Big stamped display heading */
+  .zvc-heading {
+    @apply font-display uppercase text-glow;
+    line-height: 0.92;
+    letter-spacing: 0.03em;
+  }
+  /* Small caps label above a heading */
+  .zvc-kicker {
+    @apply font-utility uppercase text-blue-light;
+    letter-spacing: 0.25em;
+  }
+  /* Body copy (serif) */
+  .zvc-body {
+    @apply font-body text-glow/80;
+  }
+  /* Inline link — blue underline on hover */
+  .zvc-link {
+    @apply text-glow underline decoration-transparent underline-offset-4 transition-colors;
+    @apply hover:text-blue-light hover:decoration-blue-light;
+  }
+  /* Accent text helpers */
+  .zvc-accent {
+    @apply text-blue-light;
+  }
+  .zvc-accent-soft {
+    @apply text-retro-blue;
+  }
+  .zvc-danger {
+    @apply text-cult-classic;
+  }
+
+  /* --- Surfaces --- */
+  /* Poster card: solid fill, thick border, hard offset shadow, straighten on hover */
+  .zvc-card {
+    @apply relative bg-card text-card-foreground border-2 border-glow/15;
+    box-shadow: 6px 6px 0 0 rgba(0, 0, 0, 0.55);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .zvc-card:hover {
+    @apply border-blue-light/50;
+    box-shadow: 8px 8px 0 0 rgba(74, 140, 198, 0.45);
+    transform: translate(-2px, -2px);
+  }
+  /* Textured section panel (pair with a texture overlay) */
+  .zvc-panel {
+    @apply relative overflow-hidden bg-card;
+  }
+  /* Square stamped icon frame (replaces rounded-full chips) */
+  .zvc-icon-frame {
+    @apply inline-flex items-center justify-center border-2 border-blue-light/40 bg-blue-light/10 text-blue-light;
+  }
+  /* Kicker chip / badge */
+  .zvc-badge {
+    @apply inline-flex items-center gap-2 border-2 border-blue-light/30 bg-blackout/60 px-4 py-2;
+    @apply font-utility uppercase text-blue-light text-sm;
+    letter-spacing: 0.2em;
+  }
+
+  /* --- Buttons --- */
+  /* Primary CTA: Glow fill on Blackout (AA ~15:1), hard shadow, press-down active */
+  .zvc-btn {
+    @apply inline-flex items-center justify-center gap-2 font-utility uppercase;
+    @apply bg-glow text-blackout border-2 border-glow px-6 py-3;
+    letter-spacing: 0.12em;
+    box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.5);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.2s ease;
+  }
+  .zvc-btn:hover {
+    @apply bg-glow/90;
+  }
+  .zvc-btn:active {
+    transform: translate(3px, 3px);
+    box-shadow: 1px 1px 0 0 rgba(0, 0, 0, 0.5);
+  }
+  /* Secondary CTA: blue outline */
+  .zvc-btn-outline {
+    @apply inline-flex items-center justify-center gap-2 font-utility uppercase;
+    @apply bg-transparent text-glow border-2 border-blue-light px-6 py-3;
+    letter-spacing: 0.12em;
+    transition: transform 0.12s ease, background-color 0.2s ease, border-color 0.2s ease;
+  }
+  .zvc-btn-outline:hover {
+    @apply bg-blue-light/15 border-blue-light;
+  }
+  .zvc-btn-outline:active {
+    transform: translate(2px, 2px);
+  }
+
+  /* --- Accents --- */
+  /* Chunky broken/worn divider rule */
+  .zvc-rule {
+    display: block;
+    height: 6px;
+    width: 8rem;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--color-blue-light) 0 14px,
+      transparent 14px 20px
+    );
+  }
+  /* Stamped element: rotate + misprint ghost (legible; use on headings/badges) */
+  .zvc-stamp {
+    display: inline-block;
+    transform: rotate(-3deg);
+    text-shadow: 2px 2px 0 rgba(74, 140, 198, 0.25);
+  }
+  /* Chipped/eroded corners — for image & media frames (deterministic, safe) */
+  .zvc-worn-edge {
+    clip-path: polygon(
+      0 4px, 4px 0, calc(100% - 5px) 0, 100% 6px,
+      100% calc(100% - 4px), calc(100% - 6px) 100%, 5px 100%, 0 calc(100% - 5px)
+    );
+  }
+  /* Torn tape corner accent — parent must be position: relative */
+  .zvc-tape::before {
+    content: '';
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    width: 84px;
+    height: 22px;
+    transform: translateX(-50%) rotate(-4deg);
+    background: rgba(217, 221, 224, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    pointer-events: none;
+  }
+}
+
+@layer utilities {
+  /* --- Wear-and-tear texture overlays ---
+   * Put each on a decorative layer: `absolute inset-0 pointer-events-none` + aria-hidden.
+   */
+  /* Film grain — no mix-blend-mode (it caused scroll-time compositing ghosting) */
+  .zvc-grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    opacity: 0.05;
+  }
+  /* Fine vertical film scratches */
+  .zvc-scratches {
+    background-image:
+      repeating-linear-gradient(90deg, transparent 0 73px, rgba(255, 255, 255, 0.04) 73px 74px, transparent 74px 151px),
+      repeating-linear-gradient(90deg, transparent 0 111px, rgba(255, 255, 255, 0.025) 111px 112px, transparent 112px 233px);
+    opacity: 0.5;
+  }
+  /* CRT scanlines */
+  .zvc-scanlines {
+    background-image: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.22) 0 1px,
+      transparent 1px 3px
+    );
+    opacity: 0.5;
+  }
+  /* Halftone dot breakup */
+  .zvc-halftone {
+    background-image: radial-gradient(var(--color-retro-blue) 1px, transparent 1.6px);
+    background-size: 10px 10px;
+    opacity: 0.12;
+  }
+
+  /* Slow, occasional projector flicker (gated by prefers-reduced-motion) */
+  @keyframes zvc-flicker {
+    0%, 91%, 100% { opacity: 1; }
+    93% { opacity: 0.74; }
+    95% { opacity: 1; }
+    97% { opacity: 0.85; }
+  }
+  .zvc-flicker {
+    animation: zvc-flicker 7s linear infinite;
+  }
+}
+
+/* Article body theming (Reviews + Editorials) — apply `prose prose-invert zvc-article` */
+.zvc-article :where(h1, h2, h3, h4):not(:where(.not-prose *)) {
+  font-family: var(--font-bootzy-condensed), Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--color-glow);
+}
+.zvc-article :where(a):not(:where(.not-prose *)) {
+  color: var(--color-blue-light);
+  text-decoration-color: var(--color-blue-light);
+}
+
+/* Respect reduced-motion: quiet all animation/transition-driven motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

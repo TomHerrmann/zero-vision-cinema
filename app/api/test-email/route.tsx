@@ -31,9 +31,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    // Get the event image
-    const eventImage =
-      typeof event.image === 'object'
+    // Get the event image (optional on events now)
+    const eventImage = !event.image
+      ? null
+      : typeof event.image === 'object'
         ? event.image
         : await payload.findByID({
             collection: 'media',
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
           eventDate={event.datetime}
           eventLocation={(event.location as Location).name}
           quantity={1} // Test quantity
-          eventDescription={event.description}
+          eventDescription={event.description ?? undefined}
           eventAddress={(event.location as Location).address}
           totalAmount={25.0} // Test amount
           purchaseDate={new Date().toISOString()}

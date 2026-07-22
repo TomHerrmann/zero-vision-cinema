@@ -14,18 +14,28 @@ import { Mail, MapPin } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="relative bg-gradient-to-b from-background to-card border-t border-primary/10">
-      {/* Top decorative line */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+    <footer className="relative bg-blackout border-t-2 border-blue-light/20 overflow-hidden">
+      {/* Texture */}
+      <div className="absolute inset-0 zvc-grain pointer-events-none" aria-hidden="true" />
+      {/* Top ragged rule */}
+      <div
+        className="absolute top-0 left-0 right-0 h-1.5"
+        aria-hidden="true"
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(90deg, var(--color-blue-light) 0 14px, transparent 14px 24px)',
+          opacity: 0.5,
+        }}
+      />
 
-      <div className="max-w-[1600px] mx-auto px-6 md:px-12 py-16 md:py-24">
+      <div className="relative z-10 max-w-[1600px] mx-auto px-6 md:px-12 py-16 md:py-24">
         {/* Main footer content */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-16 mb-16">
           {/* Site Map */}
           <div className="text-center md:text-left">
             <h5
               className={cn(
-                'font-display text-2xl md:text-3xl mb-6',
+                'font-display uppercase text-2xl md:text-3xl mb-6',
                 'text-foreground'
               )}
             >
@@ -37,7 +47,7 @@ const Footer = () => {
                   key={href}
                   href={href}
                   className={cn(
-                    'text-foreground/70 hover:text-primary',
+                    'text-foreground/70 hover:text-blue-light',
                     'transition-colors duration-200',
                     'text-lg hover:translate-x-1 inline-block',
                     'transition-transform'
@@ -53,7 +63,7 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <h5
               className={cn(
-                'font-display text-2xl md:text-3xl mb-6',
+                'font-display uppercase text-2xl md:text-3xl mb-6',
                 'text-foreground'
               )}
             >
@@ -65,11 +75,11 @@ const Footer = () => {
                 target="_blank"
                 className={cn(
                   'group flex items-center gap-3 text-foreground/70',
-                  'hover:text-primary transition-colors duration-200',
+                  'hover:text-blue-light transition-colors duration-200',
                   'justify-center md:justify-start'
                 )}
               >
-                <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <div className="zvc-icon-frame w-10 h-10 group-hover:bg-blue-light/20 transition-colors">
                   <svg
                     className="w-5 h-5"
                     fill="currentColor"
@@ -86,11 +96,11 @@ const Footer = () => {
                 target="_blank"
                 className={cn(
                   'group flex items-center gap-3 text-foreground/70',
-                  'hover:text-primary transition-colors duration-200',
+                  'hover:text-blue-light transition-colors duration-200',
                   'justify-center md:justify-start'
                 )}
               >
-                <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <div className="zvc-icon-frame w-10 h-10 group-hover:bg-blue-light/20 transition-colors">
                   <svg
                     className="w-5 h-5"
                     fill="currentColor"
@@ -107,11 +117,11 @@ const Footer = () => {
                 target="_blank"
                 className={cn(
                   'group flex items-center gap-3 text-foreground/70',
-                  'hover:text-primary transition-colors duration-200',
+                  'hover:text-blue-light transition-colors duration-200',
                   'justify-center md:justify-start'
                 )}
               >
-                <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <div className="zvc-icon-frame w-10 h-10 group-hover:bg-blue-light/20 transition-colors">
                   <svg
                     className="w-5 h-5"
                     fill="currentColor"
@@ -128,11 +138,11 @@ const Footer = () => {
                 target="_blank"
                 className={cn(
                   'group flex items-center gap-3 text-foreground/70',
-                  'hover:text-primary transition-colors duration-200',
+                  'hover:text-blue-light transition-colors duration-200',
                   'justify-center md:justify-start'
                 )}
               >
-                <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <div className="zvc-icon-frame w-10 h-10 group-hover:bg-blue-light/20 transition-colors">
                   <Mail className="w-5 h-5" />
                 </div>
                 <span className="text-lg">{ZVC_EMAIL_ADDRESS}</span>
@@ -144,14 +154,14 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <h5
               className={cn(
-                'font-display text-2xl md:text-3xl mb-6',
+                'font-display uppercase text-2xl md:text-3xl mb-6',
                 'text-foreground'
               )}
             >
               Address
             </h5>
             <div className="flex items-start gap-3 text-foreground/70 justify-center md:justify-start">
-              <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 mt-1">
+              <div className="zvc-icon-frame w-10 h-10 flex-shrink-0 mt-1">
                 <MapPin className="w-5 h-5 text-primary" />
               </div>
               <address className="not-italic text-lg leading-relaxed text-left">
@@ -166,16 +176,17 @@ const Footer = () => {
         </div>
 
         {/* Bottom bar */}
-        <div className="pt-8 border-t border-primary/10">
+        <div className="pt-8 border-t-2 border-blue-light/15">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-foreground/60">
             {/* Logo/Brand */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 border-2 border-primary/30 flex items-center justify-center">
-                <span className="font-display text-primary text-xl">
-                  ZVC
-                </span>
-              </div>
-              <span className="font-display text-xl text-foreground/80">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logos/zvc_logo_logomark_rgb_color.svg"
+                alt="Zero Vision Cinema logo"
+                className="w-10 h-10 object-contain"
+              />
+              <span className="font-display uppercase text-xl text-foreground/80">
                 Zero Vision Cinema
               </span>
             </div>
@@ -186,15 +197,12 @@ const Footer = () => {
             </p>
 
             {/* Made with love */}
-            <p className="text-sm text-foreground/40">
+            <p className="font-utility uppercase tracking-widest text-xs text-foreground/40">
               Bringing cult cinema to NYC
             </p>
           </div>
         </div>
       </div>
-
-      {/* Bottom gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
     </footer>
   );
 };

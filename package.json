@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:email": "email dev",
-    "build": "next build",
+    "build": "payload migrate && next build",
     "start": "next start",
     "lint": "next lint"
   },

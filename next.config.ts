@@ -14,6 +14,12 @@ const nextConfig: NextConfig = {
         hostname: 'fzuxxxhgqwm9izz9.public.blob.vercel-storage.com',
         pathname: '**',
       },
+      {
+        // OMDB poster fallback images
+        protocol: 'https',
+        hostname: 'm.media-amazon.com',
+        pathname: '**',
+      },
     ],
   },
   async rewrites() {

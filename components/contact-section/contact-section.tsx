@@ -19,7 +19,7 @@ import {
   Send,
   MessageCircle,
 } from 'lucide-react';
-import { cn } from '@/utils/utils';
+import SectionHeading from '../ui/section-heading';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import z from 'zod';
@@ -76,44 +76,22 @@ export default function ContactSection() {
   return (
     <section
       id="contact"
-      className="relative py-32 md:py-40 overflow-hidden bg-gradient-to-b from-background via-foreground/5 to-background"
+      className="relative pt-16 md:pt-20 pb-28 md:pb-36 overflow-hidden bg-blackout"
     >
-      {/* Decorative elements */}
-      <div className="absolute inset-0 opacity-[0.02]">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at center, oklch(0.987 0.026 102.212) 1px, transparent 1px)`,
-            backgroundSize: '50px 50px',
-          }}
-        />
-      </div>
+      {/* Texture */}
+      <div className="absolute inset-0 zvc-grain pointer-events-none" aria-hidden="true" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
         {/* Section header */}
-        <div className="text-center mb-20">
-          <div className="inline-flex items-center gap-2 mb-6 px-6 py-2 border border-primary/20 bg-background/80 backdrop-blur-sm">
-            <MessageCircle className="w-4 h-4 text-primary" />
-            <span className="text-sm uppercase tracking-widest text-foreground/70">
-              Get In Touch
-            </span>
-          </div>
-
-          <h2
-            className={cn(
-              'font-display text-[2.5rem] md:text-[5rem] lg:text-[6rem]',
-              'leading-none mb-6',
-              'bg-gradient-to-b from-foreground via-foreground to-foreground/60 bg-clip-text text-transparent'
-            )}
-          >
-            Contact Us
-          </h2>
-
-          <div className="w-32 h-1 mx-auto bg-gradient-to-r from-transparent via-primary to-transparent mb-8" />
-
-          <p className="text-xl md:text-2xl text-foreground/70 max-w-3xl mx-auto">
-            We'd love to hear from you. Whether you have a question, suggestion,
-            or want to collaborate.
+        <div className="mb-20">
+          <SectionHeading
+            kicker="Get In Touch"
+            title="Contact Us"
+            icon={MessageCircle}
+          />
+          <p className="zvc-body text-xl md:text-2xl text-glow/70 max-w-3xl mx-auto text-center mt-8">
+            We&apos;d love to hear from you. Whether you have a question,
+            suggestion, or want to collaborate.
           </p>
         </div>
 
@@ -122,7 +100,7 @@ export default function ContactSection() {
           {/* Left side - Info */}
           <div className="space-y-12">
             <div>
-              <h3 className="text-2xl md:text-3xl font-semibold mb-6 text-foreground">
+              <h3 className="font-display uppercase text-glow text-2xl md:text-3xl mb-6">
                 Why Reach Out?
               </h3>
               <ul className="space-y-4">
@@ -146,14 +124,12 @@ export default function ContactSection() {
                 ].map((item, idx) => (
                   <li
                     key={idx}
-                    className="group flex items-start gap-4 p-4 border border-primary/10 bg-background/30 backdrop-blur-sm hover:border-primary/30 hover:bg-background/50 transition-all duration-300"
+                    className="group flex items-start gap-4 p-4 border-2 border-glow/10 bg-card hover:border-blue-light/40 transition-colors duration-300"
                   >
-                    <div className="flex-shrink-0 mt-1">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                        <item.icon className="w-5 h-5 text-primary" />
-                      </div>
+                    <div className="zvc-icon-frame w-10 h-10 flex-shrink-0 mt-1">
+                      <item.icon className="w-5 h-5" />
                     </div>
-                    <p className="text-lg text-foreground/80 leading-relaxed">
+                    <p className="zvc-body text-lg text-glow/80 leading-relaxed">
                       {item.text}
                     </p>
                   </li>
@@ -162,11 +138,11 @@ export default function ContactSection() {
             </div>
 
             {/* Additional info */}
-            <div className="p-8 border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent backdrop-blur-sm">
-              <h4 className="text-xl font-semibold mb-4 text-foreground">
+            <div className="zvc-card p-8">
+              <h4 className="font-display uppercase text-glow text-xl mb-4">
                 Quick Response
               </h4>
-              <p className="text-foreground/70 leading-relaxed">
+              <p className="zvc-body text-glow/70 leading-relaxed">
                 We typically respond within 24-48 hours. For urgent inquiries
                 about upcoming events, please mention it in your message.
               </p>
@@ -175,15 +151,15 @@ export default function ContactSection() {
 
           {/* Right side - Form */}
           <div className="lg:sticky lg:top-8">
-            <Card className="border-2 border-primary/20 bg-card/80 backdrop-blur-sm shadow-2xl shadow-primary/5">
+            <Card>
               <CardHeader className="pb-6">
                 <CardTitle>
-                  <h3 className="text-2xl md:text-3xl font-semibold mb-6 text-foreground">
+                  <h3 className="font-display uppercase text-glow text-2xl md:text-3xl mb-6">
                     Send A Message
                   </h3>
                 </CardTitle>
-                <CardDescription className="text-base text-foreground/60">
-                  Fill out the form below and we'll get back to you shortly.
+                <CardDescription className="zvc-body text-base text-glow/60">
+                  Fill out the form below and we&apos;ll get back to you shortly.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -201,7 +177,7 @@ export default function ContactSection() {
                             <Input
                               placeholder="Your name"
                               {...field}
-                              className="h-12 text-base bg-background/50 border-primary/20 focus:border-primary/40"
+                              className="h-12 text-base"
                             />
                           </FormControl>
                           <FormMessage />
@@ -217,7 +193,7 @@ export default function ContactSection() {
                             <Input
                               placeholder="your@email.com"
                               {...field}
-                              className="h-12 text-base bg-background/50 border-primary/20 focus:border-primary/40"
+                              className="h-12 text-base"
                             />
                           </FormControl>
                           <FormMessage />
@@ -233,7 +209,7 @@ export default function ContactSection() {
                             <Textarea
                               placeholder="Tell us about your inquiry..."
                               {...field}
-                              className="min-h-[160px] text-base bg-background/50 border-primary/20 focus:border-primary/40 resize-none"
+                              className="min-h-[160px] text-base resize-none"
                             />
                           </FormControl>
                           <FormMessage />
@@ -244,14 +220,7 @@ export default function ContactSection() {
                       type="submit"
                       disabled={inFlight}
                       size="lg"
-                      className={cn(
-                        'w-full h-12 text-lg font-medium',
-                        'bg-primary text-primary-foreground',
-                        'hover:bg-primary/90 hover:shadow-[0_0_30px_rgba(255,255,255,0.15)]',
-                        'transition-all duration-300',
-                        'border border-primary/20',
-                        'disabled:opacity-50'
-                      )}
+                      className="w-full text-lg disabled:opacity-50"
                     >
                       {inFlight ? (
                         <Loader2Icon className="w-5 h-5 animate-spin" />

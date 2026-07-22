@@ -39,7 +39,7 @@ export function MobileNav() {
           <span className="sr-only">Toggle Menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="pr-0">
+      <SheetContent side="left" className="pr-0 bg-blackout border-r-2 border-blue-light/20">
         <SheetHeader>
           <SheetTitle className="text-left">
             <MobileLink
@@ -47,15 +47,17 @@ export function MobileNav() {
               className="flex items-center"
               onOpenChange={setOpen}
             >
-              <ArrowRightSquare className="mr-2 h-4 w-4" />
-              <span className="font-display">{SITE_NAME}</span>
+              <ArrowRightSquare className="mr-2 h-4 w-4 text-blue-light" />
+              <span className="font-display uppercase text-glow">{SITE_NAME}</span>
             </MobileLink>
           </SheetTitle>
         </SheetHeader>
         <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">
-          <div className="flex flex-col space-y-3">
-            <h3 className="text-small mt-6">Menu</h3>
-            <Separator />
+          <div className="flex flex-col space-y-4">
+            <h3 className="font-utility uppercase tracking-[0.25em] text-xs text-blue-light mt-6">
+              Menu
+            </h3>
+            <Separator className="bg-blue-light/20" />
             {Object.entries(mainMenu).map(([key, href]) => (
               <MobileLink key={key} href={href} onOpenChange={setOpen}>
                 {key.charAt(0).toUpperCase() + key.slice(1)}
@@ -89,7 +91,10 @@ function MobileLink({
         router.push(href.toString());
         onOpenChange?.(false);
       }}
-      className={cn('text-lg', className)}
+      className={cn(
+        'font-utility uppercase tracking-wider text-lg text-glow/90 hover:text-blue-light transition-colors',
+        className
+      )}
       {...props}
     >
       {children}

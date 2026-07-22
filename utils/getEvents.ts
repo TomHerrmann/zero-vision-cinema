@@ -45,6 +45,7 @@ export const getUpcomingEvents = async () => {
   const staticDoc: Event = {
     id: 10000,
     name: 'ZVC 1 Year Anniverary Show',
+    imdbId: '',
     description: {
       root: {
         type: '',
@@ -75,6 +76,21 @@ export const getUpcomingEvents = async () => {
   }
 
   return docs;
+};
+
+export const getEventById = async (id: number) => {
+  const { docs } = await payload.find({
+    collection: 'events',
+    where: {
+      _status: { equals: 'published' },
+      id: { equals: id },
+    },
+    // depth 2 resolves image + location.
+    depth: 2,
+    limit: 1,
+  });
+
+  return docs[0] ?? null;
 };
 
 export const getAllEvents = async () => {

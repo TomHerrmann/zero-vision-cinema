@@ -194,7 +194,14 @@ export interface Location {
 export interface Event {
   id: number;
   name: string;
-  description: {
+  /**
+   * Optional. Found on the IMDb movie URL — e.g. tt0082418. When set, movie details (and a fallback poster/summary) are pulled from OMDB.
+   */
+  imdbId?: string | null;
+  /**
+   * Optional. If left blank and an IMDb ID is set, the OMDB summary is used.
+   */
+  description?: {
     root: {
       type: string;
       children: {
@@ -208,8 +215,11 @@ export interface Event {
       version: number;
     };
     [k: string]: unknown;
-  };
-  image: number | Media;
+  } | null;
+  /**
+   * Optional. If left blank and an IMDb ID is set, the OMDB poster is used.
+   */
+  image?: (number | null) | Media;
   price: number;
   location: number | Location;
   datetime: string;
@@ -482,6 +492,7 @@ export interface LocationsSelect<T extends boolean = true> {
  */
 export interface EventsSelect<T extends boolean = true> {
   name?: T;
+  imdbId?: T;
   description?: T;
   image?: T;
   price?: T;

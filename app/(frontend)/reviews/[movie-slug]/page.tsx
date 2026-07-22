@@ -2,7 +2,6 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getPayload } from 'payload';
 import payloadConfig from '@/payload.config';
-import { cn } from '@/utils/utils';
 import Image from 'next/image';
 import { RichText } from '@payloadcms/richtext-lexical/react';
 
@@ -65,38 +64,26 @@ export default async function ReviewPage({ params }: Props) {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden">
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 opacity-[0.02]">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at center, oklch(0.987 0.026 102.212) 1px, transparent 1px)`,
-            backgroundSize: '40px 40px',
-          }}
-        />
-      </div>
+    <main className="relative min-h-screen overflow-hidden bg-blackout">
+      {/* Texture */}
+      <div className="absolute inset-0 zvc-grain pointer-events-none" aria-hidden="true" />
 
-      <div className="relative z-10 max-w-4xl mx-auto px-6 md:px-12 py-24 md:py-32">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 md:px-12 py-24 md:py-32 pt-32 md:pt-40">
         <article>
           <header className="mb-12">
-            <h1
-              className={cn(
-                'font-display text-4xl md:text-6xl lg:text-7xl',
-                'leading-none mb-6',
-                'bg-gradient-to-b from-foreground to-foreground/60 bg-clip-text text-transparent'
-              )}
-            >
+            <span className="zvc-kicker block mb-4">Review</span>
+            <h1 className="zvc-heading text-4xl md:text-6xl lg:text-7xl mb-6">
               {article.movie}
             </h1>
             <div className="flex items-center gap-4 mb-6">
-              <span className="text-lg text-foreground/70">Review</span>
               {article.rating && (
-                <span className="text-yellow-500">★ {article.rating}/5</span>
+                <span className="font-utility text-blue-light text-lg">
+                  ★ {article.rating}/5
+                </span>
               )}
             </div>
             {article.author && (
-              <p className="text-foreground/60">
+              <p className="zvc-body text-glow/60">
                 By{' '}
                 {typeof article.author === 'object'
                   ? article.author.name
@@ -112,12 +99,12 @@ export default async function ReviewPage({ params }: Props) {
                 alt={article.movie}
                 width={article.image.width ?? 1200}
                 height={article.image.height ?? 675}
-                className="w-full h-96 object-cover rounded-lg"
+                className="w-full h-96 object-cover border-2 border-glow/15 shadow-[6px_6px_0_0_rgba(0,0,0,0.55)] zvc-worn-edge"
               />
             </div>
           )}
 
-          <div className="prose prose-lg max-w-none">
+          <div className="prose prose-lg prose-invert zvc-article max-w-none">
             <RichText data={article.body} />
           </div>
         </article>
