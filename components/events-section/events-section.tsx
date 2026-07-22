@@ -34,7 +34,7 @@ export default function EventsSection({ events }: Props) {
 
           <h2
             className={cn(
-              'font-rubik-glitch text-[2.5rem] md:text-[5rem] lg:text-[6rem]',
+              'font-display text-[2.5rem] md:text-[5rem] lg:text-[6rem]',
               'leading-none mb-6',
               'bg-gradient-to-b from-foreground to-foreground/60 bg-clip-text text-transparent'
             )}

@@ -37,10 +37,13 @@ export default function Nav() {
             className="hover:opacity-80 transition-opacity flex gap-3 items-center group"
             href="/"
           >
-            <div className="w-10 h-10 border-2 border-primary/30 flex items-center justify-center group-hover:border-primary/50 transition-colors">
-              <span className="font-rubik-glitch text-primary text-xl">ZVC</span>
-            </div>
-            <h2 className="font-rubik-glitch text-[1.5rem] md:text-[2rem] text-foreground">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logos/zvc_logo_logomark_rgb_color.svg"
+              alt="Zero Vision Cinema logo"
+              className="w-10 h-10 object-contain group-hover:scale-105 transition-transform"
+            />
+            <h2 className="font-display text-[1.5rem] md:text-[2rem] text-foreground">
               Zero Vision Cinema
             </h2>
           </Link>

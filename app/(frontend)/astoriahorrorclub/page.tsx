@@ -12,7 +12,7 @@ const creepsterfont = Creepster({
 
 export default async function AstoriaHorrorClubPage() {
   return (
-    <main className="relative min-h-screen overflow-hidden">
+    <main className="ahc-legacy relative min-h-screen overflow-hidden font-sans">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-[0.02]">
         <div

@@ -16,6 +16,20 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    const seerrHost = process.env.SEERR_HOME_HOST;
+    if (!seerrHost) return { beforeFiles: [] };
+
+    return {
+      beforeFiles: [
+        {
+          source: '/:path*',
+          has: [{ type: 'host', value: 'requests.zerovisioncinema.com' }],
+          destination: `http://${seerrHost}:5055/:path*`,
+        },
+      ],
+    };
+  },
 };
 
 export default withPayload(nextConfig);

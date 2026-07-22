@@ -78,7 +78,7 @@ export default async function EditorialPage({ params }: Props) {
           <header className="mb-12">
             <h1
               className={cn(
-                'font-rubik-glitch text-4xl md:text-6xl lg:text-7xl',
+                'font-display text-4xl md:text-6xl lg:text-7xl',
                 'leading-none mb-6',
                 'bg-gradient-to-b from-foreground to-foreground/60 bg-clip-text text-transparent'
               )}

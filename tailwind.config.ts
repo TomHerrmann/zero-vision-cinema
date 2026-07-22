@@ -18,10 +18,23 @@ const config = {
       },
     },
     extend: {
+      // NOTE: In Tailwind v4 the source of truth is the `@theme` block in
+      // app/(frontend)/globals.css. These are mirrored here for parity/reference.
       fontFamily: {
-        sans: ['var(--font-sans)', ...fontFamily.sans],
+        sans: ['var(--font-crimson)', ...fontFamily.serif],
+        body: ['var(--font-crimson)', ...fontFamily.serif],
+        display: ['var(--font-bootzy-condensed)', ...fontFamily.sans],
+        utility: ['var(--font-bootzy)', ...fontFamily.sans],
+        acid: ['var(--font-acid)', ...fontFamily.sans],
       },
       colors: {
+        // ZVC brand palette (see ZVC-Visual Identity-Final.pdf)
+        blackout: '#1F1F1F',
+        glow: '#FFFDF6',
+        'retro-blue': '#9EB7CC',
+        'blue-light': '#4A8CC6',
+        'cult-classic': '#7F0028',
+        static: '#D9DDE0',
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',

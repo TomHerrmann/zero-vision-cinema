@@ -63,7 +63,7 @@ const EventCard = ({
           {isSoldOut && (
             <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-md z-20">
               <div className="text-center">
-                <div className="font-rubik-glitch text-destructive-alt text-4xl md:text-5xl transform -rotate-12 tracking-widest drop-shadow-lg">
+                <div className="font-display text-destructive-alt text-4xl md:text-5xl transform -rotate-12 tracking-widest drop-shadow-lg">
                   SOLD OUT
                 </div>
               </div>
@@ -194,7 +194,7 @@ const EventCard = ({
         {isSoldOut && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-md z-20">
             <div className="text-center">
-              <div className="font-rubik-glitch text-destructive-alt text-5xl md:text-6xl transform -rotate-12 tracking-widest mb-4 drop-shadow-lg">
+              <div className="font-display text-destructive-alt text-5xl md:text-6xl transform -rotate-12 tracking-widest mb-4 drop-shadow-lg">
                 SOLD OUT
               </div>
               <div className="text-foreground/60 text-sm uppercase tracking-wider">

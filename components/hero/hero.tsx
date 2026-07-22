@@ -49,28 +49,24 @@ export default function Hero() {
         {/* Glowing accent line */}
         <div className="w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mb-8 animate-pulse" />
 
-        <h1
+        {/* Wordmark logo */}
+        <h1 className="sr-only">Zero Vision Cinema</h1>
+        {/* First-party static SVG; plain img avoids the image optimizer's SVG block */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logos/zvc_logo_logotype_rgb_color_glow-transparent.svg"
+          alt="Zero Vision Cinema"
+          width={600}
+          height={450}
+          aria-hidden="true"
+          // Sized inline so it can't be affected by a stale/cached Tailwind CSS chunk
+          style={{ height: 'clamp(450px, 50vw, 440px)', width: 'auto' }}
           className={cn(
-            'font-rubik-glitch text-[3.5rem] sm:text-[5rem] md:text-[7rem] lg:text-[9rem]',
-            'leading-none mb-6 tracking-tight',
-            'bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent',
+            'mb-12',
             'drop-shadow-[0_0_60px_rgba(255,255,255,0.1)]',
             'animate-in fade-in slide-in-from-bottom-10 duration-1000'
           )}
-        >
-          ZERO VISION
-        </h1>
-
-        <h2
-          className={cn(
-            'font-rubik-glitch text-[2rem] sm:text-[3rem] md:text-[4rem] lg:text-[5.5rem]',
-            'leading-none mb-12',
-            'text-foreground/80',
-            'animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-200'
-          )}
-        >
-          CINEMA
-        </h2>
+        />
 
         {/* Tagline */}
         <p

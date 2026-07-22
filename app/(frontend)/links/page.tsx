@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { getUpcomingEvents } from '@/utils/getEvents';
 import { cn } from '@/utils/utils';
-import { Rubik_Glitch } from 'next/font/google';
 import Link from 'next/link';
 
 // Revalidate every 5 minutes (300 seconds)
@@ -19,11 +18,6 @@ type LinkItem = {
   title: string;
   url: string;
 };
-
-const rubikGlitchFont = Rubik_Glitch({
-  weight: '400',
-  subsets: ['latin'],
-});
 
 const siteLink = {
   title: 'Official Site',
@@ -106,7 +100,7 @@ export default async function TreeLinkPage() {
           <h1
             className={cn(
               'text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight bg-gradient-to-b from-foreground via-foreground to-foreground/60 bg-clip-text text-transparent',
-              rubikGlitchFont.className
+              'font-display'
             )}
           >
             ZVC LINKS

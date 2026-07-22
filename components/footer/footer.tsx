@@ -25,7 +25,7 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <h5
               className={cn(
-                'font-rubik-glitch text-2xl md:text-3xl mb-6',
+                'font-display text-2xl md:text-3xl mb-6',
                 'text-foreground'
               )}
             >
@@ -53,7 +53,7 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <h5
               className={cn(
-                'font-rubik-glitch text-2xl md:text-3xl mb-6',
+                'font-display text-2xl md:text-3xl mb-6',
                 'text-foreground'
               )}
             >
@@ -144,7 +144,7 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <h5
               className={cn(
-                'font-rubik-glitch text-2xl md:text-3xl mb-6',
+                'font-display text-2xl md:text-3xl mb-6',
                 'text-foreground'
               )}
             >
@@ -171,11 +171,11 @@ const Footer = () => {
             {/* Logo/Brand */}
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 border-2 border-primary/30 flex items-center justify-center">
-                <span className="font-rubik-glitch text-primary text-xl">
+                <span className="font-display text-primary text-xl">
                   ZVC
                 </span>
               </div>
-              <span className="font-rubik-glitch text-xl text-foreground/80">
+              <span className="font-display text-xl text-foreground/80">
                 Zero Vision Cinema
               </span>
             </div>
