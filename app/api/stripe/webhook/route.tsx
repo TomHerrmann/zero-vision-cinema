@@ -89,17 +89,31 @@ export async function POST(req: Request) {
           );
         }
 
-        // Resolve (or create) the Stripe customer.
+        // Resolve the Stripe customer: reuse the PaymentIntent's customer if
+        // present, otherwise look one up by email (dedupes repeat buyers) and
+        // reuse it, or create a new one.
         let customerId: string | null =
           typeof full.customer === 'string'
             ? full.customer
             : (full.customer?.id ?? null);
-        if (!customerId && (email || name)) {
-          const newCustomer = await stripeCheckout.customers.create({
-            email: email ?? undefined,
-            name,
+        if (!customerId && email) {
+          const existing = await stripeCheckout.customers.list({
+            email,
+            limit: 1,
           });
-          customerId = newCustomer.id;
+          customerId =
+            existing.data[0]?.id ??
+            (await stripeCheckout.customers.create({ email, name })).id;
+        }
+
+        if (!customerId) {
+          await logtail.error(
+            `API /stripe/webhook: no customer or email for payment_intent ${pi.id}`
+          );
+          return NextResponse.json(
+            { error: 'Missing customer for payment intent: ' + pi.id },
+            { status: 400 }
+          );
         }
 
         // Newsletter opt-in captured on our ticket page (PaymentIntent metadata).
@@ -116,7 +130,8 @@ export async function POST(req: Request) {
         const amountPaid = full.amount_received; // cents
         const transactionDate = new Date(full.created * 1000).toISOString();
 
-        // Find the event (or merch) this product maps to and bump its sold count.
+        // Resolve the purchased item (event or merch) — without mutating any
+        // sold counts yet, so a failed order insert can't inflate them.
         const eventDocs = await payload.find({
           collection: 'events',
           disableErrors: true,
@@ -126,12 +141,8 @@ export async function POST(req: Request) {
         const event_ = eventDocs.docs[0];
 
         let item;
+        let merch_;
         if (event_?.id) {
-          await payload.update({
-            collection: 'events',
-            id: event_.id,
-            data: { ticketsSold: (event_.ticketsSold ?? 0) + quantity },
-          });
           item = { relationTo: 'events' as const, value: event_.id };
         } else {
           const merchDocs = await payload.find({
@@ -139,15 +150,10 @@ export async function POST(req: Request) {
             disableErrors: true,
             where: { productId: { equals: productId } },
           });
-          const merch = merchDocs.docs[0];
+          merch_ = merchDocs.docs[0];
 
-          if (merch?.id) {
-            await payload.update({
-              collection: 'merch',
-              id: merch.id,
-              data: { merchSold: (merch.merchSold ?? 0) + quantity },
-            });
-            item = { relationTo: 'merch' as const, value: merch.id };
+          if (merch_?.id) {
+            item = { relationTo: 'merch' as const, value: merch_.id };
           } else {
             await logtail.error(
               `API /stripe/webhook failed to find event or merch. Check stripe for product ID: ${productId}`,
@@ -164,12 +170,13 @@ export async function POST(req: Request) {
           }
         }
 
+        // Create the order first; only bump the sold count once it succeeds.
         const newOrder = await payload.create({
           collection: 'orders',
           data: {
             paymentIntentId: pi.id,
-            customerId: customerId ?? '',
-            amountPaid: amountPaid / 100,
+            customerId,
+            amountPaid: (amountPaid ?? 0) / 100,
             transactionDate,
             productId,
             receiptUrl,
@@ -178,6 +185,20 @@ export async function POST(req: Request) {
             item,
           },
         });
+
+        if (event_?.id) {
+          await payload.update({
+            collection: 'events',
+            id: event_.id,
+            data: { ticketsSold: (event_.ticketsSold ?? 0) + quantity },
+          });
+        } else if (merch_?.id) {
+          await payload.update({
+            collection: 'merch',
+            id: merch_.id,
+            data: { merchSold: (merch_.merchSold ?? 0) + quantity },
+          });
+        }
 
         // Ticket email — events only.
         if (newOrder.id && event_?.id && email) {

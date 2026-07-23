@@ -9,6 +9,7 @@ import {
 import {
   Elements,
   ExpressCheckoutElement,
+  LinkAuthenticationElement,
   PaymentElement,
   useElements,
   useStripe,
@@ -187,6 +188,7 @@ function CheckoutForm({
   const elements = useElements();
 
   const [quantity, setQuantity] = useState(1);
+  const [email, setEmail] = useState('');
   const [newsletter, setNewsletter] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -241,7 +243,10 @@ function CheckoutForm({
 
     const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
-      confirmParams: { return_url: returnUrl },
+      confirmParams: {
+        return_url: returnUrl,
+        receipt_email: email || undefined,
+      },
       redirect: 'if_required',
     });
 
@@ -286,6 +291,12 @@ function CheckoutForm({
           ${total.toFixed(2)}
         </span>
       </div>
+
+      {/* Email — needed to send the ticket and to create the Stripe customer.
+          LinkAuthenticationElement also enables Link's saved-payment prefill. */}
+      <LinkAuthenticationElement
+        onChange={(e) => setEmail(e.value.email)}
+      />
 
       {/* Wallet buttons (Apple Pay / Google Pay / Link). Hidden entirely when no
           wallet is available so the divider below doesn't dangle. */}

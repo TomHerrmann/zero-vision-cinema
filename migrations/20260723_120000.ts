@@ -3,8 +3,8 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-vercel-postg
 /**
  * Checkout moved from Stripe Checkout Sessions to PaymentIntents. Adds
  * `payment_intent_id` to orders (unique; how new orders are keyed and
- * de-duplicated) and makes the legacy `checkout_session_id` nullable — historical
- * orders keep their session id, new orders won't have one. Additive and
+ * de-duplicated) and makes the legacy `checkout_session_id` nullable (historical
+ * orders keep their session id, new orders won't have one). Additive and
  * expand-only, so it is safe on existing rows and backward-compatible with the
  * currently-deployed code. Idempotent (safe to re-run).
  *
