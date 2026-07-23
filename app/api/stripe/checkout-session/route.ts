@@ -13,7 +13,12 @@ import { logtail } from '@/lib/logtail';
 export async function POST(req: NextRequest) {
   try {
     const { eventId, newsletter } = await req.json();
-
+    console.log(
+      'Creating checkout session for eventId:',
+      eventId,
+      'newsletter:',
+      newsletter
+    );
     if (!eventId) {
       return NextResponse.json({ error: 'Missing eventId' }, { status: 400 });
     }
@@ -51,7 +56,11 @@ export async function POST(req: NextRequest) {
         {
           price: event.priceId,
           quantity: 1,
-          adjustable_quantity: { enabled: true, minimum: 1, maximum: maxQuantity },
+          adjustable_quantity: {
+            enabled: true,
+            minimum: 1,
+            maximum: maxQuantity,
+          },
         },
       ],
       metadata: {
@@ -67,7 +76,7 @@ export async function POST(req: NextRequest) {
       timestamp: new Date().toISOString(),
     });
     return NextResponse.json(
-      { error: 'Failed to create checkout session' },
+      { error: `Failed to create checkout session: ${err}` },
       { status: 500 }
     );
   }

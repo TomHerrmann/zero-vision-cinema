@@ -26,7 +26,6 @@ export default function EmbeddedCheckoutClient({
   eventName,
   paymentLink,
 }: Props) {
-  const [newsletter, setNewsletter] = useState(false); // unchecked by default
   const [completed, setCompleted] = useState(false);
 
   if (completed) {
@@ -43,24 +42,8 @@ export default function EmbeddedCheckoutClient({
 
   return (
     <div className="space-y-5">
-      {/* Newsletter opt-in — unchecked by default. Toggling remounts the inner
-          checkout (keyed below) so the choice is baked into the session. */}
-      <label className="flex items-start gap-3 cursor-pointer select-none">
-        <Checkbox
-          checked={newsletter}
-          onCheckedChange={(v) => setNewsletter(v === true)}
-          className="mt-1 border-blue-light data-[state=checked]:bg-blue-light data-[state=checked]:border-blue-light"
-        />
-        <span className="zvc-body text-glow/80 text-sm leading-relaxed">
-          Subscribe to the ZVC newsletter for upcoming screenings and cult film
-          picks.
-        </span>
-      </label>
-
       <CheckoutInner
-        key={newsletter ? 'optin' : 'optout'}
         eventId={eventId}
-        newsletter={newsletter}
         paymentLink={paymentLink}
         onComplete={() => setCompleted(true)}
       />
@@ -70,15 +53,14 @@ export default function EmbeddedCheckoutClient({
 
 function CheckoutInner({
   eventId,
-  newsletter,
   paymentLink,
   onComplete,
 }: {
   eventId: number;
-  newsletter: boolean;
   paymentLink?: string | null;
   onComplete: () => void;
 }) {
+  const [newsletter, setNewsletter] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState(false);
 
@@ -144,6 +126,19 @@ function CheckoutInner({
 
   return (
     <div className="border-2 border-glow/15 bg-glow p-1">
+      {/* Newsletter opt-in — unchecked by default. Toggling remounts the inner
+          checkout (keyed below) so the choice is baked into the session. */}
+      <label className="flex items-start gap-3 cursor-pointer select-none">
+        <Checkbox
+          checked={newsletter}
+          onCheckedChange={(v) => setNewsletter(v === true)}
+          className="mt-1 border-blue-light data-[state=checked]:bg-blue-light data-[state=checked]:border-blue-light"
+        />
+        <span className="zvc-body text-glow/80 text-sm leading-relaxed">
+          Subscribe to the ZVC newsletter for upcoming screenings and cult film
+          picks.
+        </span>
+      </label>
       <EmbeddedCheckoutProvider
         stripe={stripePromise}
         options={{ clientSecret, onComplete }}
