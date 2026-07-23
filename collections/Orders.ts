@@ -49,9 +49,18 @@ export const Orders: CollectionConfig = {
   },
   fields: [
     {
+      // Legacy: set by the old Checkout Session flow. Kept (optional, unique)
+      // for historical orders; new orders use `paymentIntentId` instead.
       name: 'checkoutSessionId',
       type: 'text',
-      required: true,
+      required: false,
+      admin: { readOnly: true },
+      unique: true,
+    },
+    {
+      name: 'paymentIntentId',
+      type: 'text',
+      required: false,
       admin: { readOnly: true },
       unique: true,
     },

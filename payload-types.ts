@@ -269,7 +269,8 @@ export interface Merch {
  */
 export interface Order {
   id: number;
-  checkoutSessionId: string;
+  checkoutSessionId?: string | null;
+  paymentIntentId?: string | null;
   productId: string;
   customerId: string;
   price: number;
@@ -525,6 +526,7 @@ export interface MerchSelect<T extends boolean = true> {
  */
 export interface OrdersSelect<T extends boolean = true> {
   checkoutSessionId?: T;
+  paymentIntentId?: T;
   productId?: T;
   customerId?: T;
   price?: T;

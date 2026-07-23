@@ -4,7 +4,7 @@ import { getPayload } from 'payload';
 import payloadConfig from '@payload-config';
 import { headers } from 'next/headers';
 import { logtail } from '@/lib/logtail';
-import { stripe } from '@/lib/stripe';
+import { stripe, stripeCheckout } from '@/lib/stripe';
 import { Resend } from 'resend';
 import { ZVC_EMAIL_ADDRESS } from '@/app/contsants/constants';
 import TicketEmail from '@/emails/TicketEmail';
@@ -13,12 +13,6 @@ import { subscribeEmail } from '@/lib/mailerlite';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
 
 export async function POST(req: Request) {
   try {
@@ -44,253 +38,192 @@ export async function POST(req: Request) {
     );
 
     switch (event.type) {
-      case 'checkout.session.completed': {
+      case 'payment_intent.succeeded': {
         const payload = await getPayload({ config: payloadConfig });
-        const session = event.data.object as Stripe.Checkout.Session;
+        const pi = event.data.object as Stripe.PaymentIntent;
 
+        // Idempotency — this event can be delivered more than once.
         const { docs: existingOrders } = await payload.find({
           collection: 'orders',
-          where: {
-            checkoutSessionId: {
-              equals: session.id,
-            },
-          },
+          where: { paymentIntentId: { equals: pi.id } },
         });
-
         if (existingOrders.length > 0) {
           await logtail.info(
-            `API /stripe/webhook: Duplicate checkout session ${session.id} received. Ignoring.`
+            `API /stripe/webhook: Duplicate payment_intent ${pi.id} received. Ignoring.`
           );
           return NextResponse.json({ received: true }, { status: 200 });
         }
 
-        let customerId: string | null = null;
-        if (!session.customer) {
-          const customerName = session.customer_details?.name ?? undefined;
-          const customerEmail = session.customer_details?.email ?? undefined;
+        const productId = pi.metadata?.productId;
+        const quantity = Number(pi.metadata?.quantity ?? '1');
+        const unitPrice = Number(pi.metadata?.unit_price ?? '0');
+        const newsletterOptin = pi.metadata?.newsletter_optin === 'true';
 
-          if (customerName || customerEmail) {
-            const newCustomer = await stripe.customers.create({
-              name: session.customer_details?.name ?? undefined,
-              email: session.customer_details?.email ?? undefined,
-            });
-
-            customerId = newCustomer.id;
-          }
-        } else {
-          customerId =
-            typeof session.customer === 'string'
-              ? session.customer
-              : session.customer.id;
+        if (!productId) {
+          await logtail.error(
+            `API /stripe/webhook: payment_intent ${pi.id} missing productId metadata`
+          );
+          return NextResponse.json(
+            { error: 'Missing product metadata' },
+            { status: 400 }
+          );
         }
 
-        if (session.payment_status === 'paid') {
-          // Newsletter opt-in captured on our ticket page (session metadata).
-          if (
-            session.metadata?.newsletter_optin === 'true' &&
-            session.customer_details?.email
-          ) {
-            try {
-              await subscribeEmail(session.customer_details.email);
-            } catch (subErr) {
-              await logtail.error(
-                `API /stripe/webhook: newsletter opt-in failed for ${session.customer_details.email}: ${subErr}`
-              );
-            }
-          }
+        // Expand the latest charge for the receipt URL and billing details.
+        const full = await stripeCheckout.paymentIntents.retrieve(pi.id, {
+          expand: ['latest_charge'],
+        });
+        const charge = (full.latest_charge as Stripe.Charge) ?? null;
+        const receiptUrl = charge?.receipt_url ?? null;
+        const email =
+          charge?.billing_details?.email ?? full.receipt_email ?? null;
+        const name = charge?.billing_details?.name ?? undefined;
 
-          const amountPaid = session.amount_total;
-          const transactionDate = new Date(
-            session.created * 1000
-          ).toISOString();
-
-          const lineItems = await stripe.checkout.sessions.listLineItems(
-            session.id!
+        if (!receiptUrl) {
+          await logtail.error(
+            `API /stripe/webhook: No receipt for payment_intent ${pi.id}`
           );
+          return NextResponse.json(
+            { error: 'Missing receipt for payment intent: ' + pi.id },
+            { status: 400 }
+          );
+        }
 
-          const paymentIntent = session.payment_intent
-            ? await stripe.paymentIntents.retrieve(
-                session.payment_intent.toString()
-              )
-            : null;
+        // Resolve (or create) the Stripe customer.
+        let customerId: string | null =
+          typeof full.customer === 'string'
+            ? full.customer
+            : (full.customer?.id ?? null);
+        if (!customerId && (email || name)) {
+          const newCustomer = await stripeCheckout.customers.create({
+            email: email ?? undefined,
+            name,
+          });
+          customerId = newCustomer.id;
+        }
 
-          const receiptUrl = paymentIntent?.charges?.data?.[0]?.receipt_url;
-
-          if (!amountPaid || !receiptUrl) {
+        // Newsletter opt-in captured on our ticket page (PaymentIntent metadata).
+        if (newsletterOptin && email) {
+          try {
+            await subscribeEmail(email);
+          } catch (subErr) {
             await logtail.error(
-              `API /stripe/webhook: Failed to find Stripe data. Session ID: ${session.id}`
+              `API /stripe/webhook: newsletter opt-in failed for ${email}: ${subErr}`
+            );
+          }
+        }
+
+        const amountPaid = full.amount_received; // cents
+        const transactionDate = new Date(full.created * 1000).toISOString();
+
+        // Find the event (or merch) this product maps to and bump its sold count.
+        const eventDocs = await payload.find({
+          collection: 'events',
+          disableErrors: true,
+          limit: 1,
+          where: { productId: { equals: productId } },
+        });
+        const event_ = eventDocs.docs[0];
+
+        let item;
+        if (event_?.id) {
+          await payload.update({
+            collection: 'events',
+            id: event_.id,
+            data: { ticketsSold: (event_.ticketsSold ?? 0) + quantity },
+          });
+          item = { relationTo: 'events' as const, value: event_.id };
+        } else {
+          const merchDocs = await payload.find({
+            collection: 'merch',
+            disableErrors: true,
+            where: { productId: { equals: productId } },
+          });
+          const merch = merchDocs.docs[0];
+
+          if (merch?.id) {
+            await payload.update({
+              collection: 'merch',
+              id: merch.id,
+              data: { merchSold: (merch.merchSold ?? 0) + quantity },
+            });
+            item = { relationTo: 'merch' as const, value: merch.id };
+          } else {
+            await logtail.error(
+              `API /stripe/webhook failed to find event or merch. Check stripe for product ID: ${productId}`,
+              { method: 'POST', timestamp: new Date().toISOString() }
             );
             return NextResponse.json(
               {
                 error:
-                  'Failed to find stripe data. Check stripe for session ID: ' +
-                  session.id,
+                  'Failed to find event or merch. Check stripe for product ID: ' +
+                  productId,
               },
               { status: 400 }
             );
           }
+        }
 
-          for (const { quantity, price } of lineItems.data) {
-            if (!quantity || !price?.unit_amount || !price.product) {
-              await logtail.error(
-                `API /stripe/webhook Failed to find stripe product data`,
-                {
-                  method: 'POST',
-                  timestamp: new Date().toISOString(),
-                }
-              );
-              continue;
-            }
+        const newOrder = await payload.create({
+          collection: 'orders',
+          data: {
+            paymentIntentId: pi.id,
+            customerId: customerId ?? '',
+            amountPaid: amountPaid / 100,
+            transactionDate,
+            productId,
+            receiptUrl,
+            quantity,
+            price: unitPrice,
+            item,
+          },
+        });
 
-            const productId =
-              typeof price.product === 'string'
-                ? price.product
-                : (price.product?.id ?? null);
-
-            const eventDocs = await payload.find({
-              collection: 'events',
-              disableErrors: true,
-              limit: 1,
-              where: { productId: { equals: productId } },
-            });
-
-            const event = eventDocs.docs[0];
-
-            let item;
-            if (event?.id) {
-              await payload.update({
-                collection: 'events',
-                id: event.id,
-                data: {
-                  ticketsSold: (event.ticketsSold ?? 0) + (quantity ?? 0),
-                },
-              });
-
-              item = {
-                relationTo: 'events' as const,
-                value: event.id,
-              };
-            } else {
-              const merchDocs = await payload.find({
-                collection: 'merch',
-                disableErrors: true,
-                where: { productId: { equals: productId } },
-              });
-
-              const merch = merchDocs.docs[0];
-
-              if (merch?.id) {
-                await payload.update({
-                  collection: 'merch',
-                  id: merch.id,
-                  data: {
-                    merchSold: (merch.merchSold ?? 0) + (quantity ?? 0),
-                  },
+        // Ticket email — events only.
+        if (newOrder.id && event_?.id && email) {
+          // image/description are optional on events now — guard both.
+          const eventImage = !event_.image
+            ? null
+            : typeof event_.image === 'object'
+              ? event_.image
+              : await payload.findByID({
+                  collection: 'media',
+                  id: event_.image,
                 });
-                item = {
-                  relationTo: 'merch' as const,
-                  value: merch.id,
-                };
-              } else {
-                await logtail.error(
-                  `API /stripe/webhook failed to find event or merch. Check stripe for product ID: ${productId}`,
-                  {
-                    method: 'POST',
-                    timestamp: new Date().toISOString(),
-                  }
-                );
-                return NextResponse.json(
-                  {
-                    error:
-                      'Failed to find event or merch. Check stripe for product ID: ' +
-                      productId,
-                  },
-                  { status: 400 }
-                );
-              }
-            }
 
-            const newOrder = await payload.create({
-              collection: 'orders',
-              data: {
-                checkoutSessionId: session.id,
-                customerId: customerId ?? '',
-                amountPaid: amountPaid / 100,
-                transactionDate,
-                productId,
-                receiptUrl,
-                quantity,
-                price: price.unit_amount / 100,
-                item,
-              },
+          // Poster: uploaded blob image if present, else the OMDB poster URL.
+          let posterUrl = eventImage?.filename
+            ? `${process.env.VERCEL_BLOB_URL}${eventImage.filename}`
+            : undefined;
+          if (!posterUrl && event_.imdbId) {
+            const movie = await fetchMovieDataByImdbId(event_.imdbId);
+            posterUrl = movie?.poster || undefined;
+          }
+
+          try {
+            await resend.emails.send({
+              from: ZVC_EMAIL_ADDRESS,
+              subject: `Your ZVC Ticket: ${event_.name}`,
+              to: email,
+              react: (
+                <TicketEmail
+                  eventName={event_.name}
+                  eventImage={posterUrl}
+                  eventDate={event_.datetime}
+                  eventLocation={(event_.location as Location).name}
+                  quantity={quantity}
+                  eventDescription={event_.description ?? undefined}
+                  eventAddress={(event_.location as Location).address}
+                  totalAmount={amountPaid / 100}
+                  purchaseDate={transactionDate}
+                />
+              ),
             });
-
-            if (newOrder.id) {
-              let email = null;
-              if (session.customer_details?.email) {
-                email = session.customer_details.email;
-              } else if (customerId) {
-                const customer = await stripe.customers.retrieve(customerId);
-                if (customer && 'email' in customer) {
-                  if (customer.email) {
-                    email = customer.email;
-                  }
-                }
-              }
-
-              if (!email) {
-                return;
-              }
-
-              // image/description are optional on events now — guard both.
-              const eventImage = !event.image
-                ? null
-                : typeof event.image === 'object'
-                  ? event.image
-                  : await payload.findByID({
-                      collection: 'media',
-                      id: event.image,
-                    });
-
-              // Poster: uploaded blob image if present, else the OMDB poster
-              // URL (external URLs are fine in email).
-              let posterUrl = eventImage?.filename
-                ? `${process.env.VERCEL_BLOB_URL}${eventImage.filename}`
-                : undefined;
-              if (!posterUrl && event.imdbId) {
-                const movie = await fetchMovieDataByImdbId(event.imdbId);
-                posterUrl = movie?.poster || undefined;
-              }
-
-              try {
-                await resend.emails.send({
-                  from: ZVC_EMAIL_ADDRESS,
-                  subject: `Your ZVC Ticket: ${event.name}`,
-                  to: email,
-                  react: (
-                    <TicketEmail
-                      eventName={event.name}
-                      eventImage={posterUrl}
-                      eventDate={event.datetime}
-                      eventLocation={(event.location as Location).name}
-                      quantity={quantity}
-                      eventDescription={event.description ?? undefined}
-                      eventAddress={(event.location as Location).address}
-                      totalAmount={amountPaid / 100}
-                      purchaseDate={transactionDate}
-                    />
-                  ),
-                });
-              } catch (emailError) {
-                await logtail.error(
-                  `API /stripe/webhook: Failed to send ticket email for order ${newOrder.id}: ${emailError}`,
-                  {
-                    method: 'POST',
-                    timestamp: new Date().toISOString(),
-                  }
-                );
-              }
-            }
+          } catch (emailError) {
+            await logtail.error(
+              `API /stripe/webhook: Failed to send ticket email for order ${newOrder.id}: ${emailError}`,
+              { method: 'POST', timestamp: new Date().toISOString() }
+            );
           }
         }
 

@@ -7,7 +7,7 @@ import { getEventById } from '@/utils/getEvents';
 import { Location, Media } from '@/payload-types';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import { richTextIsEmpty } from '@/utils/richText';
-import EmbeddedCheckoutClient from '@/components/checkout/embedded-checkout';
+import CheckoutClient from '@/components/checkout/checkout';
 
 export const revalidate = 300;
 
@@ -181,9 +181,10 @@ export default async function EventTicketPage({ params }: Props) {
                   </p>
                 </div>
               ) : isPurchasable ? (
-                <EmbeddedCheckoutClient
+                <CheckoutClient
                   eventId={event.id}
                   eventName={event.name}
+                  price={event.price}
                   paymentLink={event.paymentLink}
                 />
               ) : (

@@ -7,6 +7,7 @@
     "dev": "next dev --turbopack",
     "dev:email": "email dev",
     "build": "payload migrate && next build",
+    "payload": "payload",
     "start": "next start",
     "lint": "next lint"
   },
