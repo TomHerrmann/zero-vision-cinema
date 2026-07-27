@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useRef,
   useState,
   type FormEvent,
 } from 'react';
@@ -169,7 +170,9 @@ export default function CheckoutClient({
   );
 }
 
-function CheckoutForm({
+// Exported for unit testing (double-submit guard). Rendered by CheckoutClient
+// inside <Elements>, so it can assume the Stripe context is available.
+export function CheckoutForm({
   eventId,
   price,
   paymentIntentId,
@@ -201,27 +204,45 @@ function CheckoutForm({
       ? `${window.location.origin}/events/${eventId}?checkout=success`
       : '';
 
+  // Tracks the in-flight metadata/amount sync so payment confirmation can wait
+  // for it to finish before charging (see `confirm`). `tokenRef` identifies the
+  // latest sync so a superseded one doesn't clear the spinner early.
+  const pendingSync = useRef<Promise<void> | null>(null);
+  const tokenRef = useRef<symbol | null>(null);
+  // Synchronous re-entrancy guard: prevents a second charge if `confirm` is
+  // invoked again (rapid double-click, or the wallet's onConfirm) before React
+  // has re-rendered the disabled button. This is the real double-charge guard;
+  // the button's `disabled` state is only a visual affordance on top of it.
+  const submittingRef = useRef(false);
+
   // Push quantity/newsletter changes to the PaymentIntent, then re-sync Elements
   // so the card form and wallet sheet reflect the new amount.
   const syncIntent = useCallback(
-    async (nextQuantity: number, nextNewsletter: boolean) => {
-      if (!elements) return;
+    (nextQuantity: number, nextNewsletter: boolean): Promise<void> => {
+      if (!elements) return Promise.resolve();
       setSyncing(true);
-      try {
-        await fetch('/api/stripe/payment-intent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            eventId,
-            quantity: nextQuantity,
-            newsletter: nextNewsletter,
-            paymentIntentId,
-          }),
-        });
-        await elements.fetchUpdates();
-      } finally {
-        setSyncing(false);
-      }
+      const token = Symbol('sync');
+      tokenRef.current = token;
+      const run = (async () => {
+        try {
+          await fetch('/api/stripe/payment-intent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              eventId,
+              quantity: nextQuantity,
+              newsletter: nextNewsletter,
+              paymentIntentId,
+            }),
+          });
+          await elements.fetchUpdates();
+        } finally {
+          // Only clear the spinner if no newer sync superseded this one.
+          if (tokenRef.current === token) setSyncing(false);
+        }
+      })();
+      pendingSync.current = run;
+      return run;
     },
     [elements, eventId, paymentIntentId]
   );
@@ -238,8 +259,18 @@ function CheckoutForm({
 
   const confirm = useCallback(async () => {
     if (!stripe || !elements) return;
+    // Bail if a charge is already in flight (checked/set synchronously so it
+    // holds even before the button's disabled state renders).
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
     setMessage(null);
+
+    // Wait for any in-flight quantity/newsletter sync to finish so the
+    // PaymentIntent's amount and metadata are current before we charge. The
+    // wallet (Express Checkout) button isn't blocked by React's disabled state,
+    // so without this a fast tap could confirm against a stale PaymentIntent.
+    if (pendingSync.current) await pendingSync.current;
 
     const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
@@ -251,6 +282,8 @@ function CheckoutForm({
     });
 
     if (error) {
+      // Payment failed — allow another attempt.
+      submittingRef.current = false;
       setMessage(error.message ?? 'Payment failed. Please try again.');
       setSubmitting(false);
       return;
@@ -261,8 +294,9 @@ function CheckoutForm({
       return;
     }
 
-    // Redirecting to complete (e.g. 3DS) — leave the submitting state.
-  }, [stripe, elements, returnUrl, onComplete]);
+    // Redirecting to complete (e.g. 3DS) — leave the submitting state (and the
+    // guard) set; the page is navigating away.
+  }, [stripe, elements, returnUrl, email, onComplete]);
 
   const handleCardSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -301,12 +335,20 @@ function CheckoutForm({
       {/* Wallet buttons (Apple Pay / Google Pay / Link). Hidden entirely when no
           wallet is available so the divider below doesn't dangle. */}
       <div className={walletAvailable ? 'space-y-5' : 'hidden'}>
-        <ExpressCheckoutElement
-          onConfirm={confirm}
-          onReady={(e: StripeExpressCheckoutElementReadyEvent) =>
-            setWalletAvailable(Boolean(e.availablePaymentMethods))
+        {/* While a quantity/newsletter sync is in flight, block the wallet so its
+            payment sheet can't open against a stale amount. */}
+        <div
+          className={
+            syncing ? 'pointer-events-none opacity-60' : undefined
           }
-        />
+        >
+          <ExpressCheckoutElement
+            onConfirm={confirm}
+            onReady={(e: StripeExpressCheckoutElementReadyEvent) =>
+              setWalletAvailable(Boolean(e.availablePaymentMethods))
+            }
+          />
+        </div>
         <div className="flex items-center gap-3">
           <span className="h-px flex-1 bg-glow/15" />
           <span className="zvc-body text-glow/50 text-xs uppercase tracking-wide">

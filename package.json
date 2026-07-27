@@ -8,6 +8,7 @@
     "dev:email": "email dev",
     "build": "payload migrate && next build",
     "payload": "payload",
+    "test": "vitest run",
     "start": "next start",
     "lint": "next lint"
   },
@@ -57,12 +58,18 @@
   "devDependencies": {
     "@react-email/preview-server": "^4.2.8",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.4",
+    "jsdom": "^30.0.0",
     "react-email": "4.2.8",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }
