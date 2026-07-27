@@ -77,7 +77,7 @@ export default async function TreeLinkPage() {
         </div>
 
         {/* Links sticker sheet */}
-        <Card className="zvc-tape w-full overflow-hidden">
+        <Card className="w-full overflow-hidden">
           <CardContent className="p-6 sm:p-8 md:p-10 space-y-4">
             {[siteLink, ...eventLinks, ...socialLins].map((link, idx) => (
               <div

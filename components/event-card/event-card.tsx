@@ -46,7 +46,7 @@ function SoldOutStamp({ size = 'lg' }: { size?: 'md' | 'lg' }) {
           SOLD OUT
         </div>
         {size === 'lg' && (
-          <div className="mt-4 font-utility text-glow/60 text-sm uppercase tracking-wider">
+          <div className="mt-4 font-utility text-glow/60 text-lg uppercase tracking-wider">
             Event at capacity
           </div>
         )}
@@ -96,14 +96,14 @@ const EventCard = async ({
     return (
       <Card className="group flex flex-col md:flex-row h-full overflow-hidden">
         {/* Image Section */}
-        <div className="relative w-full md:w-80 md:min-w-80 aspect-[2/3] overflow-hidden">
+        <div className="relative w-full md:w-80 md:min-w-[450px] aspect-[2/3] overflow-hidden">
           {posterUrl ? (
             <Image
               src={posterUrl}
               alt={posterAlt}
               fill
               className={cn(
-                'object-cover object-center transition-all duration-700 group-hover:scale-105',
+                'object-fit object-center transition-all duration-700',
                 isSoldOut ? 'grayscale opacity-30' : 'group-hover:brightness-90'
               )}
               sizes="(max-width: 768px) 100vw, 320px"
@@ -122,12 +122,14 @@ const EventCard = async ({
           </div>
 
           <CardHeader className="p-0 pb-6">
-            <CardTitle className="font-display uppercase text-glow text-2xl md:text-3xl lg:text-4xl leading-none line-clamp-2 pr-24">
-              {name}
+            <CardTitle>
+              <h2 className="zvc-heading text-4xl md:text-5xl line-clamp-2 pr-24">
+                {name}
+              </h2>
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="p-0 flex flex-col gap-6 flex-1">
+          <CardContent className="p-0 flex flex-col gap-3 flex-1">
             {!descriptionIsEmpty ? (
               <RichText
                 data={description!}
@@ -187,7 +189,7 @@ const EventCard = async ({
   }
 
   return (
-    <Card className="zvc-tape group flex flex-col h-full overflow-hidden">
+    <Card className="group flex flex-col h-full overflow-hidden">
       {/* Poster Image */}
       <div className="relative w-full aspect-[3/4] overflow-hidden">
         {posterUrl ? (
@@ -196,7 +198,7 @@ const EventCard = async ({
             alt={posterAlt}
             fill
             className={cn(
-              'object-cover object-top transition-all duration-700 group-hover:scale-105',
+              'object-cover object-top transition-all duration-700',
               isSoldOut ? 'grayscale opacity-30' : 'group-hover:brightness-90'
             )}
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -209,10 +211,10 @@ const EventCard = async ({
       </div>
 
       {/* Content Section */}
-      <div className="flex flex-col flex-1 p-5">
-        <CardTitle className="font-display uppercase text-glow text-xl md:text-2xl leading-tight mb-4 line-clamp-2">
+      <div className="flex flex-col flex-1 p-2 md:p-5">
+        <h2 className="zvc-heading text-3xl md:text-5xl mb-4 line-clamp-2">
           {name}
-        </CardTitle>
+        </h2>
 
         <div className="space-y-3 mb-5">
           <InfoRow
@@ -229,13 +231,13 @@ const EventCard = async ({
           )}
           <div className="flex items-center gap-3">
             <div className="zvc-icon-frame w-9 h-9 flex-shrink-0">
-              <span className="font-utility text-xs">$</span>
+              <span className="font-utility text-lg">$</span>
             </div>
-            <div className="flex flex-col">
-              <span className="font-utility text-xs uppercase tracking-wide text-glow/50">
+            <div className="flex flex-col text-lg">
+              <span className="font-utility uppercase tracking-wide text-glow/50">
                 Price
               </span>
-              <span className="text-base font-bold text-blue-light">
+              <span className="font-bold text-blue-light">
                 {price === 0 ? 'FREE' : `$${price.toFixed(2)}`}
               </span>
             </div>
@@ -286,10 +288,10 @@ function InfoRow({
         <Icon className="w-4 h-4" />
       </div>
       <div className="flex flex-col min-w-0">
-        <span className="font-utility text-xs uppercase tracking-wide text-glow/50">
+        <span className="font-utility text-lg uppercase tracking-wide text-glow/50">
           {label}
         </span>
-        <span className="text-sm font-medium line-clamp-1">{value}</span>
+        <span className="text-lg font-medium line-clamp-1">{value}</span>
       </div>
     </div>
   );

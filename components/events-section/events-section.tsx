@@ -9,9 +9,15 @@ type Props = { events: Event[] };
 
 export default function EventsSection({ events }: Props) {
   return (
-    <section id="events" className="relative py-24 md:py-32 overflow-hidden bg-blackout">
+    <section
+      id="events"
+      className="relative py-24 md:py-32 overflow-hidden bg-blackout"
+    >
       {/* Texture */}
-      <div className="absolute inset-0 zvc-grain pointer-events-none" aria-hidden="true" />
+      <div
+        className="absolute inset-0 zvc-grain pointer-events-none"
+        aria-hidden="true"
+      />
 
       <div className="relative z-10 max-w-[1600px] mx-auto px-6 md:px-12">
         <SectionHeading
@@ -41,7 +47,10 @@ export default function EventsSection({ events }: Props) {
                 <div
                   key={event.id}
                   className={cn(
-                    'w-full md:w-[calc(50%-1.25rem)] lg:w-[calc(33.333%-2rem)] max-w-md',
+                    // Full width on phones; from sm+ each card is at least 450px
+                    // (so long titles don't truncate), growing to fill and
+                    // wrapping when a row can't fit another 450px card.
+                    'w-full sm:flex-1 sm:min-w-[450px] sm:max-w-[540px]',
                     'animate-in fade-in slide-in-from-bottom-8 duration-700'
                   )}
                   style={{ animationDelay: `${idx * 150}ms` }}

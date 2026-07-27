@@ -87,7 +87,7 @@ export default async function EventTicketPage({ params }: Props) {
                   src={posterUrl}
                   alt={posterAlt}
                   fill
-                  className="object-cover border-2 border-glow/15 shadow-[8px_8px_0_0_rgba(0,0,0,0.55)] zvc-worn-edge"
+                  className="object-fit border-2 border-glow/15 shadow-[8px_8px_0_0_rgba(0,0,0,0.55)] zvc-worn-edge"
                   sizes="(max-width: 1024px) 100vw, 400px"
                   priority
                 />
@@ -168,7 +168,7 @@ export default async function EventTicketPage({ params }: Props) {
 
           {/* Right — checkout */}
           <div className="lg:sticky lg:top-28">
-            <div className="zvc-card p-6 md:p-8 zvc-tape">
+            <div className="zvc-card p-6 md:p-8 zvc-logo-tab">
               <h2 className="zvc-heading text-3xl mb-6">Get Tickets</h2>
 
               {isSoldOut ? (

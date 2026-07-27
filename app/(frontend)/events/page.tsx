@@ -14,7 +14,10 @@ export default async function EventsPage() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-blackout">
       {/* Texture */}
-      <div className="absolute inset-0 zvc-grain pointer-events-none" aria-hidden="true" />
+      <div
+        className="absolute inset-0 zvc-grain pointer-events-none"
+        aria-hidden="true"
+      />
 
       <div className="relative z-10 max-w-[1600px] mx-auto px-6 md:px-12 py-24 md:py-32 pt-32 md:pt-40">
         <SectionHeading
@@ -30,7 +33,7 @@ export default async function EventsPage() {
             <div className="zvc-icon-frame w-20 h-20 mb-6">
               <Film className="w-10 h-10" />
             </div>
-            <h3 className="font-display uppercase text-2xl md:text-3xl text-glow/60">
+            <h3 className="font-display uppercase text-3xl md:text-4xl text-glow/60">
               No upcoming events at this time
             </h3>
             <p className="mt-4 zvc-body text-retro-blue/70">
@@ -42,7 +45,9 @@ export default async function EventsPage() {
             {events.map((event, idx) => (
               <div
                 key={event.id}
-                className={cn('animate-in fade-in slide-in-from-bottom-8 duration-700')}
+                className={cn(
+                  'animate-in fade-in slide-in-from-bottom-8 duration-700'
+                )}
                 style={{ animationDelay: `${idx * 100}ms` }}
               >
                 <EventCard

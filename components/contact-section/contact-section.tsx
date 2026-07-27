@@ -79,7 +79,10 @@ export default function ContactSection() {
       className="relative pt-16 md:pt-20 pb-28 md:pb-36 overflow-hidden bg-blackout"
     >
       {/* Texture */}
-      <div className="absolute inset-0 zvc-grain pointer-events-none" aria-hidden="true" />
+      <div
+        className="absolute inset-0 zvc-grain pointer-events-none"
+        aria-hidden="true"
+      />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
         {/* Section header */}
@@ -159,7 +162,8 @@ export default function ContactSection() {
                   </h3>
                 </CardTitle>
                 <CardDescription className="zvc-body text-base text-glow/60">
-                  Fill out the form below and we&apos;ll get back to you shortly.
+                  Fill out the form below and we&apos;ll get back to you
+                  shortly.
                 </CardDescription>
               </CardHeader>
               <CardContent>

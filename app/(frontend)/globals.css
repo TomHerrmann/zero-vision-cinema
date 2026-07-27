@@ -125,7 +125,9 @@
   /* Restore pre-redesign body font. `@theme inline` inlines var(--font-crimson)
      into the font-sans utility, so override that referenced var (not --font-sans). */
   --font-crimson: var(--font-geist-sans);
-  background: var(--color-blackout); /* match header/footer, covers min-h-screen */
+  background: var(
+    --color-blackout
+  ); /* match header/footer, covers min-h-screen */
 }
 
 /*
@@ -164,7 +166,8 @@ body:has(.ahc-legacy) footer {
 
   /* Gradient animation */
   @keyframes gradient-shift {
-    0%, 100% {
+    0%,
+    100% {
       background-position: 0% 50%;
     }
     50% {
@@ -190,7 +193,14 @@ body:has(.ahc-legacy) footer {
   .zvc-heading {
     @apply font-display uppercase text-glow;
     line-height: 0.92;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.05em;
+  }
+  /* Bootzy Condensed carries the brand heading letter-spacing everywhere it's
+     used, so bare `font-display` titles (event cards, section headings, nav)
+     match .zvc-heading instead of rendering cramped. In the components layer,
+     so per-element `tracking-*` utilities (e.g. the SOLD OUT stamp) still win. */
+  .font-display {
+    letter-spacing: 0.05em;
   }
   /* Small caps label above a heading */
   .zvc-kicker {
@@ -222,7 +232,10 @@ body:has(.ahc-legacy) footer {
   .zvc-card {
     @apply relative bg-card text-card-foreground border-2 border-glow/15;
     box-shadow: 6px 6px 0 0 rgba(0, 0, 0, 0.55);
-    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease,
+      border-color 0.25s ease;
   }
   .zvc-card:hover {
     @apply border-blue-light/50;
@@ -248,10 +261,14 @@ body:has(.ahc-legacy) footer {
   /* Primary CTA: Glow fill on Blackout (AA ~15:1), hard shadow, press-down active */
   .zvc-btn {
     @apply inline-flex items-center justify-center gap-2 font-utility uppercase;
+    @apply rounded-full;
     @apply bg-glow text-blackout border-2 border-glow px-6 py-3;
     letter-spacing: 0.12em;
     box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.5);
-    transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.2s ease;
+    transition:
+      transform 0.12s ease,
+      box-shadow 0.12s ease,
+      background-color 0.2s ease;
   }
   .zvc-btn:hover {
     @apply bg-glow/90;
@@ -265,7 +282,10 @@ body:has(.ahc-legacy) footer {
     @apply inline-flex items-center justify-center gap-2 font-utility uppercase;
     @apply bg-transparent text-glow border-2 border-blue-light px-6 py-3;
     letter-spacing: 0.12em;
-    transition: transform 0.12s ease, background-color 0.2s ease, border-color 0.2s ease;
+    transition:
+      transform 0.12s ease,
+      background-color 0.2s ease,
+      border-color 0.2s ease;
   }
   .zvc-btn-outline:hover {
     @apply bg-blue-light/15 border-blue-light;
@@ -295,21 +315,28 @@ body:has(.ahc-legacy) footer {
   /* Chipped/eroded corners — for image & media frames (deterministic, safe) */
   .zvc-worn-edge {
     clip-path: polygon(
-      0 4px, 4px 0, calc(100% - 5px) 0, 100% 6px,
-      100% calc(100% - 4px), calc(100% - 6px) 100%, 5px 100%, 0 calc(100% - 5px)
+      0 4px,
+      4px 0,
+      calc(100% - 5px) 0,
+      100% 6px,
+      100% calc(100% - 4px),
+      calc(100% - 6px) 100%,
+      5px 100%,
+      0 calc(100% - 5px)
     );
   }
-  /* Torn tape corner accent — parent must be position: relative */
-  .zvc-tape::before {
+  /* Primary ZVC logo badge, centered on the card's top border.
+     Parent must be position: relative. */
+  .zvc-logo-tab::before {
     content: '';
     position: absolute;
-    top: -11px;
+    top: -34px;
     left: 50%;
-    width: 84px;
-    height: 22px;
-    transform: translateX(-50%) rotate(-4deg);
-    background: rgba(217, 221, 224, 0.14);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    width: 104px;
+    height: 78px; /* 4:3, matching the logo viewBox */
+    transform: translateX(-50%);
+    background: url('/logos/zvc_logo_primary_rgb_bw_light-transparent.svg')
+      center / contain no-repeat;
     pointer-events: none;
   }
 }
@@ -327,8 +354,18 @@ body:has(.ahc-legacy) footer {
   /* Fine vertical film scratches */
   .zvc-scratches {
     background-image:
-      repeating-linear-gradient(90deg, transparent 0 73px, rgba(255, 255, 255, 0.04) 73px 74px, transparent 74px 151px),
-      repeating-linear-gradient(90deg, transparent 0 111px, rgba(255, 255, 255, 0.025) 111px 112px, transparent 112px 233px);
+      repeating-linear-gradient(
+        90deg,
+        transparent 0 73px,
+        rgba(255, 255, 255, 0.04) 73px 74px,
+        transparent 74px 151px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0 111px,
+        rgba(255, 255, 255, 0.025) 111px 112px,
+        transparent 112px 233px
+      );
     opacity: 0.5;
   }
   /* CRT scanlines */
@@ -342,17 +379,30 @@ body:has(.ahc-legacy) footer {
   }
   /* Halftone dot breakup */
   .zvc-halftone {
-    background-image: radial-gradient(var(--color-retro-blue) 1px, transparent 1.6px);
+    background-image: radial-gradient(
+      var(--color-retro-blue) 1px,
+      transparent 1.6px
+    );
     background-size: 10px 10px;
     opacity: 0.12;
   }
 
   /* Slow, occasional projector flicker (gated by prefers-reduced-motion) */
   @keyframes zvc-flicker {
-    0%, 91%, 100% { opacity: 1; }
-    93% { opacity: 0.74; }
-    95% { opacity: 1; }
-    97% { opacity: 0.85; }
+    0%,
+    91%,
+    100% {
+      opacity: 1;
+    }
+    93% {
+      opacity: 0.74;
+    }
+    95% {
+      opacity: 1;
+    }
+    97% {
+      opacity: 0.85;
+    }
   }
   .zvc-flicker {
     animation: zvc-flicker 7s linear infinite;

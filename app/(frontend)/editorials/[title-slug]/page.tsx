@@ -62,7 +62,10 @@ export default async function EditorialPage({ params }: Props) {
   return (
     <main className="relative min-h-screen overflow-hidden bg-blackout">
       {/* Texture */}
-      <div className="absolute inset-0 zvc-grain pointer-events-none" aria-hidden="true" />
+      <div
+        className="absolute inset-0 zvc-grain pointer-events-none"
+        aria-hidden="true"
+      />
 
       <div className="relative z-10 max-w-4xl mx-auto px-6 md:px-12 py-24 md:py-32 pt-32 md:pt-40">
         <article>
@@ -88,7 +91,7 @@ export default async function EditorialPage({ params }: Props) {
                 alt={article.title}
                 width={article.image.width ?? 1200}
                 height={article.image.height ?? 675}
-                className="w-full h-96 object-cover border-2 border-glow/15 shadow-[6px_6px_0_0_rgba(0,0,0,0.55)] zvc-worn-edge"
+                className="w-full h-96 object-fit border-2 border-glow/15 shadow-[6px_6px_0_0_rgba(0,0,0,0.55)] zvc-worn-edge"
               />
             </div>
           )}

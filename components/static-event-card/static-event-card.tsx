@@ -20,8 +20,10 @@ const StaticEventCard = ({ event }: Props) => {
     <Card className="group flex flex-col h-full overflow-hidden">
       <CardHeader className="pb-1 pt-4">
         {event.eventName && (
-          <CardTitle className="text-center font-display uppercase text-glow text-2xl leading-none line-clamp-2 min-h-[4rem]">
-            {event.eventName}
+          <CardTitle>
+            <h2 className="zvc-heading text-center text-3xl md:text-5xl line-clamp-2 min-h-[4rem]">
+              {event.eventName}
+            </h2>
           </CardTitle>
         )}
       </CardHeader>

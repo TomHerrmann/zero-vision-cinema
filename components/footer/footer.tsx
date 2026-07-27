@@ -143,7 +143,10 @@ const Footer = () => {
                 )}
               >
                 <div className="zvc-icon-frame w-10 h-10 group-hover:bg-blue-light/20 transition-colors">
-                  <Mail className="w-5 h-5" />
+                  {/* Slightly smaller than the w-5 social glyphs: the lucide
+                      envelope fills its viewBox edge-to-edge, so w-4 gives it
+                      side padding matching the compact filled social icons. */}
+                  <Mail className="w-4 h-4" />
                 </div>
                 <span className="text-lg">{ZVC_EMAIL_ADDRESS}</span>
               </Link>
