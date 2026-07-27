@@ -4,6 +4,8 @@ import { cn } from '@/utils/utils';
 import { Creepster } from 'next/font/google';
 import { AHC_LOGO_PNG_URL } from '@/app/contsants/constants';
 import { BookOpen, Users, Calendar, Heart } from 'lucide-react';
+import { getUpcomingAhcEvents } from '@/utils/getEvents';
+import EventCard from '@/components/event-card/event-card';
 
 const creepsterfont = Creepster({
   weight: '400',
@@ -11,6 +13,8 @@ const creepsterfont = Creepster({
 });
 
 export default async function AstoriaHorrorClubPage() {
+  const events = await getUpcomingAhcEvents();
+
   return (
     <main className="ahc-legacy relative min-h-screen overflow-hidden font-sans">
       {/* Subtle background pattern */}
@@ -121,6 +125,45 @@ export default async function AstoriaHorrorClubPage() {
             </div>
           </div>
         </section>
+
+        {/* Upcoming Events */}
+        {events.length > 0 && (
+          <section
+            id="events"
+            className="mt-24 md:mt-32 animate-in fade-in slide-in-from-bottom-8 duration-1000"
+          >
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-3 mb-6 px-6 py-2 border border-primary/20 bg-primary/5 backdrop-blur-sm">
+                <Calendar className="w-5 h-5 text-primary" />
+                <span className="text-sm uppercase tracking-widest text-primary/80">
+                  Join Us
+                </span>
+              </div>
+              <h2
+                className={cn(
+                  'text-[2.5rem] md:text-[5rem] lg:text-[6rem]',
+                  'leading-none mb-6',
+                  'bg-gradient-to-b from-foreground to-foreground/60 bg-clip-text text-transparent',
+                  creepsterfont.className
+                )}
+              >
+                Upcoming Events
+              </h2>
+              <div className="w-32 h-1 mx-auto bg-gradient-to-r from-transparent via-primary to-transparent" />
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-8 md:gap-10">
+              {events.map((event) => (
+                <div
+                  key={event.id}
+                  className="w-full sm:flex-1 sm:min-w-[450px] sm:max-w-[540px]"
+                >
+                  <EventCard {...event} />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       {/* Bottom fade */}

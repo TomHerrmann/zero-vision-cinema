@@ -3,6 +3,8 @@ import { formatEventDescription } from '../utils/formatDate';
 import { ZVC_SITE_URL } from '../app/contsants/constants';
 import { logtail } from '@/lib/logtail';
 import { stripe } from '@/lib/stripe';
+import { fetchMovieDataByImdbId } from '@/lib/omdb';
+import { plotToLexical, richTextIsBlank } from '@/utils/omdbFill';
 
 export const Events: CollectionConfig = {
   slug: 'events',
@@ -13,6 +15,41 @@ export const Events: CollectionConfig = {
     drafts: true,
   },
   hooks: {
+    // Runs before field validation (so it can satisfy `required: name`) and
+    // before the Stripe `beforeChange` hook below (which reads the final name).
+    beforeValidate: [
+      async ({ data }) => {
+        if (!data) return data;
+
+        // Astoria Horror Club events are always free.
+        if (data.eventType === 'ahc') {
+          data.price = 0;
+          data.ticketLimit = null;
+        }
+
+        // Fill name/description from OMDB when left blank. (The admin IMDb field
+        // also fills name + image live on blur, but a richText editor ignores
+        // programmatic values, so description is filled here on save.)
+        const needsName = !data.name;
+        const needsDescription =
+          data.eventType !== 'ahc' && richTextIsBlank(data.description);
+        if ((needsName || needsDescription) && data.imdbId) {
+          const movie = await fetchMovieDataByImdbId(data.imdbId);
+          if (movie) {
+            if (needsName && movie.title) {
+              data.name = movie.year
+                ? `${movie.title} (${movie.year})`
+                : movie.title;
+            }
+            if (needsDescription && movie.plot) {
+              data.description = plotToLexical(movie.plot);
+            }
+          }
+        }
+
+        return data;
+      },
+    ],
     beforeChange: [
       async ({ data, req }) => {
         if (!(Number(data.price) > 0)) return data;
@@ -155,20 +192,46 @@ export const Events: CollectionConfig = {
     ],
   },
   fields: [
-    { name: 'name', type: 'text', required: true },
+    {
+      name: 'eventType',
+      type: 'select',
+      required: true,
+      defaultValue: 'zvc',
+      options: [
+        { label: 'Zero Vision Cinema', value: 'zvc' },
+        { label: 'Astoria Horror Club', value: 'ahc' },
+      ],
+      admin: {
+        description:
+          'ZVC = paid screening (full fields). AHC = free Astoria Horror Club event (name/price/media/description not required).',
+      },
+    },
+    {
+      name: 'name',
+      type: 'text',
+      required: true,
+      admin: {
+        description:
+          'Optional when an IMDb ID is set — leave blank to auto-fill "Title (Year)".',
+      },
+    },
     {
       name: 'imdbId',
       type: 'text',
       label: 'IMDb ID',
       admin: {
         description:
-          'Optional. Found on the IMDb movie URL — e.g. tt0082418. When set, movie details (and a fallback poster/summary) are pulled from OMDB.',
+          'Found on the IMDb movie URL — e.g. tt0082418. On blur the name auto-fills; description fills on save; the poster shows from OMDB (not stored). All editable.',
+        components: {
+          Field: '/collections/components/ImdbLookupField#ImdbLookupField',
+        },
       },
     },
     {
       name: 'description',
       type: 'richText',
       admin: {
+        condition: (data) => data.eventType !== 'ahc',
         description:
           'Optional. If left blank and an IMDb ID is set, the OMDB summary is used.',
       },
@@ -178,11 +241,21 @@ export const Events: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       admin: {
+        condition: (data) => data.eventType !== 'ahc',
         description:
           'Optional. If left blank and an IMDb ID is set, the OMDB poster is used.',
       },
     },
-    { name: 'price', type: 'number', required: true },
+    {
+      name: 'price',
+      type: 'number',
+      required: true,
+      defaultValue: 10,
+      admin: {
+        // AHC events are always free — price is forced to 0 on save.
+        condition: (data) => data.eventType !== 'ahc',
+      },
+    },
     {
       name: 'location',
       type: 'relationship',

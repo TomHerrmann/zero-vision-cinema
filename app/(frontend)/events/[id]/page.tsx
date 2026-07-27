@@ -66,9 +66,10 @@ export default async function EventTicketPage({ params }: Props) {
     timeZone: 'America/New_York',
   });
 
+  const price = event.price ?? 0;
   const isSoldOut =
     !!event.ticketLimit && (event.ticketsSold ?? 0) >= event.ticketLimit;
-  const isPurchasable = event.price > 0 && !!event.priceId && !isSoldOut;
+  const isPurchasable = price > 0 && !!event.priceId && !isSoldOut;
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-blackout">
@@ -122,7 +123,7 @@ export default async function EventTicketPage({ params }: Props) {
                   <DollarSign className="w-4 h-4" />
                 </div>
                 <span className="text-xl font-bold text-blue-light">
-                  {event.price === 0 ? 'FREE' : `$${event.price.toFixed(2)}`}
+                  {price === 0 ? 'FREE' : `$${price.toFixed(2)}`}
                 </span>
               </div>
             </div>
@@ -184,7 +185,7 @@ export default async function EventTicketPage({ params }: Props) {
                 <CheckoutClient
                   eventId={event.id}
                   eventName={event.name}
-                  price={event.price}
+                  price={price}
                   paymentLink={event.paymentLink}
                 />
               ) : (

@@ -28,12 +28,8 @@ export async function POST(req: NextRequest) {
       depth: 0,
     });
 
-    if (
-      !event ||
-      !event.priceId ||
-      !event.productId ||
-      !(event.price > 0)
-    ) {
+    const price = event?.price ?? 0;
+    if (!event || !event.priceId || !event.productId || !(price > 0)) {
       return NextResponse.json(
         { error: 'Event is not purchasable' },
         { status: 400 }
@@ -50,14 +46,14 @@ export async function POST(req: NextRequest) {
       Math.min(5, event.ticketLimit != null ? remaining : 5)
     );
     const qty = Math.max(1, Math.min(maxQuantity, Number(quantity) || 1));
-    const amount = formatAmountForStripe(event.price * qty, 'usd');
+    const amount = formatAmountForStripe(price * qty, 'usd');
 
     const metadata = {
       eventId: String(event.id),
       productId: event.productId,
       priceId: event.priceId,
       quantity: String(qty),
-      unit_price: String(event.price),
+      unit_price: String(price),
       newsletter_optin: newsletter ? 'true' : 'false',
     };
 

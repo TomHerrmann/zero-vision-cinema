@@ -90,7 +90,7 @@ const EventCard = async ({
   // Paid events route to the on-site ticket page by id. Free events (incl. the
   // static Eventbrite event) render no ticket button.
   const ticketHref = `/events/${id}`;
-  const showTicketButton = price > 0;
+  const showTicketButton = (price ?? 0) > 0;
 
   if (orientation === 'horz') {
     return (
@@ -118,7 +118,7 @@ const EventCard = async ({
         {/* Content Section */}
         <div className="flex flex-col flex-1 p-6 md:p-8 relative">
           <div className="absolute top-6 right-6 md:top-8 md:right-8">
-            <PriceTag price={price} />
+            <PriceTag price={price ?? 0} />
           </div>
 
           <CardHeader className="p-0 pb-6">
@@ -238,7 +238,7 @@ const EventCard = async ({
                 Price
               </span>
               <span className="font-bold text-blue-light">
-                {price === 0 ? 'FREE' : `$${price.toFixed(2)}`}
+                {(price ?? 0) === 0 ? 'FREE' : `$${(price ?? 0).toFixed(2)}`}
               </span>
             </div>
           </div>

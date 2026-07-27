@@ -14,6 +14,9 @@ export const getUpcomingEvents = async () => {
       _status: {
         equals: 'published',
       },
+      eventType: {
+        equals: 'zvc',
+      },
       datetime: {
         greater_than: nowMinus30Minutes,
       },
@@ -44,6 +47,7 @@ export const getUpcomingEvents = async () => {
 
   const staticDoc: Event = {
     id: 10000,
+    eventType: 'zvc',
     name: 'ZVC 1 Year Anniverary Show',
     imdbId: '',
     description: {
@@ -100,6 +104,9 @@ export const getAllEvents = async () => {
       _status: {
         equals: 'published',
       },
+      eventType: {
+        equals: 'zvc',
+      },
     },
     sort: ['datetime'],
     depth: 1,
@@ -115,11 +122,36 @@ export const getPastEvents = async () => {
       _status: {
         equals: 'published',
       },
+      eventType: {
+        equals: 'zvc',
+      },
       datetime: {
         less_than: now,
       },
     },
     sort: ['-datetime'],
+    depth: 1,
+  });
+
+  return docs;
+};
+
+/** Upcoming Astoria Horror Club events (free), for the AHC page. */
+export const getUpcomingAhcEvents = async () => {
+  const { docs } = await payload.find({
+    collection: 'events',
+    where: {
+      _status: {
+        equals: 'published',
+      },
+      eventType: {
+        equals: 'ahc',
+      },
+      datetime: {
+        greater_than: nowMinus30Minutes,
+      },
+    },
+    sort: ['datetime'],
     depth: 1,
   });
 

@@ -193,9 +193,16 @@ export interface Location {
  */
 export interface Event {
   id: number;
+  /**
+   * ZVC = paid screening (full fields). AHC = free Astoria Horror Club event (name/price/media/description not required).
+   */
+  eventType: 'zvc' | 'ahc';
+  /**
+   * Optional when an IMDb ID is set — leave blank to auto-fill "Title (Year)".
+   */
   name: string;
   /**
-   * Optional. Found on the IMDb movie URL — e.g. tt0082418. When set, movie details (and a fallback poster/summary) are pulled from OMDB.
+   * Found on the IMDb movie URL — e.g. tt0082418. On blur the name auto-fills; description fills on save; the poster shows from OMDB (not stored). All editable.
    */
   imdbId?: string | null;
   /**
@@ -220,7 +227,7 @@ export interface Event {
    * Optional. If left blank and an IMDb ID is set, the OMDB poster is used.
    */
   image?: (number | null) | Media;
-  price: number;
+  price?: number | null;
   location: number | Location;
   datetime: string;
   /**
@@ -492,6 +499,7 @@ export interface LocationsSelect<T extends boolean = true> {
  * via the `definition` "events_select".
  */
 export interface EventsSelect<T extends boolean = true> {
+  eventType?: T;
   name?: T;
   imdbId?: T;
   description?: T;
