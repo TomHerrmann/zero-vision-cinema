@@ -1,4 +1,5 @@
-import { getUpcomingEvents, isSoldOut } from '@/utils/getEvents';
+import { getUpcomingEvents } from '@/utils/getEvents';
+import { isSoldOut } from '@/utils/isSoldOut';
 import EventCard from '@/components/event-card/event-card';
 import '../globals.css';
 import { cn } from '@/utils/utils';

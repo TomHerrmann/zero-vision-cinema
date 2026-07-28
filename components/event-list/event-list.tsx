@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from '../ui/button';
 import { useState } from 'react';
 import type { Event } from '@/payload-types';
-import { isSoldOut } from '@/utils/getEvents';
+import { isSoldOut } from '@/utils/isSoldOut';
 
 type Props = {
   events: Event[];

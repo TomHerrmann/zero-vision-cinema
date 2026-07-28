@@ -7,7 +7,8 @@ import {
 } from '@/app/contsants/constants';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { getUpcomingEvents, isSoldOut } from '@/utils/getEvents';
+import { getUpcomingEvents } from '@/utils/getEvents';
+import { isSoldOut } from '@/utils/isSoldOut';
 import Link from 'next/link';
 
 // Revalidate every 5 minutes (300 seconds)

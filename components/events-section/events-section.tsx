@@ -4,7 +4,7 @@ import { cn } from '@/utils/utils';
 import Link from 'next/link';
 import { Film } from 'lucide-react';
 import SectionHeading from '../ui/section-heading';
-import { isSoldOut } from '@/utils/getEvents';
+import { isSoldOut } from '@/utils/isSoldOut';
 
 type Props = { events: Event[] };
 

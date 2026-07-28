@@ -8,7 +8,7 @@ import { Location, Media } from '@/payload-types';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import { richTextIsEmpty } from '@/utils/richText';
 import CheckoutClient from '@/components/checkout/checkout';
-import { isSoldOut } from '@/utils/getEvents';
+import { isSoldOut } from '@/utils/isSoldOut';
 
 export const revalidate = 300;
 
