@@ -8,6 +8,8 @@ import { Location, Media } from '@/payload-types';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import { richTextIsEmpty } from '@/utils/richText';
 import CheckoutClient from '@/components/checkout/checkout';
+import { cn } from '@/utils/utils';
+import SoldOutStamp from '@/components/sold-out/sold-out-stamp';
 import { isSoldOut } from '@/utils/isSoldOut';
 
 export const revalidate = 300;
@@ -87,10 +89,20 @@ export default async function EventTicketPage({ params }: Props) {
                   src={posterUrl}
                   alt={posterAlt}
                   fill
-                  className="object-cover border-2 border-glow/15 shadow-[8px_8px_0_0_rgba(0,0,0,0.55)] zvc-worn-edge"
+                  className={cn(
+                    'object-cover border-2 border-glow/15 shadow-[8px_8px_0_0_rgba(0,0,0,0.55)] zvc-worn-edge',
+                    isSoldOut(event)
+                      ? 'grayscale opacity-30'
+                      : 'group-hover:brightness-90'
+                  )}
                   sizes="(max-width: 1024px) 100vw, 400px"
                   priority
                 />
+                {isSoldOut(event) && (
+                  // Lazy-load the stamp as a small component; z-20 ensures it
+                  // sits above the image's styling.
+                  <SoldOutStamp size="lg" />
+                )}
               </div>
             )}
 
