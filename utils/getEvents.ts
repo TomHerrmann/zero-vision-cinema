@@ -1,6 +1,5 @@
 import payloadConfig from '@/payload.config';
 import { getPayload } from 'payload';
-import type { Event, Location, Media } from '@/payload-types';
 
 const payload = await getPayload({ config: payloadConfig });
 
