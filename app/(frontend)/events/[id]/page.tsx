@@ -83,12 +83,12 @@ export default async function EventTicketPage({ params }: Props) {
           {/* Left — poster + details */}
           <div>
             {posterUrl && (
-              <div className="relative w-full aspect-[3/4] max-w-md mb-8">
+              <div className="relative w-full aspect-[2/3] max-w-md mb-8">
                 <Image
                   src={posterUrl}
                   alt={posterAlt}
                   fill
-                  className="object-fit border-2 border-glow/15 shadow-[8px_8px_0_0_rgba(0,0,0,0.55)] zvc-worn-edge"
+                  className="object-cover border-2 border-glow/15 shadow-[8px_8px_0_0_rgba(0,0,0,0.55)] zvc-worn-edge"
                   sizes="(max-width: 1024px) 100vw, 400px"
                   priority
                 />

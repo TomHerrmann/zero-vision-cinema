@@ -28,13 +28,13 @@ const StaticEventCard = ({ event }: Props) => {
         )}
       </CardHeader>
       {event.image && (
-        <div className="relative w-full aspect-[4/5] pb-2">
+        <div className="relative w-full aspect-[2/3] pb-2">
           <div className="relative w-full h-full overflow-hidden">
             <Image
               src={event.image}
               alt={event.eventName || 'Event image'}
               fill
-              className="object-contain"
+              className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           </div>

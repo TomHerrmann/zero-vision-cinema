@@ -103,7 +103,7 @@ const EventCard = async ({
               alt={posterAlt}
               fill
               className={cn(
-                'object-fit object-center',
+                'object-cover object-center',
                 isSoldOut ? 'grayscale opacity-30' : 'group-hover:brightness-90'
               )}
               loading="lazy"
@@ -190,7 +190,7 @@ const EventCard = async ({
   return (
     <Card className="group flex flex-col h-full overflow-hidden">
       {/* Poster Image */}
-      <div className="relative w-full aspect-[3/4] overflow-hidden">
+      <div className="relative w-full aspect-[2/3] overflow-hidden">
         {posterUrl ? (
           <Image
             src={posterUrl}

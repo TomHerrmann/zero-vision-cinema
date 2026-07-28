@@ -23,6 +23,15 @@ type OmdbResponse = Partial<Record<string, string>> & {
 
 const clean = (v: string | undefined): string => (v && v !== 'N/A' ? v : '');
 
+/**
+ * OMDB posters come back capped at 300px wide (`._V1_SX300.jpg`). The same
+ * Amazon image is available at full resolution by rewriting the size token —
+ * request ~1000px so next/image has enough resolution for retina displays.
+ * Non-matching or empty URLs pass through unchanged.
+ */
+const highResPoster = (url: string): string =>
+  url ? url.replace(/(\._V1_)[^/]*?(\.jpg)$/i, '$1SX1000$2') : url;
+
 const THIRTY_DAYS_IN_SECONDS = 60 * 60 * 24 * 30;
 /**
  * Fetch a movie from OMDB by its IMDb id (e.g. "tt0082418") and normalize it.
@@ -56,6 +65,6 @@ export async function fetchMovieDataByImdbId(
     actors: clean(data.Actors),
     plot: clean(data.Plot),
     imdbRating: clean(data.imdbRating),
-    poster: clean(data.Poster),
+    poster: highResPoster(clean(data.Poster)),
   };
 }
