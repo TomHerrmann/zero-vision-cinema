@@ -178,6 +178,7 @@ export interface Media {
 export interface Location {
   id: number;
   name: string;
+  capacity: number;
   address: string;
   city: string;
   state: string;
@@ -494,6 +495,7 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface LocationsSelect<T extends boolean = true> {
   name?: T;
+  capacity?: T;
   address?: T;
   city?: T;
   state?: T;
