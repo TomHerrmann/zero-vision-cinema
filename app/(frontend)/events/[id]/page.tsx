@@ -68,7 +68,7 @@ export default async function EventTicketPage({ params }: Props) {
   });
 
   const price = event.price ?? 0;
-  const isPurchasable = price > 0 && !!event.priceId && !isSoldOut;
+  const isPurchasable = price > 0 && !!event.priceId && !isSoldOut(event);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-blackout">
