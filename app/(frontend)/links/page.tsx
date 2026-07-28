@@ -51,10 +51,10 @@ export default async function TreeLinkPage() {
   const events = await getUpcomingEvents();
 
   const eventLinks = events
-    .filter((event) => isSoldOut(event) && event.paymentLink)
+    .filter((event) => !isSoldOut(event))
     .map((event) => ({
       title: event.name,
-      url: event.paymentLink,
+      url: `/events/${event.id}`,
     })) as LinkItem[];
 
   return (
