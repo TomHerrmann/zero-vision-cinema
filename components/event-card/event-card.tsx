@@ -103,10 +103,9 @@ const EventCard = async ({
               alt={posterAlt}
               fill
               className={cn(
-                'object-fit object-center transition-all duration-700',
+                'object-fit object-center',
                 isSoldOut ? 'grayscale opacity-30' : 'group-hover:brightness-90'
               )}
-              sizes="(max-width: 768px) 100vw, 320px"
               loading="lazy"
             />
           ) : (

@@ -33,7 +33,7 @@ export default async function AstoriaHorrorClubPage() {
         <section className="flex w-full justify-center mb-16 md:mb-20">
           <div className="relative group animate-in fade-in slide-in-from-bottom-8 duration-1000">
             {/* Subtle glow effect */}
-            <div className="absolute inset-0 bg-primary/10 blur-[80px] scale-90 group-hover:scale-100 transition-transform duration-700" />
+            <div className="absolute inset-0 bg-blue-light/10 blur-[80px] scale-90 group-hover:scale-100 transition-transform duration-700" />
 
             <Image
               src={AHC_LOGO_PNG_URL}
@@ -52,9 +52,9 @@ export default async function AstoriaHorrorClubPage() {
         >
           {/* Section Header */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-3 mb-6 px-6 py-2 border border-primary/20 bg-primary/5 backdrop-blur-sm">
-              <Heart className="w-5 h-5 text-primary" />
-              <span className="text-sm uppercase tracking-widest text-primary/80">
+            <div className="inline-flex items-center gap-3 mb-6 px-6 py-2 border border-blue-light/20 bg-blue-light/5 backdrop-blur-sm">
+              <Heart className="w-5 h-5 text-blue-light" />
+              <span className="text-sm uppercase tracking-widest text-blue-light/80">
                 Community & Horror
               </span>
             </div>
@@ -70,7 +70,7 @@ export default async function AstoriaHorrorClubPage() {
               About Us
             </h2>
 
-            <div className="w-32 h-1 mx-auto bg-gradient-to-r from-transparent via-primary to-transparent" />
+            <div className="w-32 h-1 mx-auto bg-gradient-to-r from-transparent via-blue-light to-transparent" />
           </div>
 
           {/* Content */}
@@ -88,10 +88,10 @@ export default async function AstoriaHorrorClubPage() {
 
           {/* Feature Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 w-full max-w-5xl">
-            <div className="group relative p-8 border-2 border-primary/20 bg-background/50 backdrop-blur-sm hover:border-primary/40 transition-all duration-300 shadow-lg hover:shadow-xl">
+            <div className="group relative p-8 border-2 border-blue-light/20 bg-background/50 backdrop-blur-sm hover:border-blue-light/40 transition-all duration-300 shadow-lg hover:shadow-xl">
               <div className="flex flex-col items-center text-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                  <Calendar className="w-8 h-8 text-primary" />
+                <div className="w-16 h-16 rounded-full bg-blue-light/10 border border-blue-light/20 flex items-center justify-center">
+                  <Calendar className="w-8 h-8 text-blue-light" />
                 </div>
                 <h3 className="text-xl font-bold text-foreground">Movie Nights</h3>
                 <p className="text-foreground/70">
@@ -100,10 +100,10 @@ export default async function AstoriaHorrorClubPage() {
               </div>
             </div>
 
-            <div className="group relative p-8 border-2 border-primary/20 bg-background/50 backdrop-blur-sm hover:border-primary/40 transition-all duration-300 shadow-lg hover:shadow-xl">
+            <div className="group relative p-8 border-2 border-blue-light/20 bg-background/50 backdrop-blur-sm hover:border-blue-light/40 transition-all duration-300 shadow-lg hover:shadow-xl">
               <div className="flex flex-col items-center text-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                  <BookOpen className="w-8 h-8 text-primary" />
+                <div className="w-16 h-16 rounded-full bg-blue-light/10 border border-blue-light/20 flex items-center justify-center">
+                  <BookOpen className="w-8 h-8 text-blue-light" />
                 </div>
                 <h3 className="text-xl font-bold text-foreground">Book Clubs</h3>
                 <p className="text-foreground/70">
@@ -112,10 +112,10 @@ export default async function AstoriaHorrorClubPage() {
               </div>
             </div>
 
-            <div className="group relative p-8 border-2 border-primary/20 bg-background/50 backdrop-blur-sm hover:border-primary/40 transition-all duration-300 shadow-lg hover:shadow-xl">
+            <div className="group relative p-8 border-2 border-blue-light/20 bg-background/50 backdrop-blur-sm hover:border-blue-light/40 transition-all duration-300 shadow-lg hover:shadow-xl">
               <div className="flex flex-col items-center text-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                  <Users className="w-8 h-8 text-primary" />
+                <div className="w-16 h-16 rounded-full bg-blue-light/10 border border-blue-light/20 flex items-center justify-center">
+                  <Users className="w-8 h-8 text-blue-light" />
                 </div>
                 <h3 className="text-xl font-bold text-foreground">Community Events</h3>
                 <p className="text-foreground/70">
@@ -133,9 +133,9 @@ export default async function AstoriaHorrorClubPage() {
             className="mt-24 md:mt-32 animate-in fade-in slide-in-from-bottom-8 duration-1000"
           >
             <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-3 mb-6 px-6 py-2 border border-primary/20 bg-primary/5 backdrop-blur-sm">
-                <Calendar className="w-5 h-5 text-primary" />
-                <span className="text-sm uppercase tracking-widest text-primary/80">
+              <div className="inline-flex items-center gap-3 mb-6 px-6 py-2 border border-blue-light/20 bg-blue-light/5 backdrop-blur-sm">
+                <Calendar className="w-5 h-5 text-blue-light" />
+                <span className="text-sm uppercase tracking-widest text-blue-light/80">
                   Join Us
                 </span>
               </div>
@@ -149,7 +149,7 @@ export default async function AstoriaHorrorClubPage() {
               >
                 Upcoming Events
               </h2>
-              <div className="w-32 h-1 mx-auto bg-gradient-to-r from-transparent via-primary to-transparent" />
+              <div className="w-32 h-1 mx-auto bg-gradient-to-r from-transparent via-blue-light to-transparent" />
             </div>
 
             <div className="flex flex-wrap justify-center gap-8 md:gap-10">

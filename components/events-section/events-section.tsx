@@ -50,7 +50,7 @@ export default function EventsSection({ events }: Props) {
                     // Full width on phones; from sm+ each card is at least 450px
                     // (so long titles don't truncate), growing to fill and
                     // wrapping when a row can't fit another 450px card.
-                    'w-full sm:flex-1 sm:min-w-[450px] sm:max-w-[540px]',
+                    'w-full sm-flex-1 sm:w-[360px] sm:grow max-w-[450px]',
                     'animate-in fade-in slide-in-from-bottom-8 duration-700'
                   )}
                   style={{ animationDelay: `${idx * 150}ms` }}

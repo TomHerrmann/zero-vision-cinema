@@ -280,6 +280,7 @@ body:has(.ahc-legacy) footer {
   /* Secondary CTA: blue outline */
   .zvc-btn-outline {
     @apply inline-flex items-center justify-center gap-2 font-utility uppercase;
+    @apply rounded-full;
     @apply bg-transparent text-glow border-2 border-blue-light px-6 py-3;
     letter-spacing: 0.12em;
     transition:

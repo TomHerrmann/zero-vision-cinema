@@ -16,7 +16,10 @@ const Footer = () => {
   return (
     <footer className="relative bg-blackout border-t-2 border-blue-light/20 overflow-hidden">
       {/* Texture */}
-      <div className="absolute inset-0 zvc-grain pointer-events-none" aria-hidden="true" />
+      <div
+        className="absolute inset-0 zvc-grain pointer-events-none"
+        aria-hidden="true"
+      />
       {/* Top ragged rule */}
       <div
         className="absolute top-0 left-0 right-0 h-1.5"
@@ -200,7 +203,7 @@ const Footer = () => {
             </p>
 
             {/* Made with love */}
-            <p className="font-utility uppercase tracking-widest text-xs text-foreground/40">
+            <p className="font-utility uppercase tracking-widest text-base text-foreground/40">
               Bringing cult cinema to NYC
             </p>
           </div>
