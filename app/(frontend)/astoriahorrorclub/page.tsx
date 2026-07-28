@@ -9,6 +9,14 @@ import {
   getUpcomingBookClubEvents,
 } from '@/utils/getEvents';
 import EventCard from '@/components/event-card/event-card';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: true,
+  },
+};
 
 const creepsterfont = Creepster({
   weight: '400',

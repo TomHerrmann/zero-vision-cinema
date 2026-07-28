@@ -2,23 +2,12 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export default function middleware(req: NextRequest) {
-  const token = req.headers.get('Authorization');
-
-  if (!token) {
-    return (
-      NextResponse.json({ message: 'Unauthorized' }),
-      {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+export function middleware(req: NextRequest) {
+  const res = NextResponse.next();
+  if (req.nextUrl.pathname.startsWith('/astoriahorrorclub')) {
+    res.headers.set('X-Robots-Tag', 'noindex, follow');
   }
-
-  return NextResponse.next();
+  return res;
 }
 
-// Optionally apply it only to certain paths
-export const config = {
-  matcher: ['/api/attendees/:eventid*'],
-};
+export const config = { matcher: ['/astoriahorrorclub/:path*'] };
