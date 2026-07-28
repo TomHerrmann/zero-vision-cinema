@@ -20,7 +20,6 @@ import type {
   StripeElementsOptions,
   StripeExpressCheckoutElementReadyEvent,
 } from '@stripe/stripe-js';
-import { Loader2Icon } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getStripe } from '@/utils/stripeUtils';
 import CheckoutSuccess from './checkout-success';
@@ -35,6 +34,10 @@ const appearance: Appearance = {
     colorPrimary: '#4A8CC6', // blue-light
     colorBackground: '#1F1F1F', // blackout
     colorText: '#FFFDF6', // glow
+    // Placeholder / secondary text: cool retro-blue instead of the warm tan
+    // Stripe would otherwise derive from the cream colorText.
+    colorTextPlaceholder: 'rgba(158, 183, 204, 0.7)', // retro-blue
+    colorTextSecondary: 'rgba(158, 183, 204, 0.9)', // retro-blue
     colorDanger: '#7F0028', // cult-classic
     fontFamily: 'ui-sans-serif, system-ui, sans-serif',
     borderRadius: '0px',
@@ -49,6 +52,7 @@ const appearance: Appearance = {
       border: '2px solid #4A8CC6',
       boxShadow: 'none',
     },
+    '.Input::placeholder': { color: 'rgba(158, 183, 204, 0.6)' },
     '.Label': { color: 'rgba(255, 253, 246, 0.7)' },
     '.Tab, .Block': {
       border: '2px solid rgba(255, 253, 246, 0.15)',
@@ -136,37 +140,49 @@ export default function CheckoutClient({
 
   if (completed) return <CheckoutSuccess eventName={eventName} />;
 
+  // Reserve a stable height so the box is the same size while loading (skeleton),
+  // after loading (form), and on error — no layout shift between states. Sized to
+  // the fully-rendered Stripe card form (~1010px); it can still grow if the buyer
+  // switches to a taller payment method, which is Stripe's own dynamic element.
+  const STABLE = 'min-h-[64rem]';
+
   if (!stripePromise) {
     return (
-      <p className="zvc-body text-glow/70">
-        Checkout is temporarily unavailable. Please try again later.
-      </p>
+      <div className={`${STABLE} flex items-center justify-center`}>
+        <p className="zvc-body text-glow/70 text-center">
+          Checkout is temporarily unavailable. Please try again later.
+        </p>
+      </div>
     );
   }
 
-  if (error) return <CheckoutError paymentLink={paymentLink} />;
-
-  if (!clientSecret || !paymentIntentId) {
+  if (error) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2Icon className="w-6 h-6 animate-spin text-blue-light" />
+      <div className={`${STABLE} flex items-center justify-center`}>
+        <CheckoutError paymentLink={paymentLink} />
       </div>
     );
+  }
+
+  if (!clientSecret || !paymentIntentId) {
+    return <CheckoutSkeleton className={STABLE} />;
   }
 
   const options: StripeElementsOptions = { clientSecret, appearance };
 
   return (
-    <Elements stripe={stripePromise} options={options}>
-      <CheckoutForm
-        eventId={eventId}
-        price={price}
-        paymentIntentId={paymentIntentId}
-        maxQuantity={maxQuantity}
-        paymentLink={paymentLink}
-        onComplete={() => setCompleted(true)}
-      />
-    </Elements>
+    <div className={STABLE}>
+      <Elements stripe={stripePromise} options={options}>
+        <CheckoutForm
+          eventId={eventId}
+          price={price}
+          paymentIntentId={paymentIntentId}
+          maxQuantity={maxQuantity}
+          paymentLink={paymentLink}
+          onComplete={() => setCompleted(true)}
+        />
+      </Elements>
+    </div>
   );
 }
 
@@ -417,6 +433,56 @@ function CheckoutError({ paymentLink }: { paymentLink?: string | null }) {
           Please try again in a moment.
         </p>
       )}
+    </div>
+  );
+}
+
+/**
+ * Placeholder shown while the PaymentIntent + Stripe Elements load. Mirrors the
+ * form's structure (quantity, email, payment fields, newsletter, pay button) so
+ * the box height stays stable and doesn't jump when the real form mounts.
+ */
+function CheckoutSkeleton({ className }: { className?: string }) {
+  const block = 'bg-glow/10 border-2 border-glow/10';
+  return (
+    <div
+      className={`flex flex-col space-y-5 animate-pulse ${className ?? ''}`}
+      aria-hidden="true"
+    >
+      {/* Quantity + total */}
+      <div className="flex items-center justify-between">
+        <div className="h-10 w-28 bg-glow/10" />
+        <div className="h-6 w-20 bg-blue-light/20" />
+      </div>
+      {/* Email */}
+      <div className={`h-[76px] w-full ${block}`} />
+      {/* Wallet buttons */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="h-11 bg-glow/10" />
+        <div className="h-11 bg-glow/10" />
+      </div>
+      {/* Divider */}
+      <div className="flex items-center gap-3">
+        <span className="h-px flex-1 bg-glow/15" />
+        <span className="h-3 w-24 bg-glow/10" />
+        <span className="h-px flex-1 bg-glow/15" />
+      </div>
+      {/* Payment element — fills remaining height so the box height is stable */}
+      <div className="flex-1 flex flex-col gap-3">
+        <div className="grid grid-cols-4 gap-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className={`h-14 ${block}`} />
+          ))}
+        </div>
+        <div className={`flex-1 w-full ${block}`} />
+      </div>
+      {/* Newsletter */}
+      <div className="flex items-start gap-3">
+        <div className="h-5 w-5 bg-glow/10 border border-blue-light/30" />
+        <div className="h-4 flex-1 bg-glow/10" />
+      </div>
+      {/* Pay button */}
+      <div className="h-12 w-full bg-glow/20" />
     </div>
   );
 }
