@@ -15,6 +15,8 @@ const creepsterfont = Creepster({
   subsets: ['latin'],
 });
 
+export const revalidate = 300;
+
 export default async function AstoriaHorrorClubPage() {
   const events = await getUpcomingAhcEvents();
   const bookClubEvents = await getUpcomingBookClubEvents();
@@ -80,13 +82,13 @@ export default async function AstoriaHorrorClubPage() {
           {/* Content */}
           <div className="flex justify-center text-center mb-16">
             <p className="text-lg md:text-xl lg:text-2xl text-foreground/80 max-w-[45em] leading-relaxed">
-              Astoria Horror Club builds community through a shared love of scary
-              movies and books. AHC was started in 2021 with a reddit post to
-              r/astoria with the goal of finding other horror fans in the
-              neighborhood. Since then we have hosted movie nights, block parties,
-              book clubs, and other amazing events in the area. We welcome horror
-              fans of all kinds to join us in celebrating the genre and making
-              meaningful connections with others.
+              Astoria Horror Club builds community through a shared love of
+              scary movies and books. AHC was started in 2021 with a reddit post
+              to r/astoria with the goal of finding other horror fans in the
+              neighborhood. Since then we have hosted movie nights, block
+              parties, book clubs, and other amazing events in the area. We
+              welcome horror fans of all kinds to join us in celebrating the
+              genre and making meaningful connections with others.
             </p>
           </div>
 
@@ -97,7 +99,9 @@ export default async function AstoriaHorrorClubPage() {
                 <div className="w-16 h-16 rounded-full bg-blue-light/10 border border-blue-light/20 flex items-center justify-center">
                   <Calendar className="w-8 h-8 text-blue-light" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground">Movie Nights</h3>
+                <h3 className="text-xl font-bold text-foreground">
+                  Movie Nights
+                </h3>
                 <p className="text-foreground/70">
                   Regular screenings of classic and contemporary horror films
                 </p>
@@ -109,7 +113,9 @@ export default async function AstoriaHorrorClubPage() {
                 <div className="w-16 h-16 rounded-full bg-blue-light/10 border border-blue-light/20 flex items-center justify-center">
                   <BookOpen className="w-8 h-8 text-blue-light" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground">Book Clubs</h3>
+                <h3 className="text-xl font-bold text-foreground">
+                  Book Clubs
+                </h3>
                 <p className="text-foreground/70">
                   Discuss spine-tingling horror literature with fellow fans
                 </p>
@@ -121,7 +127,9 @@ export default async function AstoriaHorrorClubPage() {
                 <div className="w-16 h-16 rounded-full bg-blue-light/10 border border-blue-light/20 flex items-center justify-center">
                   <Users className="w-8 h-8 text-blue-light" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground">Community Events</h3>
+                <h3 className="text-xl font-bold text-foreground">
+                  Community Events
+                </h3>
                 <p className="text-foreground/70">
                   Block parties and special events bringing horror fans together
                 </p>
