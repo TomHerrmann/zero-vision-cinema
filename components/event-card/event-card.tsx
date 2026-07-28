@@ -13,6 +13,7 @@ import { Event, Location } from '@/payload-types';
 import { RichText } from '@payloadcms/richtext-lexical/react';
 import { cn } from '@/utils/utils';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
+import { fetchBookDataByOpenLibraryId } from '@/lib/openlibrary';
 import { richTextIsEmpty } from '@/utils/richText';
 
 type Orientation = 'vert' | 'horz';
@@ -66,7 +67,9 @@ function PosterPlaceholder() {
 const EventCard = async ({
   id,
   name,
+  eventType,
   imdbId,
+  openLibraryId,
   description,
   image,
   price,
@@ -79,13 +82,21 @@ const EventCard = async ({
 
   const imageObj = image && typeof image === 'object' ? image : null;
   const descriptionIsEmpty = richTextIsEmpty(description);
+  const isBook = eventType === 'bookclub';
 
-  // Pull OMDB (cached 30 days) only when we actually need a fallback.
-  const needsOmdb = !!imdbId && (!imageObj?.url || descriptionIsEmpty);
+  // Book Club events pull cover/summary from Open Library; movie events from
+  // OMDB. Both are cached 30 days and only fetched when a fallback is needed.
+  const book =
+    isBook && openLibraryId
+      ? await fetchBookDataByOpenLibraryId(openLibraryId)
+      : null;
+  const needsOmdb = !isBook && !!imdbId && (!imageObj?.url || descriptionIsEmpty);
   const movie = needsOmdb ? await fetchMovieDataByImdbId(imdbId!) : null;
 
-  const posterUrl = imageObj?.url ?? movie?.poster ?? null;
+  const posterUrl = imageObj?.url ?? book?.cover ?? movie?.poster ?? null;
   const posterAlt = imageObj?.alt || name;
+  // Plain-text fallback shown when the stored richText description is empty.
+  const fallbackText = book?.description ?? movie?.plot ?? null;
 
   // Paid events route to the on-site ticket page by id. Free events (incl. the
   // static Eventbrite event) render no ticket button.
@@ -134,9 +145,9 @@ const EventCard = async ({
                 data={description!}
                 className="zvc-body text-base md:text-lg leading-relaxed line-clamp-3"
               />
-            ) : movie?.plot ? (
+            ) : fallbackText ? (
               <p className="zvc-body text-base md:text-lg leading-relaxed line-clamp-3">
-                {movie.plot}
+                {fallbackText}
               </p>
             ) : null}
 

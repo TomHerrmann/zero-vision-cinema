@@ -157,3 +157,25 @@ export const getUpcomingAhcEvents = async () => {
 
   return docs;
 };
+
+/** Upcoming Astoria Horror Book Club events (free), for the AHC page. */
+export const getUpcomingBookClubEvents = async () => {
+  const { docs } = await payload.find({
+    collection: 'events',
+    where: {
+      _status: {
+        equals: 'published',
+      },
+      eventType: {
+        equals: 'bookclub',
+      },
+      datetime: {
+        greater_than: nowMinus30Minutes,
+      },
+    },
+    sort: ['datetime'],
+    depth: 1,
+  });
+
+  return docs;
+};

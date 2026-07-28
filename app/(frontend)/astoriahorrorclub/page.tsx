@@ -4,7 +4,10 @@ import { cn } from '@/utils/utils';
 import { Creepster } from 'next/font/google';
 import { AHC_LOGO_PNG_URL } from '@/app/contsants/constants';
 import { BookOpen, Users, Calendar, Heart } from 'lucide-react';
-import { getUpcomingAhcEvents } from '@/utils/getEvents';
+import {
+  getUpcomingAhcEvents,
+  getUpcomingBookClubEvents,
+} from '@/utils/getEvents';
 import EventCard from '@/components/event-card/event-card';
 
 const creepsterfont = Creepster({
@@ -14,6 +17,7 @@ const creepsterfont = Creepster({
 
 export default async function AstoriaHorrorClubPage() {
   const events = await getUpcomingAhcEvents();
+  const bookClubEvents = await getUpcomingBookClubEvents();
 
   return (
     <main className="ahc-legacy relative min-h-screen overflow-hidden font-sans">
@@ -160,6 +164,40 @@ export default async function AstoriaHorrorClubPage() {
                 >
                   <EventCard {...event} />
                 </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Book Club */}
+        {bookClubEvents.length > 0 && (
+          <section
+            id="book-club"
+            className="mt-24 md:mt-32 animate-in fade-in slide-in-from-bottom-8 duration-1000"
+          >
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-3 mb-6 px-6 py-2 border border-blue-light/20 bg-blue-light/5 backdrop-blur-sm">
+                <BookOpen className="w-5 h-5 text-blue-light" />
+                <span className="text-sm uppercase tracking-widest text-blue-light/80">
+                  Read With Us
+                </span>
+              </div>
+              <h2
+                className={cn(
+                  'text-[2.5rem] md:text-[5rem] lg:text-[6rem]',
+                  'leading-none mb-6',
+                  'bg-gradient-to-b from-foreground to-foreground/60 bg-clip-text text-transparent',
+                  creepsterfont.className
+                )}
+              >
+                Book Club
+              </h2>
+              <div className="w-32 h-1 mx-auto bg-gradient-to-r from-transparent via-blue-light to-transparent" />
+            </div>
+
+            <div className="flex flex-col gap-8 md:gap-10 max-w-5xl mx-auto">
+              {bookClubEvents.map((event) => (
+                <EventCard key={event.id} {...event} orientation="horz" />
               ))}
             </div>
           </section>

@@ -4,6 +4,10 @@ import { ZVC_SITE_URL } from '../app/contsants/constants';
 import { logtail } from '@/lib/logtail';
 import { stripe } from '@/lib/stripe';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
+import {
+  searchBookByTitleAuthor,
+  fetchBookDataByOpenLibraryId,
+} from '@/lib/openlibrary';
 import { plotToLexical, richTextIsBlank } from '@/utils/omdbFill';
 
 export const Events: CollectionConfig = {
@@ -21,19 +25,44 @@ export const Events: CollectionConfig = {
       async ({ data }) => {
         if (!data) return data;
 
-        // Astoria Horror Club events are always free.
-        if (data.eventType === 'ahc') {
+        // AHC and Book Club events are always free.
+        if (data.eventType === 'ahc' || data.eventType === 'bookclub') {
           data.price = 0;
           data.ticketLimit = null;
         }
 
-        // Fill name/description from OMDB when left blank. (The admin IMDb field
-        // also fills name + image live on blur, but a richText editor ignores
-        // programmatic values, so description is filled here on save.)
         const needsName = !data.name;
-        const needsDescription =
-          data.eventType !== 'ahc' && richTextIsBlank(data.description);
-        if ((needsName || needsDescription) && data.imdbId) {
+        const needsDescription = richTextIsBlank(data.description);
+
+        if (data.eventType === 'bookclub') {
+          // Resolve the Open Library work id (if not already set by the admin
+          // field's on-blur lookup), then fill name / description from the book.
+          if (!data.openLibraryId && data.bookTitle && data.bookAuthor) {
+            const match = await searchBookByTitleAuthor(
+              data.bookTitle,
+              data.bookAuthor
+            );
+            if (match) data.openLibraryId = match.workId;
+          }
+          if (needsName && data.bookTitle) {
+            data.name = data.bookAuthor
+              ? `${data.bookTitle} — ${data.bookAuthor}`
+              : data.bookTitle;
+          }
+          if (needsDescription && data.openLibraryId) {
+            const book = await fetchBookDataByOpenLibraryId(data.openLibraryId);
+            if (book?.description) data.description = plotToLexical(book.description);
+          }
+          return data;
+        }
+
+        // Movie types (zvc/ahc): fill name/description from OMDB when blank. The
+        // admin IMDb field also fills name live on blur, but a richText editor
+        // ignores programmatic values, so description is filled here on save.
+        // (AHC hides its description field, so only fill it for zvc.)
+        const needsMovieDescription =
+          data.eventType !== 'ahc' && needsDescription;
+        if ((needsName || needsMovieDescription) && data.imdbId) {
           const movie = await fetchMovieDataByImdbId(data.imdbId);
           if (movie) {
             if (needsName && movie.title) {
@@ -41,7 +70,7 @@ export const Events: CollectionConfig = {
                 ? `${movie.title} (${movie.year})`
                 : movie.title;
             }
-            if (needsDescription && movie.plot) {
+            if (needsMovieDescription && movie.plot) {
               data.description = plotToLexical(movie.plot);
             }
           }
@@ -200,10 +229,11 @@ export const Events: CollectionConfig = {
       options: [
         { label: 'Zero Vision Cinema', value: 'zvc' },
         { label: 'Astoria Horror Club', value: 'ahc' },
+        { label: 'Astoria Horror Book Club', value: 'bookclub' },
       ],
       admin: {
         description:
-          'ZVC = paid screening (full fields). AHC = free Astoria Horror Club event (name/price/media/description not required).',
+          'ZVC = paid screening (full fields). AHC = free movie event. Book Club = free event driven by a book title + author.',
       },
     },
     {
@@ -212,7 +242,7 @@ export const Events: CollectionConfig = {
       required: true,
       admin: {
         description:
-          'Optional when an IMDb ID is set — leave blank to auto-fill "Title (Year)".',
+          'Optional — leave blank to auto-fill from the movie ("Title (Year)") or book ("Title — Author").',
       },
     },
     {
@@ -220,11 +250,48 @@ export const Events: CollectionConfig = {
       type: 'text',
       label: 'IMDb ID',
       admin: {
+        condition: (data) => data.eventType !== 'bookclub',
         description:
           'Found on the IMDb movie URL — e.g. tt0082418. On blur the name auto-fills; description fills on save; the poster shows from OMDB (not stored). All editable.',
         components: {
           Field: '/collections/components/ImdbLookupField#ImdbLookupField',
         },
+      },
+    },
+    {
+      name: 'bookTitle',
+      type: 'text',
+      label: 'Book Title',
+      admin: {
+        condition: (data) => data.eventType === 'bookclub',
+        description:
+          'When both title and author are filled, the book is looked up on Open Library as you leave the field.',
+        components: {
+          Field: '/collections/components/BookLookupField#BookLookupField',
+        },
+      },
+    },
+    {
+      name: 'bookAuthor',
+      type: 'text',
+      label: 'Book Author',
+      admin: {
+        condition: (data) => data.eventType === 'bookclub',
+        components: {
+          Field: '/collections/components/BookLookupField#BookLookupField',
+        },
+      },
+    },
+    {
+      name: 'openLibraryId',
+      type: 'text',
+      label: 'Open Library ID',
+      admin: {
+        readOnly: true,
+        condition: (data) =>
+          data.eventType === 'bookclub' && Boolean(data.openLibraryId),
+        description:
+          'Set automatically from the book lookup — used to fetch the cover and summary.',
       },
     },
     {
@@ -241,7 +308,7 @@ export const Events: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       admin: {
-        condition: (data) => data.eventType !== 'ahc',
+        condition: (data) => data.eventType === 'zvc',
         description:
           'Optional. If left blank and an IMDb ID is set, the OMDB poster is used.',
       },
@@ -252,8 +319,8 @@ export const Events: CollectionConfig = {
       required: true,
       defaultValue: 10,
       admin: {
-        // AHC events are always free — price is forced to 0 on save.
-        condition: (data) => data.eventType !== 'ahc',
+        // Only ZVC events are paid — AHC / Book Club are forced to 0 on save.
+        condition: (data) => data.eventType === 'zvc',
       },
     },
     {

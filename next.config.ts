@@ -20,6 +20,12 @@ const nextConfig: NextConfig = {
         hostname: 'm.media-amazon.com',
         pathname: '**',
       },
+      {
+        // Open Library book covers (Book Club events)
+        protocol: 'https',
+        hostname: 'covers.openlibrary.org',
+        pathname: '**',
+      },
     ],
   },
   async rewrites() {

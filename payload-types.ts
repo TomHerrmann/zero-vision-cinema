@@ -194,17 +194,26 @@ export interface Location {
 export interface Event {
   id: number;
   /**
-   * ZVC = paid screening (full fields). AHC = free Astoria Horror Club event (name/price/media/description not required).
+   * ZVC = paid screening (full fields). AHC = free movie event. Book Club = free event driven by a book title + author.
    */
-  eventType: 'zvc' | 'ahc';
+  eventType: 'zvc' | 'ahc' | 'bookclub';
   /**
-   * Optional when an IMDb ID is set — leave blank to auto-fill "Title (Year)".
+   * Optional — leave blank to auto-fill from the movie ("Title (Year)") or book ("Title — Author").
    */
   name: string;
   /**
    * Found on the IMDb movie URL — e.g. tt0082418. On blur the name auto-fills; description fills on save; the poster shows from OMDB (not stored). All editable.
    */
   imdbId?: string | null;
+  /**
+   * When both title and author are filled, the book is looked up on Open Library as you leave the field.
+   */
+  bookTitle?: string | null;
+  bookAuthor?: string | null;
+  /**
+   * Set automatically from the book lookup — used to fetch the cover and summary.
+   */
+  openLibraryId?: string | null;
   /**
    * Optional. If left blank and an IMDb ID is set, the OMDB summary is used.
    */
@@ -502,6 +511,9 @@ export interface EventsSelect<T extends boolean = true> {
   eventType?: T;
   name?: T;
   imdbId?: T;
+  bookTitle?: T;
+  bookAuthor?: T;
+  openLibraryId?: T;
   description?: T;
   image?: T;
   price?: T;
