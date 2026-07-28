@@ -42,9 +42,12 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     found: true,
     openLibraryId: match.workId,
-    name: `${match.title} — ${match.author}`,
+    // Name uses the admin's typed title + author (Open Library often stores a
+    // romanized/original-language variant, e.g. "Pora Chŏng").
+    name: `${title} — ${author}`,
     cover: match.cover || book?.cover || null,
     description: book?.description || null,
+    // Preview shows what Open Library matched, for confirmation.
     title: match.title,
     author: match.author,
     year: match.year,

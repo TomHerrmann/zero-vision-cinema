@@ -13,7 +13,10 @@ import { Event, Location } from '@/payload-types';
 import { RichText } from '@payloadcms/richtext-lexical/react';
 import { cn } from '@/utils/utils';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
-import { fetchBookDataByOpenLibraryId } from '@/lib/openlibrary';
+import {
+  fetchBookDataByOpenLibraryId,
+  searchBookByTitleAuthor,
+} from '@/lib/openlibrary';
 import { richTextIsEmpty } from '@/utils/richText';
 
 type Orientation = 'vert' | 'horz';
@@ -70,6 +73,8 @@ const EventCard = async ({
   eventType,
   imdbId,
   openLibraryId,
+  bookTitle,
+  bookAuthor,
   description,
   image,
   price,
@@ -90,10 +95,17 @@ const EventCard = async ({
     isBook && openLibraryId
       ? await fetchBookDataByOpenLibraryId(openLibraryId)
       : null;
-  const needsOmdb = !isBook && !!imdbId && (!imageObj?.url || descriptionIsEmpty);
+  // Work records often lack a cover; fall back to the search's edition cover.
+  let bookCover = book?.cover || null;
+  if (isBook && !bookCover && bookTitle && bookAuthor) {
+    bookCover =
+      (await searchBookByTitleAuthor(bookTitle, bookAuthor))?.cover || null;
+  }
+  const needsOmdb =
+    !isBook && !!imdbId && (!imageObj?.url || descriptionIsEmpty);
   const movie = needsOmdb ? await fetchMovieDataByImdbId(imdbId!) : null;
 
-  const posterUrl = imageObj?.url ?? book?.cover ?? movie?.poster ?? null;
+  const posterUrl = imageObj?.url ?? bookCover ?? movie?.poster ?? null;
   const posterAlt = imageObj?.alt || name;
   // Plain-text fallback shown when the stored richText description is empty.
   const fallbackText = book?.description ?? movie?.plot ?? null;
@@ -114,7 +126,7 @@ const EventCard = async ({
               alt={posterAlt}
               fill
               className={cn(
-                'object-cover object-center',
+                'object-cover object-center px-4',
                 isSoldOut ? 'grayscale opacity-30' : 'group-hover:brightness-90'
               )}
               loading="lazy"
