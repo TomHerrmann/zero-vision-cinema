@@ -252,10 +252,6 @@ export interface Event {
    * This id is automatically generated when the event is published
    */
   priceId?: string | null;
-  /**
-   * Maximum number of tickets that can be sold for this event
-   */
-  ticketLimit?: number | null;
   ticketsSold?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -524,7 +520,6 @@ export interface EventsSelect<T extends boolean = true> {
   paymentLink?: T;
   productId?: T;
   priceId?: T;
-  ticketLimit?: T;
   ticketsSold?: T;
   updatedAt?: T;
   createdAt?: T;

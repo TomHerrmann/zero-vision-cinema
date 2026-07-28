@@ -4,6 +4,7 @@ import { cn } from '@/utils/utils';
 import Link from 'next/link';
 import { Film } from 'lucide-react';
 import SectionHeading from '../ui/section-heading';
+import { isSoldOut } from '@/utils/getEvents';
 
 type Props = { events: Event[] };
 
@@ -55,14 +56,7 @@ export default function EventsSection({ events }: Props) {
                   )}
                   style={{ animationDelay: `${idx * 150}ms` }}
                 >
-                  <EventCard
-                    {...event}
-                    isSoldOut={
-                      !!event.ticketLimit &&
-                      !!event.ticketsSold &&
-                      event.ticketsSold >= event.ticketLimit
-                    }
-                  />
+                  <EventCard {...event} isSoldOut={isSoldOut(event)} />
                 </div>
               ))}
             </div>

@@ -8,6 +8,7 @@ import { Location, Media } from '@/payload-types';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import { richTextIsEmpty } from '@/utils/richText';
 import CheckoutClient from '@/components/checkout/checkout';
+import { isSoldOut } from '@/utils/getEvents';
 
 export const revalidate = 300;
 
@@ -67,8 +68,6 @@ export default async function EventTicketPage({ params }: Props) {
   });
 
   const price = event.price ?? 0;
-  const isSoldOut =
-    !!event.ticketLimit && (event.ticketsSold ?? 0) >= event.ticketLimit;
   const isPurchasable = price > 0 && !!event.priceId && !isSoldOut;
 
   return (
@@ -172,7 +171,7 @@ export default async function EventTicketPage({ params }: Props) {
             <div className="zvc-card p-6 md:p-8 zvc-logo-tab">
               <h2 className="zvc-heading text-3xl mb-6">Get Tickets</h2>
 
-              {isSoldOut ? (
+              {isSoldOut(event) ? (
                 <div className="text-center py-10">
                   <div className="zvc-stamp inline-block font-display text-destructive text-4xl md:text-5xl tracking-widest border-4 border-destructive px-4 py-1">
                     SOLD OUT

@@ -1,4 +1,4 @@
-import { getUpcomingEvents } from '@/utils/getEvents';
+import { getUpcomingEvents, isSoldOut } from '@/utils/getEvents';
 import EventCard from '@/components/event-card/event-card';
 import '../globals.css';
 import { cn } from '@/utils/utils';
@@ -53,11 +53,7 @@ export default async function EventsPage() {
                 <EventCard
                   {...event}
                   orientation="horz"
-                  isSoldOut={
-                    !!event.ticketLimit &&
-                    !!event.ticketsSold &&
-                    event.ticketsSold >= event.ticketLimit
-                  }
+                  isSoldOut={isSoldOut(event)}
                 />
               </div>
             ))}

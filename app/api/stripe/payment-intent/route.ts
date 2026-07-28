@@ -4,6 +4,7 @@ import payloadConfig from '@payload-config';
 import { stripeCheckout } from '@/lib/stripe';
 import { logtail } from '@/lib/logtail';
 import { formatAmountForStripe } from '@/utils/stripeUtils';
+import type { Location } from '@/payload-types';
 
 /**
  * Creates (or updates) a PaymentIntent for an event ticket purchase and returns
@@ -36,14 +37,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const remaining = (event.ticketLimit ?? 0) - (event.ticketsSold ?? 0);
-    if (event.ticketLimit != null && remaining <= 0) {
+    const remaining =
+      ((event.location as Location).capacity ?? 0) - (event.ticketsSold ?? 0);
+    if ((event.location as Location).capacity && remaining <= 0) {
       return NextResponse.json({ error: 'Sold out' }, { status: 409 });
     }
 
     const maxQuantity = Math.max(
       1,
-      Math.min(5, event.ticketLimit != null ? remaining : 5)
+      Math.min(5, (event.location as Location).capacity != null ? remaining : 5)
     );
     const qty = Math.max(1, Math.min(maxQuantity, Number(quantity) || 1));
     const amount = formatAmountForStripe(price * qty, 'usd');

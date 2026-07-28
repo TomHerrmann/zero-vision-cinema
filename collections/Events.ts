@@ -9,6 +9,7 @@ import {
   fetchBookDataByOpenLibraryId,
 } from '@/lib/openlibrary';
 import { plotToLexical, richTextIsBlank } from '@/utils/omdbFill';
+import { Location } from '@/payload-types';
 
 export const Events: CollectionConfig = {
   slug: 'events',
@@ -28,7 +29,6 @@ export const Events: CollectionConfig = {
         // AHC and Book Club events are always free.
         if (data.eventType === 'ahc' || data.eventType === 'bookclub') {
           data.price = 0;
-          data.ticketLimit = null;
         }
 
         const needsName = !data.name;
@@ -51,7 +51,8 @@ export const Events: CollectionConfig = {
           }
           if (needsDescription && data.openLibraryId) {
             const book = await fetchBookDataByOpenLibraryId(data.openLibraryId);
-            if (book?.description) data.description = plotToLexical(book.description);
+            if (book?.description)
+              data.description = plotToLexical(book.description);
           }
           return data;
         }
@@ -96,16 +97,12 @@ export const Events: CollectionConfig = {
           }
 
           // Get the full location document
-          const locationDoc = await req.payload.findByID({
+          const locationDoc = (await req.payload.findByID({
             collection: 'locations' as CollectionSlug,
             id: data.location,
-          });
+          })) as Location;
 
-          if (
-            !locationDoc ||
-            typeof locationDoc !== 'object' ||
-            !('name' in locationDoc)
-          ) {
+          if (!locationDoc) {
             throw new Error('Location not found or missing name');
           }
 
@@ -168,7 +165,10 @@ export const Events: CollectionConfig = {
                     adjustable_quantity: {
                       enabled: true,
                       minimum: 1,
-                      maximum: Math.min(5, data.ticketLimit || 5),
+                      maximum: Math.min(
+                        5,
+                        locationDoc.capacity - data.ticketsSold || 5
+                      ),
                     },
                   } as any,
                 ],
@@ -197,7 +197,10 @@ export const Events: CollectionConfig = {
                   adjustable_quantity: {
                     enabled: true,
                     minimum: 1,
-                    maximum: Math.min(5, data.ticketLimit || 5),
+                    maximum: Math.min(
+                      5,
+                      data.location.capacity - data.ticketsSold
+                    ),
                   },
                 },
               ],
@@ -376,25 +379,6 @@ export const Events: CollectionConfig = {
         condition: (data) => Boolean(data.paymentLink),
         description:
           'This id is automatically generated when the event is published',
-      },
-    },
-    {
-      name: 'ticketLimit',
-      type: 'number',
-      label: 'Number of Tickets Available',
-      admin: {
-        condition: (data) => Boolean(data.price),
-        description:
-          'Maximum number of tickets that can be sold for this event',
-      },
-      validate: (
-        value: number | null | undefined,
-        { data }: { data: { price?: number } }
-      ) => {
-        if (data.price && (value === null || value === undefined)) {
-          return 'Ticket limit is required for paid events';
-        }
-        return true;
       },
     },
     {

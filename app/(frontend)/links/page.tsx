@@ -7,7 +7,7 @@ import {
 } from '@/app/contsants/constants';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { getUpcomingEvents } from '@/utils/getEvents';
+import { getUpcomingEvents, isSoldOut } from '@/utils/getEvents';
 import Link from 'next/link';
 
 // Revalidate every 5 minutes (300 seconds)
@@ -50,11 +50,7 @@ export default async function TreeLinkPage() {
   const events = await getUpcomingEvents();
 
   const eventLinks = events
-    .filter((event) => {
-      const ticketsSold = event.ticketsSold ?? 0;
-      const capacity = event.ticketLimit ?? 0;
-      return event.paymentLink && ticketsSold < capacity;
-    })
+    .filter((event) => isSoldOut(event) && event.paymentLink)
     .map((event) => ({
       title: event.name,
       url: event.paymentLink,
@@ -63,9 +59,18 @@ export default async function TreeLinkPage() {
   return (
     <div className="relative min-h-screen bg-blackout flex flex-col items-center justify-center py-32 md:py-40 px-6 md:px-12">
       {/* Wear-and-tear texture stack */}
-      <div className="absolute inset-0 pointer-events-none zvc-scanlines" aria-hidden="true" />
-      <div className="absolute inset-0 pointer-events-none zvc-scratches" aria-hidden="true" />
-      <div className="absolute inset-0 pointer-events-none zvc-grain" aria-hidden="true" />
+      <div
+        className="absolute inset-0 pointer-events-none zvc-scanlines"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 pointer-events-none zvc-scratches"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 pointer-events-none zvc-grain"
+        aria-hidden="true"
+      />
 
       <div className="relative z-10 w-full max-w-2xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
         {/* Title */}

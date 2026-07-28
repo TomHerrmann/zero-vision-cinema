@@ -1,4 +1,8 @@
-import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-vercel-postgres';
+import {
+  MigrateUpArgs,
+  MigrateDownArgs,
+  sql,
+} from '@payloadcms/db-vercel-postgres';
 
 /**
  * Adds the missing `capacity` column to locations.
