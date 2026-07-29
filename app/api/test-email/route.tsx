@@ -5,6 +5,7 @@ import { Resend } from 'resend';
 import { ZVC_EMAIL_ADDRESS } from '@/app/contsants/constants';
 import TicketEmail from '@/emails/TicketEmail';
 import { Location } from '@/payload-types';
+import sharp from 'sharp';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -47,21 +48,44 @@ export async function POST(req: Request) {
       );
     }
 
+    const imageUrl = `${process.env.VERCEL_BLOB_URL}${eventImage.filename}`;
+    let emailImageSrc = imageUrl;
+    let emailAttachments: Array<{ filename: string; content: Buffer; content_id: string }> = [];
+
+    try {
+      const fetchUrl = eventImage.sizes?.emailPoster?.url ?? imageUrl;
+      const imageResponse = await fetch(fetchUrl);
+      if (imageResponse.ok) {
+        let imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+        if (!eventImage.sizes?.emailPoster?.url) {
+          imageBuffer = await sharp(imageBuffer)
+            .resize(200, 300, { fit: 'cover' })
+            .jpeg({ quality: 75 })
+            .toBuffer();
+        }
+        emailAttachments = [{ filename: 'event-poster.jpg', content: imageBuffer, content_id: 'event-poster' }];
+        emailImageSrc = 'cid:event-poster';
+      }
+    } catch {
+      // fall back to external URL
+    }
+
     // Send test email with real event data
     const emailResult = await resend.emails.send({
       from: ZVC_EMAIL_ADDRESS,
       subject: `[TEST!!!] Your ZVC Ticket: ${event.name}`,
       to: testEmail,
+      attachments: emailAttachments,
       react: (
         <TicketEmail
           eventName={event.name}
-          eventImage={`${process.env.VERCEL_BLOB_URL}${eventImage.filename}`}
+          eventImage={emailImageSrc}
           eventDate={event.datetime}
           eventLocation={(event.location as Location).name}
-          quantity={1} // Test quantity
+          quantity={1}
           eventDescription={event.description}
           eventAddress={(event.location as Location).address}
-          totalAmount={25.0} // Test amount
+          totalAmount={25.0}
           purchaseDate={new Date().toISOString()}
         />
       ),
