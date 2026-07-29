@@ -173,7 +173,7 @@ export default async function AstoriaHorrorClubPage() {
             </div>
 
             <div className="flex flex-wrap justify-center gap-8 md:gap-10 lg:gap-12 mb-16">
-              {events.map((event, idx) => (
+              {events.slice(0, 3).map((event, idx) => (
                 <div
                   key={event.id}
                   className={cn(
