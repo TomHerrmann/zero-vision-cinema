@@ -42,18 +42,6 @@ export default function TicketEmail({
   totalAmount,
   purchaseDate,
 }: Props) {
-  console.log('** EMAIL PROPS **', {
-    eventName,
-    eventImage,
-    quantity,
-    eventDate,
-    eventLocation,
-    eventDescription,
-    eventAddress,
-    customerName,
-    totalAmount,
-    purchaseDate,
-  });
   const date = new Date(eventDate);
   const plural = quantity > 1 ? 's' : '';
   const purchaseDateFormatted = purchaseDate

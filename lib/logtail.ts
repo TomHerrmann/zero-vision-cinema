@@ -5,8 +5,22 @@ import { Logtail } from '@logtail/node';
 // caused Logtail's `_sync` flush to reject with "Unauthorized", which surfaced
 // as the request's error. If no token is configured we no-op; otherwise every
 // call is caught and swallowed.
+// BetterStack provisions each source with a region-specific ingesting host
+// (e.g. s1234567.xx-xxx-x.betterstackdata.com). The SDK otherwise defaults to
+// https://in.logs.betterstack.com, which 401s ("Unauthorized") if the source
+// lives elsewhere — set BETTERSTACK_INGESTING_HOST to the source's ingesting
+// host. Accepts a bare host or a full URL; the https:// scheme is added if
+// missing (the SDK requires a scheme to pick its transport).
 const token = process.env.BETTERSTACK_SOURCE_TOKEN;
-const client = token ? new Logtail(token) : null;
+const host = process.env.BETTERSTACK_INGESTING_HOST?.trim();
+const endpoint = host
+  ? /^https?:\/\//.test(host)
+    ? host
+    : `https://${host}`
+  : undefined;
+const client = token
+  ? new Logtail(token, endpoint ? { endpoint } : undefined)
+  : null;
 
 type Context = Record<string, unknown>;
 

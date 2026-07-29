@@ -15,8 +15,10 @@ const receiver = new Receiver({
 });
 
 /**
- * Absolute base URL QStash calls back to reach our task endpoints. Defaults to
- * the production domain; override with APP_BASE_URL on preview deployments.
+ * Absolute base URL QStash calls back to reach our task endpoints. Set
+ * NEXT_PUBLIC_BASE_URL to the deployment's public https origin; falls back to
+ * the production domain. Must be publicly reachable — cloud QStash cannot call
+ * localhost or a private preview URL.
  */
 export const QSTASH_TARGET_BASE_URL =
   process.env.NEXT_PUBLIC_BASE_URL ?? ZVC_SITE_URL;
