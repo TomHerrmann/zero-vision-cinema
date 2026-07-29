@@ -1,10 +1,8 @@
 import EventCard from '../event-card/event-card';
 import { Event } from '@/payload-types';
 import { cn } from '@/utils/utils';
-import Link from 'next/link';
 import { Film } from 'lucide-react';
 import SectionHeading from '../ui/section-heading';
-import { isSoldOut } from '@/utils/isSoldOut';
 
 type Props = { events: Event[] };
 
@@ -56,33 +54,10 @@ export default function EventsSection({ events }: Props) {
                   )}
                   style={{ animationDelay: `${idx * 150}ms` }}
                 >
-                  <EventCard {...event} isSoldOut={isSoldOut(event)} />
+                  <EventCard {...event} isSoldOut={false} />
                 </div>
               ))}
             </div>
-
-            {/* See more button */}
-            {events.length > 3 && (
-              <div className="flex justify-center">
-                <Link href="/events" className="zvc-btn text-lg py-4 group">
-                  <span>See All Screenings</span>
-                  <svg
-                    className="w-5 h-5 transition-transform group-hover:translate-x-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 8l4 4m0 0l-4 4m4-4H3"
-                    />
-                  </svg>
-                </Link>
-              </div>
-            )}
           </>
         )}
       </div>
