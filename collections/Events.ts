@@ -9,6 +9,7 @@ import {
   fetchBookDataByOpenLibraryId,
 } from '@/lib/openlibrary';
 import { plotToLexical, richTextIsBlank } from '@/utils/omdbFill';
+import { rescheduleRemindersForEvent } from '@/lib/reminders';
 import { Location } from '@/payload-types';
 
 export const Events: CollectionConfig = {
@@ -220,6 +221,45 @@ export const Events: CollectionConfig = {
           );
         }
         return data;
+      },
+    ],
+    afterChange: [
+      async ({ doc, previousDoc, operation, req }) => {
+        // When a published event's date moves, re-sync every attendee's
+        // scheduled reminders to the new date (see lib/reminders). Unpublish/
+        // delete needs no reschedule: the reminder task only finds published
+        // events, so it no-ops for those.
+        if (
+          operation === 'update' &&
+          doc.eventType === 'zvc' &&
+          doc._status === 'published' &&
+          previousDoc?.datetime !== doc.datetime
+        ) {
+          try {
+            await rescheduleRemindersForEvent(req.payload, doc);
+          } catch (err) {
+            await logtail.error(
+              `Events afterChange: failed to reschedule reminders for event ${doc.id}: ${err}`
+            );
+          }
+        }
+        return doc;
+      },
+    ],
+    afterDelete: [
+      async ({ doc, req }) => {
+        if (doc.eventType === 'zvc') {
+          try {
+            await rescheduleRemindersForEvent(req.payload, doc, {
+              cancelOnly: true,
+            });
+          } catch (err) {
+            await logtail.error(
+              `Events afterDelete: failed to cancel reminders for event ${doc.id}: ${err}`
+            );
+          }
+        }
+        return doc;
       },
     ],
   },

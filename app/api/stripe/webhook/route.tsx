@@ -7,6 +7,7 @@ import { logtail } from '@/lib/logtail';
 import { stripe, stripeCheckout } from '@/lib/stripe';
 import { subscribeEmail } from '@/lib/mailerlite';
 import { qstash, QSTASH_TARGET_BASE_URL } from '@/lib/qstash';
+import { scheduleOrderReminders, cancelOrderReminders } from '@/lib/reminders';
 
 export async function POST(req: Request) {
   try {
@@ -216,8 +217,58 @@ export async function POST(req: Request) {
               { method: 'POST', timestamp: new Date().toISOString() }
             );
           }
+
+          // Schedule the pre-event + day-of reminders (QStash delayed delivery).
+          // Store the message ids so they can be cancelled on refund/reschedule.
+          try {
+            const ids = await scheduleOrderReminders(
+              newOrder.id,
+              new Date(event_.datetime),
+              new Date(full.created * 1000)
+            );
+            if (ids.preEventMessageId || ids.dayOfMessageId) {
+              await payload.update({
+                collection: 'orders',
+                id: newOrder.id,
+                data: ids,
+              });
+            }
+          } catch (reminderErr) {
+            await logtail.error(
+              `API /stripe/webhook: failed to schedule reminders for order ${newOrder.id}: ${reminderErr}`,
+              { method: 'POST', timestamp: new Date().toISOString() }
+            );
+          }
         }
 
+        break;
+      }
+
+      case 'charge.refunded': {
+        const charge = event.data.object as Stripe.Charge;
+        const paymentIntentId =
+          typeof charge.payment_intent === 'string'
+            ? charge.payment_intent
+            : (charge.payment_intent?.id ?? null);
+        if (!paymentIntentId) break;
+
+        const payload = await getPayload({ config: payloadConfig });
+        const { docs } = await payload.find({
+          collection: 'orders',
+          where: { paymentIntentId: { equals: paymentIntentId } },
+          limit: 1,
+        });
+        const order = docs[0];
+        if (!order || order.refundedAt) break;
+
+        // Cancel any not-yet-sent reminders and mark the order refunded so the
+        // reminder tasks skip it even if a message is already in flight.
+        await cancelOrderReminders(order);
+        await payload.update({
+          collection: 'orders',
+          id: order.id,
+          data: { refundedAt: new Date().toISOString() },
+        });
         break;
       }
     }

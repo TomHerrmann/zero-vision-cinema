@@ -74,6 +74,41 @@ export const Orders: CollectionConfig = {
       admin: { readOnly: true },
     },
     {
+      // Idempotency guards for the two event reminders (see
+      // app/api/tasks/send-event-reminder). Set once Resend accepts each send.
+      name: 'preEventEmailSentAt',
+      type: 'date',
+      required: false,
+      admin: { readOnly: true },
+    },
+    {
+      name: 'dayOfEmailSentAt',
+      type: 'date',
+      required: false,
+      admin: { readOnly: true },
+    },
+    {
+      // QStash message ids of the scheduled (not-yet-delivered) reminders, so
+      // they can be cancelled on refund or event reschedule/cancel.
+      name: 'preEventMessageId',
+      type: 'text',
+      required: false,
+      admin: { readOnly: true },
+    },
+    {
+      name: 'dayOfMessageId',
+      type: 'text',
+      required: false,
+      admin: { readOnly: true },
+    },
+    {
+      // Set when the order is refunded; the reminder tasks skip a refunded order.
+      name: 'refundedAt',
+      type: 'date',
+      required: false,
+      admin: { readOnly: true },
+    },
+    {
       name: 'productId',
       type: 'text',
       required: true,

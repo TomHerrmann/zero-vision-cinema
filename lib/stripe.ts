@@ -16,3 +16,18 @@ export const stripeCheckout = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   // that otherwise pins the apiVersion literal to an old version.
   apiVersion: '2025-08-27.basil' as Stripe.LatestApiVersion,
 });
+
+/**
+ * Resolve a customer's email from Stripe by customer id. We store the Stripe
+ * customer id on the order (not the email) and look it up at send time, so we
+ * never persist customer emails ourselves. Returns null if the customer was
+ * deleted or has no email; throws on transient Stripe errors (so callers can
+ * retry).
+ */
+export async function getCustomerEmail(
+  customerId: string
+): Promise<string | null> {
+  const customer = await stripeCheckout.customers.retrieve(customerId);
+  if ('deleted' in customer && customer.deleted) return null;
+  return (customer as Stripe.Customer).email ?? null;
+}

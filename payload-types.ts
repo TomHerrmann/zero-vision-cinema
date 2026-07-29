@@ -285,6 +285,11 @@ export interface Order {
   checkoutSessionId?: string | null;
   paymentIntentId?: string | null;
   ticketEmailSentAt?: string | null;
+  preEventEmailSentAt?: string | null;
+  dayOfEmailSentAt?: string | null;
+  preEventMessageId?: string | null;
+  dayOfMessageId?: string | null;
+  refundedAt?: string | null;
   productId: string;
   customerId: string;
   price: number;
@@ -546,6 +551,11 @@ export interface OrdersSelect<T extends boolean = true> {
   checkoutSessionId?: T;
   paymentIntentId?: T;
   ticketEmailSentAt?: T;
+  preEventEmailSentAt?: T;
+  dayOfEmailSentAt?: T;
+  preEventMessageId?: T;
+  dayOfMessageId?: T;
+  refundedAt?: T;
   productId?: T;
   customerId?: T;
   price?: T;
