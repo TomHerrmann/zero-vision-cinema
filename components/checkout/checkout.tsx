@@ -344,20 +344,14 @@ export function CheckoutForm({
 
       {/* Email — needed to send the ticket and to create the Stripe customer.
           LinkAuthenticationElement also enables Link's saved-payment prefill. */}
-      <LinkAuthenticationElement
-        onChange={(e) => setEmail(e.value.email)}
-      />
+      <LinkAuthenticationElement onChange={(e) => setEmail(e.value.email)} />
 
       {/* Wallet buttons (Apple Pay / Google Pay / Link). Hidden entirely when no
           wallet is available so the divider below doesn't dangle. */}
       <div className={walletAvailable ? 'space-y-5' : 'hidden'}>
         {/* While a quantity/newsletter sync is in flight, block the wallet so its
             payment sheet can't open against a stale amount. */}
-        <div
-          className={
-            syncing ? 'pointer-events-none opacity-60' : undefined
-          }
-        >
+        <div className={syncing ? 'pointer-events-none opacity-60' : undefined}>
           <ExpressCheckoutElement
             onConfirm={confirm}
             onReady={(e: StripeExpressCheckoutElementReadyEvent) =>
@@ -389,7 +383,9 @@ export function CheckoutForm({
         </span>
       </label>
 
-      {message && <p className="zvc-body text-cult-classic text-sm">{message}</p>}
+      {message && (
+        <p className="zvc-body text-cult-classic text-sm">{message}</p>
+      )}
 
       <button
         type="submit"
