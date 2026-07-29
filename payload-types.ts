@@ -284,6 +284,7 @@ export interface Order {
   id: number;
   checkoutSessionId?: string | null;
   paymentIntentId?: string | null;
+  ticketEmailSentAt?: string | null;
   productId: string;
   customerId: string;
   price: number;
@@ -544,6 +545,7 @@ export interface MerchSelect<T extends boolean = true> {
 export interface OrdersSelect<T extends boolean = true> {
   checkoutSessionId?: T;
   paymentIntentId?: T;
+  ticketEmailSentAt?: T;
   productId?: T;
   customerId?: T;
   price?: T;

@@ -10,6 +10,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': dirname,
+      // Mirror the tsconfig path so test files that import server routes resolve
+      // the specifier; individual tests still vi.mock it to avoid loading Payload.
+      '@payload-config': path.resolve(dirname, './payload.config.ts'),
     },
   },
   test: {

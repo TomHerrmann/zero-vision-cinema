@@ -5,14 +5,8 @@ import payloadConfig from '@payload-config';
 import { headers } from 'next/headers';
 import { logtail } from '@/lib/logtail';
 import { stripe, stripeCheckout } from '@/lib/stripe';
-import { Resend } from 'resend';
-import { ZVC_EMAIL_ADDRESS } from '@/app/contsants/constants';
-import TicketEmail from '@/emails/TicketEmail';
-import { Location } from '@/payload-types';
 import { subscribeEmail } from '@/lib/mailerlite';
-import { fetchMovieDataByImdbId } from '@/lib/omdb';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { qstash, QSTASH_TARGET_BASE_URL } from '@/lib/qstash';
 
 export async function POST(req: Request) {
   try {
@@ -200,49 +194,25 @@ export async function POST(req: Request) {
           });
         }
 
-        // Ticket email — events only.
+        // Ticket email — events only. Enqueued to QStash so delivery is durable
+        // (retried on failure, dead-lettered + alerted if exhausted) and can't be
+        // swallowed by this webhook request. The task does the OMDB poster lookup
+        // and Resend send; see app/api/tasks/send-ticket-email.
         if (newOrder.id && event_?.id && email) {
-          // image/description are optional on events now — guard both.
-          const eventImage = !event_.image
-            ? null
-            : typeof event_.image === 'object'
-              ? event_.image
-              : await payload.findByID({
-                  collection: 'media',
-                  id: event_.image,
-                });
-
-          // Poster: uploaded blob image if present, else the OMDB poster URL.
-          let posterUrl = eventImage?.filename
-            ? `${process.env.VERCEL_BLOB_URL}${eventImage.filename}`
-            : undefined;
-          if (!posterUrl && event_.imdbId) {
-            const movie = await fetchMovieDataByImdbId(event_.imdbId);
-            posterUrl = movie?.poster || undefined;
-          }
-
           try {
-            await resend.emails.send({
-              from: ZVC_EMAIL_ADDRESS,
-              subject: `Your ZVC Ticket: ${event_.name}`,
-              to: email,
-              react: (
-                <TicketEmail
-                  eventName={event_.name}
-                  eventImage={posterUrl}
-                  eventDate={event_.datetime}
-                  eventLocation={(event_.location as Location).name}
-                  quantity={quantity}
-                  eventDescription={event_.description ?? undefined}
-                  eventAddress={(event_.location as Location).address}
-                  totalAmount={amountPaid / 100}
-                  purchaseDate={transactionDate}
-                />
-              ),
+            await qstash.publishJSON({
+              url: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-ticket-email`,
+              body: { orderId: newOrder.id, email },
+              deduplicationId: `ticket-email:${pi.id}`,
+              retries: 3,
+              failureCallback: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-ticket-email/failure`,
             });
-          } catch (emailError) {
+          } catch (enqueueErr) {
+            // Payment is captured and the order recorded; don't fail the webhook.
+            // Log so a missed enqueue is visible (still far more reliable than the
+            // previous inline send).
             await logtail.error(
-              `API /stripe/webhook: Failed to send ticket email for order ${newOrder.id}: ${emailError}`,
+              `API /stripe/webhook: failed to enqueue ticket email for order ${newOrder.id}: ${enqueueErr}`,
               { method: 'POST', timestamp: new Date().toISOString() }
             );
           }

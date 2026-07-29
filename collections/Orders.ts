@@ -65,6 +65,15 @@ export const Orders: CollectionConfig = {
       unique: true,
     },
     {
+      // Set by the ticket-email task once Resend accepts the send. Doubles as
+      // the delivery-idempotency guard: the task skips if this is already set,
+      // so QStash's at-least-once delivery can't send a duplicate email.
+      name: 'ticketEmailSentAt',
+      type: 'date',
+      required: false,
+      admin: { readOnly: true },
+    },
+    {
       name: 'productId',
       type: 'text',
       required: true,
