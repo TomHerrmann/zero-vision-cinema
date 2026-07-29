@@ -139,7 +139,7 @@ export default async function AstoriaHorrorClubPage() {
                   Community Events
                 </h3>
                 <p className="text-foreground/70">
-                  Block parties and special events bringing horror fans together
+                  Special events bringing horror fans together
                 </p>
               </div>
             </div>
