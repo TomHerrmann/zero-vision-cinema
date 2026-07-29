@@ -203,7 +203,7 @@ export async function POST(req: Request) {
             await qstash.publishJSON({
               url: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-ticket-email`,
               body: { orderId: newOrder.id, email },
-              deduplicationId: `ticket-email:${pi.id}`,
+              deduplicationId: `ticket-email-${pi.id}`,
               retries: 3,
               failureCallback: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-ticket-email/failure`,
             });
