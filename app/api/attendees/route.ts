@@ -59,42 +59,28 @@ export async function GET(req: NextRequest) {
 
     const attendees: Attendee[] = [];
 
-    for (const { checkoutSessionId, createdAt } of orders) {
-      const session =
-        await stripe.checkout.sessions.retrieve(checkoutSessionId);
+    // Orders are only created after a successful payment, and each stores the
+    // Stripe customer + quantity — so the roster is built directly from the
+    // customer, independent of whether the order came from a Checkout Session
+    // (legacy) or a PaymentIntent (current).
+    for (const { customerId, quantity, createdAt } of orders) {
+      if (!customerId) continue;
 
-      if (session.payment_status !== 'paid') {
-        continue;
-      }
+      const customer = await stripe.customers.retrieve(customerId);
+      if (customer.deleted) continue;
 
-      const lineItems = await stripe.checkout.sessions.listLineItems(
-        session.id,
-        {
-          limit: 100,
-          expand: ['data.price.product'],
-        }
-      );
+      const customerName = customer.name ?? 'N/A';
+      const customerEmail = customer.email;
 
-      for (const item of lineItems.data) {
-        const price = item.price;
-        const product =
-          typeof price?.product === 'string' ? null : price?.product;
-
-        if (product?.id !== productId) continue;
-
-        const customerName = session.customer_details?.name ?? null;
-        const customerEmail = session.customer_details?.email ?? null;
-
-        let quantity = item.quantity ?? 1;
-        while (quantity > 0 && !!customerEmail) {
-          attendees.push({
-            eventName,
-            customerName: customerName ?? 'N/A',
-            customerEmail,
-            createdAt,
-          });
-          quantity--;
-        }
+      let remaining = quantity ?? 1;
+      while (remaining > 0 && !!customerEmail) {
+        attendees.push({
+          eventName,
+          customerName,
+          customerEmail,
+          createdAt,
+        });
+        remaining--;
       }
     }
     attendees.sort((a, b) => a.customerName.localeCompare(b.customerName));

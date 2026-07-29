@@ -7,6 +7,7 @@ export const Locations: CollectionConfig = {
   },
   fields: [
     { name: 'name', type: 'text', required: true },
+    { name: 'capacity', type: 'number', required: true, defaultValue: 0 },
     { name: 'address', type: 'text', required: true },
     { name: 'city', type: 'text', required: true },
     { name: 'state', type: 'text', required: true },

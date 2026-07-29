@@ -14,9 +14,8 @@ import {
 } from '@/components/ui/form';
 import { toast } from 'sonner';
 import subscribeSchema from '@/app/(frontend)/(schemas)/subscribeSchema';
-import { cn } from '@/utils/utils';
 import { useState } from 'react';
-import { Loader2Icon, Mail, Sparkles } from 'lucide-react';
+import { Loader2Icon, Mail } from 'lucide-react';
 
 export function NewsletterSignup() {
   const [inFlight, setInFlight] = useState(false);
@@ -55,58 +54,31 @@ export function NewsletterSignup() {
   return (
     <section
       id="newsletter"
-      className="relative py-32 md:py-40 overflow-hidden"
+      className="relative pt-24 md:pt-32 pb-16 md:pb-20 overflow-hidden bg-blackout"
     >
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-accent-color via-accent-color/90 to-background/50" />
-
-      {/* Animated background elements */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-10 right-20 w-64 h-64 bg-primary rounded-full blur-[100px] animate-pulse" />
-        <div
-          className="absolute bottom-20 left-20 w-80 h-80 bg-foreground rounded-full blur-[120px] animate-pulse"
-          style={{ animationDelay: '1.5s' }}
-        />
-      </div>
-
-      {/* Decorative grid overlay */}
-      <div className="absolute inset-0 opacity-[0.03]">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `linear-gradient(to right, white 1px, transparent 1px),
-                             linear-gradient(to bottom, white 1px, transparent 1px)`,
-            backgroundSize: '80px 80px',
-          }}
-        />
-      </div>
+      {/* Blue riso wash + texture */}
+      <div className="absolute inset-0 bg-blue-light/10 pointer-events-none" aria-hidden="true" />
+      <div className="absolute inset-0 zvc-halftone pointer-events-none" aria-hidden="true" />
+      <div className="absolute inset-0 zvc-grain pointer-events-none" aria-hidden="true" />
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 md:px-12">
-        <div className="text-center mb-12">
+        <div className="flex flex-col items-center text-center mb-12">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 mb-8 px-6 py-2 border border-foreground/20 bg-background/20 backdrop-blur-sm">
-            <Sparkles className="w-4 h-4 text-foreground" />
-            <span className="text-sm uppercase tracking-widest text-foreground/90">
-              Stay Updated
-            </span>
-          </div>
+          <span className="zvc-badge mb-8">
+            <Mail className="w-4 h-4" aria-hidden="true" />
+            Stay Updated
+          </span>
 
           {/* Heading */}
-          <h2
-            className={cn(
-              'font-rubik-glitch text-[2.5rem] md:text-[5rem] lg:text-[6rem]',
-              'leading-none mb-6',
-              'text-foreground drop-shadow-lg'
-            )}
-          >
+          <h2 className="zvc-heading text-[2.75rem] md:text-[5rem] lg:text-[6rem] mb-6">
             Join Our Newsletter
           </h2>
 
           {/* Divider */}
-          <div className="w-32 h-1 mx-auto bg-gradient-to-r from-transparent via-foreground to-transparent mb-8" />
+          <span className="zvc-rule mb-8" aria-hidden="true" />
 
           {/* Description */}
-          <p className="text-xl md:text-2xl text-foreground/80 max-w-2xl mx-auto leading-relaxed">
+          <p className="zvc-body text-xl md:text-2xl text-glow/80 max-w-2xl mx-auto leading-relaxed">
             Get updates on upcoming screenings, special events, and cult film
             recommendations delivered to your inbox.
           </p>
@@ -124,22 +96,15 @@ export function NewsletterSignup() {
                     <FormItem className="flex-1">
                       <FormControl>
                         <div className="relative group">
-                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground/40 group-focus-within:text-foreground/60 transition-colors" />
+                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-glow/40 group-focus-within:text-blue-light transition-colors" />
                           <Input
                             placeholder="your@email.com"
                             {...field}
-                            className={cn(
-                              'h-14 pl-12 pr-4 text-lg',
-                              'bg-background/10 backdrop-blur-sm',
-                              'border-2 border-foreground/20',
-                              'text-foreground placeholder:text-foreground/40',
-                              'focus:border-foreground/40 focus:bg-background/20',
-                              'transition-all duration-300'
-                            )}
+                            className="h-14 pl-12 pr-4 text-lg"
                           />
                         </div>
                       </FormControl>
-                      <FormMessage className="text-foreground/90 bg-background/20 backdrop-blur-sm px-3 py-1 rounded mt-2" />
+                      <FormMessage className="text-glow/90 bg-blackout/60 px-3 py-1 mt-2" />
                     </FormItem>
                   )}
                 />
@@ -147,15 +112,7 @@ export function NewsletterSignup() {
                   disabled={inFlight}
                   type="submit"
                   size="lg"
-                  className={cn(
-                    'h-14 px-10 text-lg font-medium',
-                    'bg-foreground text-background',
-                    'hover:bg-foreground/90 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]',
-                    'transition-all duration-300',
-                    'border-2 border-foreground/20',
-                    'disabled:opacity-50 disabled:cursor-not-allowed',
-                    'whitespace-nowrap'
-                  )}
+                  className="h-14 px-10 text-lg disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                 >
                   {inFlight ? (
                     <Loader2Icon className="w-5 h-5 animate-spin" />

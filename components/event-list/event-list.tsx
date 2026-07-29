@@ -2,17 +2,9 @@
 
 import Link from 'next/link';
 import { Button } from '../ui/button';
-import { ArrowDownUp } from 'lucide-react';
-import { Input } from '../ui/input';
 import { useState } from 'react';
-
-type Event = {
-  id: number;
-  name: string;
-  datetime: string;
-  ticketsSold?: number | null | undefined;
-  ticketLimit?: number | null | undefined;
-};
+import type { Event } from '@/payload-types';
+import { isSoldOut } from '@/utils/isSoldOut';
 
 type Props = {
   events: Event[];
@@ -43,9 +35,7 @@ export default function EventList({ events }: Props) {
                   <h2 className="text-xl font-semibold">{event.name}</h2>
                   <p>{event.datetime}</p>
                   <p>Tickets Sold: {event.ticketsSold}</p>
-                  {(event.ticketsSold ?? 0) >= (event.ticketLimit ?? 0) && (
-                    <strong>SOLD OUT</strong>
-                  )}
+                  {isSoldOut(event) && <strong>SOLD OUT</strong>}
                 </div>
                 <Button className="m-4" asChild>
                   <Link href={`/attendees/${event.id}/list`}>

@@ -49,11 +49,29 @@ export const Orders: CollectionConfig = {
   },
   fields: [
     {
+      // Legacy: set by the old Checkout Session flow. Kept (optional, unique)
+      // for historical orders; new orders use `paymentIntentId` instead.
       name: 'checkoutSessionId',
       type: 'text',
-      required: true,
+      required: false,
       admin: { readOnly: true },
       unique: true,
+    },
+    {
+      name: 'paymentIntentId',
+      type: 'text',
+      required: false,
+      admin: { readOnly: true },
+      unique: true,
+    },
+    {
+      // Set by the ticket-email task once Resend accepts the send. Doubles as
+      // the delivery-idempotency guard: the task skips if this is already set,
+      // so QStash's at-least-once delivery can't send a duplicate email.
+      name: 'ticketEmailSentAt',
+      type: 'date',
+      required: false,
+      admin: { readOnly: true },
     },
     {
       name: 'productId',

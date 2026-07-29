@@ -19,10 +19,10 @@ import {
 
 interface Props {
   eventName: string;
-  eventImage: string;
+  eventImage?: string;
   eventDate: string;
   eventLocation: string;
-  eventDescription: SerializedEditorState;
+  eventDescription?: SerializedEditorState;
   eventAddress: string;
   quantity: number;
   customerName?: string;
@@ -42,18 +42,6 @@ export default function TicketEmail({
   totalAmount,
   purchaseDate,
 }: Props) {
-  console.log('** EMAIL PROPS **', {
-    eventName,
-    eventImage,
-    quantity,
-    eventDate,
-    eventLocation,
-    eventDescription,
-    eventAddress,
-    customerName,
-    totalAmount,
-    purchaseDate,
-  });
   const date = new Date(eventDate);
   const plural = quantity > 1 ? 's' : '';
   const purchaseDateFormatted = purchaseDate
@@ -269,13 +257,15 @@ export default function TicketEmail({
                                         align="center"
                                         style={{ padding: '20px 0' }}
                                       >
-                                        <img
-                                          src={eventImage}
-                                          width="200"
-                                          height="300"
-                                          alt="Event Poster"
-                                          style={gmailEventImageStyle}
-                                        />
+                                        {eventImage && (
+                                          <img
+                                            src={eventImage}
+                                            width="200"
+                                            height="300"
+                                            alt="Event Poster"
+                                            style={gmailEventImageStyle}
+                                          />
+                                        )}
                                       </td>
                                     </tr>
                                   </table>

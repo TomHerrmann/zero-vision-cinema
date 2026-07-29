@@ -27,7 +27,7 @@ export default function Nav() {
       className={cn(
         'fixed w-full z-50 top-0 transition-all duration-300',
         scrolled
-          ? 'bg-background/95 backdrop-blur-md border-b border-primary/10 shadow-lg'
+          ? 'bg-blackout border-b-2 border-blue-light/20 shadow-lg'
           : 'bg-transparent'
       )}
     >
@@ -37,12 +37,15 @@ export default function Nav() {
             className="hover:opacity-80 transition-opacity flex gap-3 items-center group"
             href="/"
           >
-            <div className="w-10 h-10 border-2 border-primary/30 flex items-center justify-center group-hover:border-primary/50 transition-colors">
-              <span className="font-rubik-glitch text-primary text-xl">ZVC</span>
-            </div>
-            <h2 className="font-rubik-glitch text-[1.5rem] md:text-[2rem] text-foreground">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logos/zvc_logo_logomark_rgb_color.svg"
+              alt="Zero Vision Cinema logo"
+              className="w-10 h-10 object-contain group-hover:scale-105 transition-transform"
+            />
+            <span className="font-display uppercase text-[1.5rem] md:text-[2rem] text-foreground">
               Zero Vision Cinema
-            </h2>
+            </span>
           </Link>
         ) : (
           <div />
@@ -54,15 +57,15 @@ export default function Nav() {
                 key={href}
                 href={href}
                 className={cn(
-                  'px-4 py-2 text-lg font-medium capitalize',
-                  'text-foreground/90 hover:text-primary',
-                  'transition-all duration-200',
+                  'px-4 py-2 font-utility uppercase tracking-wider text-base',
+                  'text-foreground/90 hover:text-blue-light',
+                  'transition-colors duration-200',
                   'relative group',
                   scrolled ? '' : 'drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]'
                 )}
               >
                 {key}
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-blue-light group-hover:w-full transition-all duration-300" />
               </Link>
             ))}
           </div>

@@ -6,113 +6,105 @@ import { useEffect, useState } from 'react';
 
 export default function Hero() {
   const [scrollY, setScrollY] = useState(0);
+  const [allowMotion, setAllowMotion] = useState(false);
 
   useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setAllowMotion(!mq.matches);
+    if (mq.matches) return;
+
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <section className="relative w-full h-[100svh] min-h-[600px] overflow-hidden">
-      {/* Animated gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-background/95 to-accent-color/30 animate-gradient-shift" />
-
+    <section className="relative w-full h-[100svh] min-h-[600px] overflow-hidden bg-blackout">
       {/* Background image with parallax */}
       <div
         className="absolute inset-0 opacity-20"
-        style={{ transform: `translateY(${scrollY * 0.5}px)` }}
+        style={
+          allowMotion
+            ? { transform: `translateY(${scrollY * 0.4}px)` }
+            : undefined
+        }
       >
         <Image
           src="https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/zvc_blank_header.png"
-          alt="Hero Image"
+          alt=""
           fill
+          aria-hidden="true"
           className="object-cover scale-110"
           priority
         />
       </div>
 
-      {/* Grid pattern overlay */}
-      <div className="absolute inset-0 opacity-[0.03]">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `linear-gradient(to right, oklch(0.987 0.026 102.212) 1px, transparent 1px),
-                             linear-gradient(to bottom, oklch(0.987 0.026 102.212) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px',
-          }}
-        />
-      </div>
+      {/* Wear-and-tear texture stack */}
+      <div
+        className="absolute inset-0 zvc-scanlines pointer-events-none"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 zvc-grain pointer-events-none"
+        aria-hidden="true"
+      />
+      {/* Vignette */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        aria-hidden="true"
+        style={{
+          background:
+            'radial-gradient(120% 100% at 50% 40%, transparent 40%, rgba(0,0,0,0.55) 100%)',
+        }}
+      />
 
       {/* Main content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-full px-6 text-center pt-20 pb-32 md:pt-0 md:pb-0">
-        {/* Glowing accent line */}
-        <div className="w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mb-8 animate-pulse" />
-
-        <h1
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-full px-6 text-center pt-20 pb-32 md:pt-24 md:pb-32">
+        {/* Wordmark logo */}
+        <h1 className="sr-only">Zero Vision Cinema</h1>
+        {/* First-party static SVG; plain img avoids the image optimizer's SVG block */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logos/zvc_logo_logotype_rgb_color_glow-transparent.svg"
+          alt="Zero Vision Cinema"
+          width={600}
+          height={450}
+          aria-hidden="true"
+          // Height-based clamp so the wordmark shrinks on short viewports,
+          // leaving room for the CTAs + scroll cue (avoids overlap).
+          // Inline so it can't be affected by a stale/cached Tailwind CSS chunk.
+          style={{ height: 'clamp(260px, 40vh, 440px)', width: 'auto' }}
           className={cn(
-            'font-rubik-glitch text-[3.5rem] sm:text-[5rem] md:text-[7rem] lg:text-[9rem]',
-            'leading-none mb-6 tracking-tight',
-            'bg-gradient-to-b from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent',
-            'drop-shadow-[0_0_60px_rgba(255,255,255,0.1)]',
-            'animate-in fade-in slide-in-from-bottom-10 duration-1000'
+            'mb-10 zvc-flicker',
+            'drop-shadow-[0_0_60px_rgba(255,255,255,0.08)]',
+            'animate-in fade-in slide-in-from-bottom-8 duration-1000'
           )}
-        >
-          ZERO VISION
-        </h1>
-
-        <h2
-          className={cn(
-            'font-rubik-glitch text-[2rem] sm:text-[3rem] md:text-[4rem] lg:text-[5.5rem]',
-            'leading-none mb-12',
-            'text-foreground/80',
-            'animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-200'
-          )}
-        >
-          CINEMA
-        </h2>
+        />
 
         {/* Tagline */}
         <p
           className={cn(
-            'text-lg md:text-xl lg:text-2xl max-w-3xl mx-auto',
-            'text-foreground/70 font-light tracking-wide mb-12',
-            'animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-500'
+            'font-utility uppercase tracking-[0.28em] text-md md:text-xl',
+            'text-retro-blue mb-10',
+            'animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500'
           )}
         >
-          Niche Movies, Genre Films, and Cult Classics
+          Niche Movies · Genre Films · Cult Classics
         </p>
 
         {/* CTA Buttons */}
         <div
           className={cn(
             'flex flex-col sm:flex-row gap-4 mb-20 md:mb-0',
-            'animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-700'
+            'animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-700'
           )}
         >
-          <a
-            href="#events"
-            className={cn(
-              'group relative px-8 py-4 text-lg font-medium',
-              'bg-primary text-primary-foreground',
-              'hover:bg-primary/90 transition-all duration-300',
-              'border border-primary/20',
-              'overflow-hidden'
-            )}
-          >
-            <span className="relative z-10">View Upcoming Events</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+          <a href="#events" className="zvc-btn text-base md:text-lg py-4">
+            View Upcoming Events
           </a>
-
           <a
             href="#about"
-            className={cn(
-              'group px-8 py-4 text-lg font-medium',
-              'border-2 border-primary/30 text-foreground',
-              'hover:border-primary hover:bg-primary/10',
-              'transition-all duration-300',
-              'backdrop-blur-sm'
-            )}
+            className="zvc-btn-outline text-base md:text-lg py-4"
           >
             Learn More
           </a>
@@ -124,10 +116,13 @@ export default function Hero() {
         className={cn(
           'hidden md:flex absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 z-20',
           'flex-col items-center gap-2',
-          'text-foreground/40 animate-bounce'
+          'text-retro-blue/60 animate-bounce'
         )}
+        aria-hidden="true"
       >
-        <span className="text-xs uppercase tracking-widest">Scroll</span>
+        <span className="font-utility text-xs uppercase tracking-[0.3em]">
+          Scroll
+        </span>
         <svg
           className="w-6 h-6"
           fill="none"
@@ -143,8 +138,8 @@ export default function Hero() {
         </svg>
       </div>
 
-      {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
+      {/* Bottom fade into next section */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-blackout to-transparent pointer-events-none" />
     </section>
   );
 }

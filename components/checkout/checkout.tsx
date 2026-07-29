@@ -1,0 +1,484 @@
+'use client';
+
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from 'react';
+import {
+  Elements,
+  ExpressCheckoutElement,
+  LinkAuthenticationElement,
+  PaymentElement,
+  useElements,
+  useStripe,
+} from '@stripe/react-stripe-js';
+import type {
+  Appearance,
+  StripeElementsOptions,
+  StripeExpressCheckoutElementReadyEvent,
+} from '@stripe/stripe-js';
+import { Checkbox } from '@/components/ui/checkbox';
+import { getStripe } from '@/utils/stripeUtils';
+import CheckoutSuccess from './checkout-success';
+
+const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = publishableKey ? getStripe() : null;
+
+// Stripe Elements themed to the ZVC grindhouse palette (see tailwind.config.ts).
+const appearance: Appearance = {
+  theme: 'night',
+  variables: {
+    colorPrimary: '#4A8CC6', // blue-light
+    colorBackground: '#1F1F1F', // blackout
+    colorText: '#FFFDF6', // glow
+    // Placeholder / secondary text: cool retro-blue instead of the warm tan
+    // Stripe would otherwise derive from the cream colorText.
+    colorTextPlaceholder: 'rgba(158, 183, 204, 0.7)', // retro-blue
+    colorTextSecondary: 'rgba(158, 183, 204, 0.9)', // retro-blue
+    colorDanger: '#7F0028', // cult-classic
+    fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+    borderRadius: '0px',
+    spacingUnit: '4px',
+  },
+  rules: {
+    '.Input': {
+      border: '2px solid rgba(255, 253, 246, 0.15)',
+      backgroundColor: '#1F1F1F',
+    },
+    '.Input:focus': {
+      border: '2px solid #4A8CC6',
+      boxShadow: 'none',
+    },
+    '.Input::placeholder': { color: 'rgba(158, 183, 204, 0.6)' },
+    '.Label': { color: 'rgba(255, 253, 246, 0.7)' },
+    '.Tab, .Block': {
+      border: '2px solid rgba(255, 253, 246, 0.15)',
+      backgroundColor: '#1F1F1F',
+    },
+  },
+};
+
+type Props = {
+  eventId: number;
+  eventName: string;
+  price: number;
+  /** Hosted Stripe payment link, shown as a fallback if checkout can't start. */
+  paymentLink?: string | null;
+};
+
+export default function CheckoutClient({
+  eventId,
+  eventName,
+  price,
+  paymentLink,
+}: Props) {
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
+  const [maxQuantity, setMaxQuantity] = useState(5);
+  const [error, setError] = useState(false);
+  const [completed, setCompleted] = useState(false);
+
+  // If we're returning from a redirect-based payment (e.g. 3DS), resolve the
+  // outcome from the URL instead of starting a new PaymentIntent.
+  const [returning] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).has(
+      'payment_intent_client_secret'
+    );
+  });
+
+  useEffect(() => {
+    if (!returning || !stripePromise) return;
+    const cs = new URLSearchParams(window.location.search).get(
+      'payment_intent_client_secret'
+    );
+    if (!cs) return;
+    let active = true;
+    stripePromise
+      .then((stripe) => stripe?.retrievePaymentIntent(cs))
+      .then((res) => {
+        if (active && res?.paymentIntent?.status === 'succeeded') {
+          setCompleted(true);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [returning]);
+
+  // Create the PaymentIntent once on mount.
+  useEffect(() => {
+    if (returning || !stripePromise) return;
+    let active = true;
+    fetch('/api/stripe/payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventId, quantity: 1, newsletter: false }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('intent failed');
+        return res.json();
+      })
+      .then((data) => {
+        if (!data.clientSecret) throw new Error('missing client secret');
+        if (!active) return;
+        setClientSecret(data.clientSecret);
+        setPaymentIntentId(data.paymentIntentId);
+        setMaxQuantity(data.maxQuantity ?? 5);
+      })
+      .catch(() => {
+        if (active) setError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [eventId, returning]);
+
+  if (completed) return <CheckoutSuccess eventName={eventName} />;
+
+  // Reserve a stable height so the box is the same size while loading (skeleton),
+  // after loading (form), and on error — no layout shift between states. Sized to
+  // the fully-rendered Stripe card form (~1010px); it can still grow if the buyer
+  // switches to a taller payment method, which is Stripe's own dynamic element.
+  const STABLE = 'min-h-[64rem]';
+
+  if (!stripePromise) {
+    return (
+      <div className={`${STABLE} flex items-center justify-center`}>
+        <p className="zvc-body text-glow/70 text-center">
+          Checkout is temporarily unavailable. Please try again later.
+        </p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={`${STABLE} flex items-center justify-center`}>
+        <CheckoutError paymentLink={paymentLink} />
+      </div>
+    );
+  }
+
+  if (!clientSecret || !paymentIntentId) {
+    return <CheckoutSkeleton className={STABLE} />;
+  }
+
+  const options: StripeElementsOptions = { clientSecret, appearance };
+
+  return (
+    <div className={STABLE}>
+      <Elements stripe={stripePromise} options={options}>
+        <CheckoutForm
+          eventId={eventId}
+          price={price}
+          paymentIntentId={paymentIntentId}
+          maxQuantity={maxQuantity}
+          paymentLink={paymentLink}
+          onComplete={() => setCompleted(true)}
+        />
+      </Elements>
+    </div>
+  );
+}
+
+// Exported for unit testing (double-submit guard). Rendered by CheckoutClient
+// inside <Elements>, so it can assume the Stripe context is available.
+export function CheckoutForm({
+  eventId,
+  price,
+  paymentIntentId,
+  maxQuantity,
+  paymentLink,
+  onComplete,
+}: {
+  eventId: number;
+  price: number;
+  paymentIntentId: string;
+  maxQuantity: number;
+  paymentLink?: string | null;
+  onComplete: () => void;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+
+  const [quantity, setQuantity] = useState(1);
+  const [email, setEmail] = useState('');
+  const [newsletter, setNewsletter] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [walletAvailable, setWalletAvailable] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const total = price * quantity;
+  const returnUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/events/${eventId}?checkout=success`
+      : '';
+
+  // Tracks the in-flight metadata/amount sync so payment confirmation can wait
+  // for it to finish before charging (see `confirm`). `tokenRef` identifies the
+  // latest sync so a superseded one doesn't clear the spinner early.
+  const pendingSync = useRef<Promise<void> | null>(null);
+  const tokenRef = useRef<symbol | null>(null);
+  // Synchronous re-entrancy guard: prevents a second charge if `confirm` is
+  // invoked again (rapid double-click, or the wallet's onConfirm) before React
+  // has re-rendered the disabled button. This is the real double-charge guard;
+  // the button's `disabled` state is only a visual affordance on top of it.
+  const submittingRef = useRef(false);
+
+  // Push quantity/newsletter changes to the PaymentIntent, then re-sync Elements
+  // so the card form and wallet sheet reflect the new amount.
+  const syncIntent = useCallback(
+    (nextQuantity: number, nextNewsletter: boolean): Promise<void> => {
+      if (!elements) return Promise.resolve();
+      setSyncing(true);
+      const token = Symbol('sync');
+      tokenRef.current = token;
+      const run = (async () => {
+        try {
+          await fetch('/api/stripe/payment-intent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              eventId,
+              quantity: nextQuantity,
+              newsletter: nextNewsletter,
+              paymentIntentId,
+            }),
+          });
+          await elements.fetchUpdates();
+        } finally {
+          // Only clear the spinner if no newer sync superseded this one.
+          if (tokenRef.current === token) setSyncing(false);
+        }
+      })();
+      pendingSync.current = run;
+      return run;
+    },
+    [elements, eventId, paymentIntentId]
+  );
+
+  const handleQuantity = (value: number) => {
+    setQuantity(value);
+    void syncIntent(value, newsletter);
+  };
+
+  const handleNewsletter = (value: boolean) => {
+    setNewsletter(value);
+    void syncIntent(quantity, value);
+  };
+
+  const confirm = useCallback(async () => {
+    if (!stripe || !elements) return;
+    // Bail if a charge is already in flight (checked/set synchronously so it
+    // holds even before the button's disabled state renders).
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setSubmitting(true);
+    setMessage(null);
+
+    // Wait for any in-flight quantity/newsletter sync to finish so the
+    // PaymentIntent's amount and metadata are current before we charge. The
+    // wallet (Express Checkout) button isn't blocked by React's disabled state,
+    // so without this a fast tap could confirm against a stale PaymentIntent.
+    if (pendingSync.current) await pendingSync.current;
+
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: returnUrl,
+        receipt_email: email || undefined,
+      },
+      redirect: 'if_required',
+    });
+
+    if (error) {
+      // Payment failed — allow another attempt.
+      submittingRef.current = false;
+      setMessage(error.message ?? 'Payment failed. Please try again.');
+      setSubmitting(false);
+      return;
+    }
+
+    if (paymentIntent && paymentIntent.status === 'succeeded') {
+      onComplete();
+      return;
+    }
+
+    // Redirecting to complete (e.g. 3DS) — leave the submitting state (and the
+    // guard) set; the page is navigating away.
+  }, [stripe, elements, returnUrl, email, onComplete]);
+
+  const handleCardSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    await confirm();
+  };
+
+  return (
+    <form onSubmit={handleCardSubmit} className="space-y-5">
+      <div className="flex items-center justify-between">
+        <label className="zvc-body text-glow/80 text-sm flex items-center gap-3">
+          Quantity
+          <select
+            value={quantity}
+            onChange={(e) => handleQuantity(Number(e.target.value))}
+            disabled={submitting}
+            className="bg-blackout border-2 border-glow/15 text-glow px-3 py-2 outline-none focus:border-blue-light disabled:opacity-60"
+          >
+            {Array.from({ length: maxQuantity }, (_, i) => i + 1).map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+        </label>
+        <span className="text-xl font-bold text-blue-light">
+          ${total.toFixed(2)}
+        </span>
+      </div>
+
+      {/* Email — needed to send the ticket and to create the Stripe customer.
+          LinkAuthenticationElement also enables Link's saved-payment prefill. */}
+      <LinkAuthenticationElement onChange={(e) => setEmail(e.value.email)} />
+
+      {/* Wallet buttons (Apple Pay / Google Pay / Link). Hidden entirely when no
+          wallet is available so the divider below doesn't dangle. */}
+      <div className={walletAvailable ? 'space-y-5' : 'hidden'}>
+        {/* While a quantity/newsletter sync is in flight, block the wallet so its
+            payment sheet can't open against a stale amount. */}
+        <div className={syncing ? 'pointer-events-none opacity-60' : undefined}>
+          <ExpressCheckoutElement
+            onConfirm={confirm}
+            onReady={(e: StripeExpressCheckoutElementReadyEvent) =>
+              setWalletAvailable(Boolean(e.availablePaymentMethods))
+            }
+          />
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-glow/15" />
+          <span className="zvc-body text-glow/50 text-xs uppercase tracking-wide">
+            or pay with card
+          </span>
+          <span className="h-px flex-1 bg-glow/15" />
+        </div>
+      </div>
+
+      <PaymentElement options={{ layout: 'tabs' }} />
+
+      <label className="flex items-start gap-3 cursor-pointer select-none">
+        <Checkbox
+          checked={newsletter}
+          onCheckedChange={(v) => handleNewsletter(v === true)}
+          disabled={submitting}
+          className="mt-1 border-blue-light data-[state=checked]:bg-blue-light data-[state=checked]:border-blue-light"
+        />
+        <span className="zvc-body text-glow/80 text-sm leading-relaxed">
+          Subscribe to the ZVC newsletter for upcoming screenings and cult film
+          picks.
+        </span>
+      </label>
+
+      {message && (
+        <p className="zvc-body text-cult-classic text-sm">{message}</p>
+      )}
+
+      <button
+        type="submit"
+        disabled={!stripe || submitting || syncing}
+        className="zvc-btn w-full text-base py-3 disabled:opacity-60"
+      >
+        {submitting ? 'Processing…' : `Pay $${total.toFixed(2)}`}
+      </button>
+
+      {paymentLink && (
+        <a
+          href={paymentLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block text-center zvc-body text-glow/50 text-sm underline"
+        >
+          Trouble checking out? Use our secure payment link.
+        </a>
+      )}
+    </form>
+  );
+}
+
+function CheckoutError({ paymentLink }: { paymentLink?: string | null }) {
+  return (
+    <div className="text-center py-8">
+      <p className="zvc-body text-glow/70 mb-5">
+        We couldn&apos;t start checkout right now.
+      </p>
+      {paymentLink ? (
+        <a
+          href={paymentLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="zvc-btn text-base py-3"
+        >
+          Continue to Payment
+        </a>
+      ) : (
+        <p className="zvc-body text-glow/50 text-sm">
+          Please try again in a moment.
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Placeholder shown while the PaymentIntent + Stripe Elements load. Mirrors the
+ * form's structure (quantity, email, payment fields, newsletter, pay button) so
+ * the box height stays stable and doesn't jump when the real form mounts.
+ */
+function CheckoutSkeleton({ className }: { className?: string }) {
+  const block = 'bg-glow/10 border-2 border-glow/10';
+  return (
+    <div
+      className={`flex flex-col space-y-5 animate-pulse ${className ?? ''}`}
+      aria-hidden="true"
+    >
+      {/* Quantity + total */}
+      <div className="flex items-center justify-between">
+        <div className="h-10 w-28 bg-glow/10" />
+        <div className="h-6 w-20 bg-blue-light/20" />
+      </div>
+      {/* Email */}
+      <div className={`h-[76px] w-full ${block}`} />
+      {/* Wallet buttons */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="h-11 bg-glow/10" />
+        <div className="h-11 bg-glow/10" />
+      </div>
+      {/* Divider */}
+      <div className="flex items-center gap-3">
+        <span className="h-px flex-1 bg-glow/15" />
+        <span className="h-3 w-24 bg-glow/10" />
+        <span className="h-px flex-1 bg-glow/15" />
+      </div>
+      {/* Payment element — fills remaining height so the box height is stable */}
+      <div className="flex-1 flex flex-col gap-3">
+        <div className="grid grid-cols-4 gap-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className={`h-14 ${block}`} />
+          ))}
+        </div>
+        <div className={`flex-1 w-full ${block}`} />
+      </div>
+      {/* Newsletter */}
+      <div className="flex items-start gap-3">
+        <div className="h-5 w-5 bg-glow/10 border border-blue-light/30" />
+        <div className="h-4 flex-1 bg-glow/10" />
+      </div>
+      {/* Pay button */}
+      <div className="h-12 w-full bg-glow/20" />
+    </div>
+  );
+}

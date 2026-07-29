@@ -178,6 +178,7 @@ export interface Media {
 export interface Location {
   id: number;
   name: string;
+  capacity: number;
   address: string;
   city: string;
   state: string;
@@ -193,8 +194,31 @@ export interface Location {
  */
 export interface Event {
   id: number;
+  /**
+   * ZVC = paid screening (full fields). AHC = free movie event. Book Club = free event driven by a book title + author.
+   */
+  eventType: 'zvc' | 'ahc' | 'bookclub';
+  /**
+   * Optional — leave blank to auto-fill from the movie ("Title (Year)") or book ("Title — Author").
+   */
   name: string;
-  description: {
+  /**
+   * Found on the IMDb movie URL — e.g. tt0082418. On blur the name auto-fills; description fills on save; the poster shows from OMDB (not stored). All editable.
+   */
+  imdbId?: string | null;
+  /**
+   * When both title and author are filled, the book is looked up on Open Library as you leave the field.
+   */
+  bookTitle?: string | null;
+  bookAuthor?: string | null;
+  /**
+   * Set automatically from the book lookup — used to fetch the cover and summary.
+   */
+  openLibraryId?: string | null;
+  /**
+   * Optional. If left blank and an IMDb ID is set, the OMDB summary is used.
+   */
+  description?: {
     root: {
       type: string;
       children: {
@@ -208,9 +232,12 @@ export interface Event {
       version: number;
     };
     [k: string]: unknown;
-  };
-  image: number | Media;
-  price: number;
+  } | null;
+  /**
+   * Optional. If left blank and an IMDb ID is set, the OMDB poster is used.
+   */
+  image?: (number | null) | Media;
+  price?: number | null;
   location: number | Location;
   datetime: string;
   /**
@@ -225,10 +252,6 @@ export interface Event {
    * This id is automatically generated when the event is published
    */
   priceId?: string | null;
-  /**
-   * Maximum number of tickets that can be sold for this event
-   */
-  ticketLimit?: number | null;
   ticketsSold?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -259,7 +282,9 @@ export interface Merch {
  */
 export interface Order {
   id: number;
-  checkoutSessionId: string;
+  checkoutSessionId?: string | null;
+  paymentIntentId?: string | null;
+  ticketEmailSentAt?: string | null;
   productId: string;
   customerId: string;
   price: number;
@@ -467,6 +492,7 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface LocationsSelect<T extends boolean = true> {
   name?: T;
+  capacity?: T;
   address?: T;
   city?: T;
   state?: T;
@@ -481,7 +507,12 @@ export interface LocationsSelect<T extends boolean = true> {
  * via the `definition` "events_select".
  */
 export interface EventsSelect<T extends boolean = true> {
+  eventType?: T;
   name?: T;
+  imdbId?: T;
+  bookTitle?: T;
+  bookAuthor?: T;
+  openLibraryId?: T;
   description?: T;
   image?: T;
   price?: T;
@@ -490,7 +521,6 @@ export interface EventsSelect<T extends boolean = true> {
   paymentLink?: T;
   productId?: T;
   priceId?: T;
-  ticketLimit?: T;
   ticketsSold?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -514,6 +544,8 @@ export interface MerchSelect<T extends boolean = true> {
  */
 export interface OrdersSelect<T extends boolean = true> {
   checkoutSessionId?: T;
+  paymentIntentId?: T;
+  ticketEmailSentAt?: T;
   productId?: T;
   customerId?: T;
   price?: T;
