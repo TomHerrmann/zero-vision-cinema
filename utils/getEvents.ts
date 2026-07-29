@@ -6,7 +6,7 @@ const payload = await getPayload({ config: payloadConfig });
 const nowMinus30Minutes = new Date(Date.now() - 30 * 60 * 1000).toISOString();
 const now = new Date().toISOString();
 
-export const getUpcomingEvents = async () => {
+export const getUpcomingZvcEvents = async () => {
   const { docs } = await payload.find({
     collection: 'events',
     where: {
@@ -27,12 +27,13 @@ export const getUpcomingEvents = async () => {
   return docs;
 };
 
-export const getEventById = async (id: number) => {
+export const getZvcEventById = async (id: number) => {
   const { docs } = await payload.find({
     collection: 'events',
     where: {
       _status: { equals: 'published' },
       id: { equals: id },
+      eventType: { equals: 'zvc' },
     },
     // depth 2 resolves image + location.
     depth: 2,
@@ -42,7 +43,7 @@ export const getEventById = async (id: number) => {
   return docs[0] ?? null;
 };
 
-export const getAllEvents = async () => {
+export const getAllZvcEvents = async () => {
   const { docs } = await payload.find({
     collection: 'events',
     where: {
@@ -60,7 +61,7 @@ export const getAllEvents = async () => {
   return docs;
 };
 
-export const getPastEvents = async () => {
+export const getPastZvcEvents = async () => {
   const { docs } = await payload.find({
     collection: 'events',
     where: {

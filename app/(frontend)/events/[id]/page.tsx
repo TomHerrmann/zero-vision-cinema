@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { RichText } from '@payloadcms/richtext-lexical/react';
 import { Calendar, MapPin, DollarSign, Star } from 'lucide-react';
-import { getEventById } from '@/utils/getEvents';
+import { getZvcEventById } from '@/utils/getEvents';
 import { Location, Media } from '@/payload-types';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import { richTextIsEmpty } from '@/utils/richText';
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const event = Number.isNaN(Number(id))
     ? null
-    : await getEventById(Number(id));
+    : await getZvcEventById(Number(id));
   if (!event) return { title: 'Event Not Found' };
   return {
     title: `${event.name} — Tickets`,
@@ -44,7 +44,7 @@ export default async function EventTicketPage({ params }: Props) {
   const { id } = await params;
   const event = Number.isNaN(Number(id))
     ? null
-    : await getEventById(Number(id));
+    : await getZvcEventById(Number(id));
 
   if (!event) notFound();
 

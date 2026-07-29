@@ -1,6 +1,5 @@
 /**
- * OMDB API helper. We persist the normalized result onto the Event (see
- * collections/Events.ts) so pages never call OMDB at render time.
+ * OMDB API helper.
  */
 
 export type MovieData = {

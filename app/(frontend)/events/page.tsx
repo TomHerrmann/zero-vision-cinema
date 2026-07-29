@@ -1,4 +1,4 @@
-import { getUpcomingEvents } from '@/utils/getEvents';
+import { getUpcomingZvcEvents } from '@/utils/getEvents';
 import { isSoldOut } from '@/utils/isSoldOut';
 import EventCard from '@/components/event-card/event-card';
 import '../globals.css';
@@ -10,7 +10,7 @@ import SectionHeading from '@/components/ui/section-heading';
 export const revalidate = 300;
 
 export default async function EventsPage() {
-  const events = await getUpcomingEvents();
+  const events = await getUpcomingZvcEvents();
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-blackout">

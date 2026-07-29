@@ -7,7 +7,7 @@ import {
 } from '@/app/contsants/constants';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { getUpcomingEvents } from '@/utils/getEvents';
+import { getUpcomingZvcEvents } from '@/utils/getEvents';
 import { isSoldOut } from '@/utils/isSoldOut';
 import Link from 'next/link';
 
@@ -48,7 +48,7 @@ const socialLins: LinkItem[] = [
 ];
 
 export default async function TreeLinkPage() {
-  const events = await getUpcomingEvents();
+  const events = await getUpcomingZvcEvents();
 
   const eventLinks = events
     .filter((event) => !isSoldOut(event))
