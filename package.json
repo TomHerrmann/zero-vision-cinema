@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
-    "dev:email": "email dev",
+    "dev:email": "email dev --dir emails/previews",
+    "email:send": "tsx --tsconfig tsconfig.scripts.json --env-file=.env.local scripts/preview-emails.tsx",
     "build": "payload migrate && next build",
     "postbuild": "next-sitemap",
     "payload": "payload",
