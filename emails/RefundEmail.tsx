@@ -46,14 +46,14 @@ function fmtDate(iso: string): string {
 }
 
 export default function RefundEmail({
-  eventName = 'Zero Event',
-  orderNumber = 12345,
-  refundAmount = 10,
-  currency = 'USD',
-  cardBrand = 'Zero Card',
-  cardLast4 = '1234',
-  refundDate = new Date().toISOString(),
-  receiptUrl = '#',
+  eventName,
+  orderNumber,
+  refundAmount,
+  currency,
+  cardBrand,
+  cardLast4,
+  refundDate,
+  receiptUrl,
 }: Props) {
   const refundedTo =
     cardBrand && cardLast4 ? `${cardBrand} ending in ${cardLast4}` : null;

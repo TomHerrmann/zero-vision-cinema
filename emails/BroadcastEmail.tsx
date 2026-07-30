@@ -96,29 +96,18 @@ function formatEventDate(iso: string): string {
 }
 
 export default function BroadcastEmail({
-  kind = 'announcement',
-  paid = true,
-  headerImage = EMAIL_HEADER_IMAGE_ZVC_URL,
-  eventName = 'Terminator 2: Judgment Day',
-  eventImage = 'https://m.media-amazon.com/images/M/MV5BNGMyMGNkMDUtMjc2Ni00NWFlLTgyODEtZTY2MzBiZTg0OWZiXkEyXkFqcGc@._V1_SX1000.jpg',
-  eventDate = new Date().toISOString(),
-  eventLocation = 'SingleCut Beersmiths QNS',
-  eventAddress = '19-33 37th St, Astoria, NY 11105',
+  kind,
+  paid,
+  headerImage,
+  eventName,
+  eventImage,
+  eventDate,
+  eventLocation,
+  eventAddress,
   eventDescription,
-  movie = {
-    title: 'Terminator 2: Judgment Day',
-    year: '1991',
-    rated: 'R',
-    runtime: '137 min',
-    genre: 'Action, Sci-Fi',
-    director: 'James Cameron',
-    actors: 'Arnold Schwarzenegger, Linda Hamilton',
-    plot: 'A cyborg must protect a young John Connor from a more advanced and powerful cyborg.',
-    imdbRating: '8.6',
-    poster: '',
-  },
-  book = null,
-  eventUrl = `${ZVC_SITE_URL}/events/1`,
+  movie,
+  book,
+  eventUrl,
 }: Props) {
   const variant = paid ? COPY.paid : COPY.free;
   const c = variant[kind];
