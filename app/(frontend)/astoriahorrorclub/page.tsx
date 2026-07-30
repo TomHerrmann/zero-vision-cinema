@@ -172,13 +172,20 @@ export default async function AstoriaHorrorClubPage() {
               <div className="w-32 h-1 mx-auto bg-gradient-to-r from-transparent via-blue-light to-transparent" />
             </div>
 
-            <div className="flex flex-wrap justify-center gap-8 md:gap-10">
-              {events.map((event) => (
+            <div className="flex flex-wrap justify-center gap-8 md:gap-10 lg:gap-12 mb-16">
+              {events.slice(0, 3).map((event, idx) => (
                 <div
                   key={event.id}
-                  className="w-full sm:flex-1 sm:min-w-[450px] sm:max-w-[540px]"
+                  className={cn(
+                    // Full width on phones; from sm+ each card is at least 450px
+                    // (so long titles don't truncate), growing to fill and
+                    // wrapping when a row can't fit another 450px card.
+                    'w-full sm-flex-1 sm:w-[360px] sm:grow max-w-[450px]',
+                    'animate-in fade-in slide-in-from-bottom-8 duration-700'
+                  )}
+                  style={{ animationDelay: `${idx * 150}ms` }}
                 >
-                  <EventCard {...event} />
+                  <EventCard {...event} isSoldOut={false} />
                 </div>
               ))}
             </div>
