@@ -4,7 +4,9 @@ import payloadConfig from '@payload-config';
 import { Resend } from 'resend';
 import { logtail } from '@/lib/logtail';
 import { verifyQstashRequest } from '@/lib/qstash';
-import { ZVC_EMAIL_ADDRESS } from '@/app/contsants/constants';
+import { getReceiptDetails } from '@/lib/stripe';
+import { signRefundToken } from '@/lib/refundToken';
+import { ZVC_EMAIL_ADDRESS, ZVC_SITE_URL } from '@/app/contsants/constants';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import TicketEmail from '@/emails/TicketEmail';
 import type { Event, Location, Media } from '@/payload-types';
@@ -100,22 +102,32 @@ export async function POST(req: Request) {
       );
     }
 
+    // OMDB film data (plot, director, year, rating, …) when an IMDb id is set —
+    // shown in the email's About section, and used as the poster fallback.
+    const movie = event_.imdbId
+      ? await fetchMovieDataByImdbId(event_.imdbId)
+      : null;
+
     // Poster: uploaded blob image if present, else the OMDB poster URL.
     const image =
       typeof event_.image === 'object' ? (event_.image as Media) : null;
-    let posterUrl = image?.filename
+    const posterUrl = image?.filename
       ? `${process.env.VERCEL_BLOB_URL}${image.filename}`
-      : undefined;
-    if (!posterUrl && event_.imdbId) {
-      const movie = await fetchMovieDataByImdbId(event_.imdbId);
-      posterUrl = movie?.poster || undefined;
-    }
+      : movie?.poster || undefined;
 
     const location = event_.location as Location;
 
+    // Receipt fields from Stripe (card brand/last4, currency, receipt URL) so the
+    // ticket email doubles as a compliant receipt. Resolved at send time; never
+    // stored by us.
+    const receipt = order.paymentIntentId
+      ? await getReceiptDetails(order.paymentIntentId)
+      : {};
+    const refundUrl = `${ZVC_SITE_URL}/refund?order=${order.id}&token=${signRefundToken(order.id)}`;
+
     const { error: sendError } = await resend.emails.send({
       from: ZVC_EMAIL_ADDRESS,
-      subject: `Your ZVC Ticket: ${event_.name}`,
+      subject: `Your ZVC Ticket & Receipt: ${event_.name}`,
       to: email,
       react: (
         <TicketEmail
@@ -125,9 +137,16 @@ export async function POST(req: Request) {
           eventLocation={location.name}
           quantity={order.quantity}
           eventDescription={event_.description ?? undefined}
+          movie={movie}
           eventAddress={location.address}
           totalAmount={order.amountPaid}
           purchaseDate={order.transactionDate}
+          orderNumber={order.id}
+          cardBrand={receipt.cardBrand}
+          cardLast4={receipt.cardLast4}
+          currency={receipt.currency}
+          receiptUrl={receipt.receiptUrl ?? order.receiptUrl}
+          refundUrl={refundUrl}
         />
       ),
     });

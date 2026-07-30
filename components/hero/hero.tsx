@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { cn } from '@/utils/utils';
 import { useEffect, useState } from 'react';
+import { WEB_PAGE_HEADER_IMAGE_ZVC_URL } from '@/app/contsants/constants';
 
 export default function Hero() {
   const [scrollY, setScrollY] = useState(0);
@@ -30,7 +31,7 @@ export default function Hero() {
         }
       >
         <Image
-          src="https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/zvc_blank_header.png"
+          src={WEB_PAGE_HEADER_IMAGE_ZVC_URL}
           alt=""
           fill
           aria-hidden="true"

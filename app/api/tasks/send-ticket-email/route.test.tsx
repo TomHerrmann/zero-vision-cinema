@@ -8,6 +8,7 @@ const h = vi.hoisted(() => ({
   update: vi.fn().mockResolvedValue({}),
   send: vi.fn(),
   fetchMovie: vi.fn(),
+  getReceipt: vi.fn(),
 }));
 
 vi.mock('@/lib/qstash', () => ({
@@ -15,6 +16,7 @@ vi.mock('@/lib/qstash', () => ({
   qstash: {},
   QSTASH_TARGET_BASE_URL: '',
 }));
+vi.mock('@/lib/stripe', () => ({ getReceiptDetails: h.getReceipt }));
 vi.mock('payload', () => ({
   getPayload: vi.fn().mockResolvedValue({
     findByID: h.findByID,
@@ -64,6 +66,12 @@ beforeEach(() => {
   h.update.mockReset().mockResolvedValue({});
   h.send.mockReset().mockResolvedValue({ data: { id: 'email_1' }, error: null });
   h.fetchMovie.mockReset().mockResolvedValue(null);
+  h.getReceipt.mockReset().mockResolvedValue({
+    cardBrand: 'Visa',
+    cardLast4: '4242',
+    currency: 'USD',
+    receiptUrl: 'https://receipt',
+  });
 });
 
 describe('send-ticket-email task', () => {

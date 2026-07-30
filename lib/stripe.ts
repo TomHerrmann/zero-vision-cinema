@@ -31,3 +31,42 @@ export async function getCustomerEmail(
   if ('deleted' in customer && customer.deleted) return null;
   return (customer as Stripe.Customer).email ?? null;
 }
+
+const CARD_BRAND_LABELS: Record<string, string> = {
+  visa: 'Visa',
+  mastercard: 'Mastercard',
+  amex: 'American Express',
+  discover: 'Discover',
+  diners: 'Diners Club',
+  jcb: 'JCB',
+  unionpay: 'UnionPay',
+};
+
+export type ReceiptDetails = {
+  cardBrand?: string;
+  cardLast4?: string;
+  currency?: string;
+  receiptUrl?: string;
+};
+
+/**
+ * Receipt fields for the ticket/refund emails, resolved from Stripe (never
+ * stored by us): card brand + last4, currency, and the Stripe-hosted receipt
+ * URL. Looked up from the PaymentIntent's latest charge.
+ */
+export async function getReceiptDetails(
+  paymentIntentId: string
+): Promise<ReceiptDetails> {
+  const pi = await stripeCheckout.paymentIntents.retrieve(paymentIntentId, {
+    expand: ['latest_charge'],
+  });
+  const charge = (pi.latest_charge as Stripe.Charge | null) ?? null;
+  const card = charge?.payment_method_details?.card ?? null;
+  const brand = card?.brand;
+  return {
+    cardBrand: brand ? (CARD_BRAND_LABELS[brand] ?? brand) : undefined,
+    cardLast4: card?.last4 ?? undefined,
+    currency: charge?.currency ? charge.currency.toUpperCase() : undefined,
+    receiptUrl: charge?.receipt_url ?? undefined,
+  };
+}

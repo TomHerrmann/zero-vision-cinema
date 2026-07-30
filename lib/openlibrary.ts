@@ -4,6 +4,11 @@
  * time (cached), so nothing is copied into blob storage.
  */
 
+import {
+  OPEN_LIBRARY_BASE_URL,
+  OPEN_LIBRARY_COVER_BASE_URL,
+} from '@/app/contsants/constants';
+
 export type BookSearchResult = {
   workId: string; // e.g. "OL81633W"
   title: string;
@@ -20,7 +25,7 @@ export type BookData = {
 const THIRTY_DAYS_IN_SECONDS = 60 * 60 * 24 * 30;
 
 const coverUrl = (coverId: number | undefined | null): string =>
-  coverId ? `https://covers.openlibrary.org/b/id/${coverId}-L.jpg` : '';
+  coverId ? `${OPEN_LIBRARY_COVER_BASE_URL}/b/id/${coverId}-L.jpg` : '';
 
 /** Bare work id ("OL81633W") from a work key ("/works/OL81633W" or "OL81633W"). */
 const toWorkId = (key: string): string => key.replace(/^\/works\//, '');
@@ -36,7 +41,7 @@ type OLDoc = {
 async function olSearch(params: string): Promise<OLDoc[]> {
   try {
     const res = await fetch(
-      `https://openlibrary.org/search.json?${params}` +
+      `${OPEN_LIBRARY_BASE_URL}/search.json?${params}` +
         `&fields=key,title,author_name,first_publish_year,cover_i`,
       { next: { revalidate: THIRTY_DAYS_IN_SECONDS } }
     );
@@ -110,7 +115,7 @@ export async function fetchBookDataByOpenLibraryId(
   const id = toWorkId(workId);
 
   try {
-    const res = await fetch(`https://openlibrary.org/works/${id}.json`, {
+    const res = await fetch(`${OPEN_LIBRARY_BASE_URL}/works/${id}.json`, {
       next: { revalidate: THIRTY_DAYS_IN_SECONDS },
     });
     if (!res.ok) return null;

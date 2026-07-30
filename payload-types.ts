@@ -253,6 +253,10 @@ export interface Event {
    */
   priceId?: string | null;
   ticketsSold?: number | null;
+  announcementMessageId?: string | null;
+  reminderMessageId?: string | null;
+  announcementSentAt?: string | null;
+  reminderSentAt?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -285,11 +289,8 @@ export interface Order {
   checkoutSessionId?: string | null;
   paymentIntentId?: string | null;
   ticketEmailSentAt?: string | null;
-  preEventEmailSentAt?: string | null;
-  dayOfEmailSentAt?: string | null;
-  preEventMessageId?: string | null;
-  dayOfMessageId?: string | null;
   refundedAt?: string | null;
+  refundEmailSentAt?: string | null;
   productId: string;
   customerId: string;
   price: number;
@@ -527,6 +528,10 @@ export interface EventsSelect<T extends boolean = true> {
   productId?: T;
   priceId?: T;
   ticketsSold?: T;
+  announcementMessageId?: T;
+  reminderMessageId?: T;
+  announcementSentAt?: T;
+  reminderSentAt?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -551,11 +556,8 @@ export interface OrdersSelect<T extends boolean = true> {
   checkoutSessionId?: T;
   paymentIntentId?: T;
   ticketEmailSentAt?: T;
-  preEventEmailSentAt?: T;
-  dayOfEmailSentAt?: T;
-  preEventMessageId?: T;
-  dayOfMessageId?: T;
   refundedAt?: T;
+  refundEmailSentAt?: T;
   productId?: T;
   customerId?: T;
   price?: T;

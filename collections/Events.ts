@@ -9,7 +9,7 @@ import {
   fetchBookDataByOpenLibraryId,
 } from '@/lib/openlibrary';
 import { plotToLexical, richTextIsBlank } from '@/utils/omdbFill';
-import { rescheduleRemindersForEvent } from '@/lib/reminders';
+import { rescheduleEventBroadcasts } from '@/lib/broadcasts';
 import { Location } from '@/payload-types';
 
 export const Events: CollectionConfig = {
@@ -225,21 +225,21 @@ export const Events: CollectionConfig = {
     ],
     afterChange: [
       async ({ doc, previousDoc, operation, req }) => {
-        // When a published event's date moves, re-sync every attendee's
-        // scheduled reminders to the new date (see lib/reminders). Unpublish/
-        // delete needs no reschedule: the reminder task only finds published
-        // events, so it no-ops for those.
+        // Schedule/reschedule the announcement + reminder broadcasts (all event
+        // types) when the event is published, its date moves, or it's
+        // unpublished. `skipBroadcastReschedule` guards the internal message-id
+        // write below from recursing.
+        const dateChanged = previousDoc?.datetime !== doc.datetime;
+        const statusChanged = previousDoc?._status !== doc._status;
         if (
-          operation === 'update' &&
-          doc.eventType === 'zvc' &&
-          doc._status === 'published' &&
-          previousDoc?.datetime !== doc.datetime
+          !req.context?.skipBroadcastReschedule &&
+          (operation === 'create' || dateChanged || statusChanged)
         ) {
           try {
-            await rescheduleRemindersForEvent(req.payload, doc);
+            await rescheduleEventBroadcasts(req.payload, doc);
           } catch (err) {
             await logtail.error(
-              `Events afterChange: failed to reschedule reminders for event ${doc.id}: ${err}`
+              `Events afterChange: failed to (re)schedule broadcasts for event ${doc.id}: ${err}`
             );
           }
         }
@@ -248,16 +248,14 @@ export const Events: CollectionConfig = {
     ],
     afterDelete: [
       async ({ doc, req }) => {
-        if (doc.eventType === 'zvc') {
-          try {
-            await rescheduleRemindersForEvent(req.payload, doc, {
-              cancelOnly: true,
-            });
-          } catch (err) {
-            await logtail.error(
-              `Events afterDelete: failed to cancel reminders for event ${doc.id}: ${err}`
-            );
-          }
+        try {
+          await rescheduleEventBroadcasts(req.payload, doc, {
+            cancelOnly: true,
+          });
+        } catch (err) {
+          await logtail.error(
+            `Events afterDelete: failed to cancel broadcasts for event ${doc.id}: ${err}`
+          );
         }
         return doc;
       },
@@ -426,6 +424,33 @@ export const Events: CollectionConfig = {
       type: 'number',
       defaultValue: 0,
       admin: { readOnly: true },
+    },
+    // Announcement (−6d) + reminder (day-of) broadcast state. Message ids are the
+    // scheduled QStash messages (for cancel/reschedule); *SentAt are the
+    // idempotency guards. Managed by lib/broadcasts + the send-broadcast task.
+    {
+      name: 'announcementMessageId',
+      type: 'text',
+      required: false,
+      admin: { readOnly: true, position: 'sidebar' },
+    },
+    {
+      name: 'reminderMessageId',
+      type: 'text',
+      required: false,
+      admin: { readOnly: true, position: 'sidebar' },
+    },
+    {
+      name: 'announcementSentAt',
+      type: 'date',
+      required: false,
+      admin: { readOnly: true, position: 'sidebar' },
+    },
+    {
+      name: 'reminderSentAt',
+      type: 'date',
+      required: false,
+      admin: { readOnly: true, position: 'sidebar' },
     },
   ],
 };

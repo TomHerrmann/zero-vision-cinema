@@ -5,9 +5,8 @@ import payloadConfig from '@payload-config';
 import { headers } from 'next/headers';
 import { logtail } from '@/lib/logtail';
 import { stripe, stripeCheckout } from '@/lib/stripe';
-import { subscribeEmail } from '@/lib/mailerlite';
 import { qstash, QSTASH_TARGET_BASE_URL } from '@/lib/qstash';
-import { scheduleOrderReminders, cancelOrderReminders } from '@/lib/reminders';
+import { addResendContact } from '@/lib/resend';
 
 export async function POST(req: Request) {
   try {
@@ -113,8 +112,10 @@ export async function POST(req: Request) {
 
         // Newsletter opt-in captured on our ticket page (PaymentIntent metadata).
         if (newsletterOptin && email) {
+          const firstName = name?.split(' ')[0] ?? undefined;
+          const lastName = name?.split(' ').slice(1).join(' ') || undefined;
           try {
-            await subscribeEmail(email);
+            await addResendContact({ email, firstName, lastName });
           } catch (subErr) {
             await logtail.error(
               `API /stripe/webhook: newsletter opt-in failed for ${email}: ${subErr}`
@@ -217,28 +218,6 @@ export async function POST(req: Request) {
               { method: 'POST', timestamp: new Date().toISOString() }
             );
           }
-
-          // Schedule the pre-event + day-of reminders (QStash delayed delivery).
-          // Store the message ids so they can be cancelled on refund/reschedule.
-          try {
-            const ids = await scheduleOrderReminders(
-              newOrder.id,
-              new Date(event_.datetime),
-              new Date(full.created * 1000)
-            );
-            if (ids.preEventMessageId || ids.dayOfMessageId) {
-              await payload.update({
-                collection: 'orders',
-                id: newOrder.id,
-                data: ids,
-              });
-            }
-          } catch (reminderErr) {
-            await logtail.error(
-              `API /stripe/webhook: failed to schedule reminders for order ${newOrder.id}: ${reminderErr}`,
-              { method: 'POST', timestamp: new Date().toISOString() }
-            );
-          }
         }
 
         break;
@@ -246,6 +225,9 @@ export async function POST(req: Request) {
 
       case 'charge.refunded': {
         const charge = event.data.object as Stripe.Charge;
+        // Only handle FULL refunds — `charge.refunded` also fires for partial
+        // refunds (which shouldn't invalidate the whole ticket / free the seat).
+        if (!charge.refunded) break;
         const paymentIntentId =
           typeof charge.payment_intent === 'string'
             ? charge.payment_intent
@@ -261,14 +243,48 @@ export async function POST(req: Request) {
         const order = docs[0];
         if (!order || order.refundedAt) break;
 
-        // Cancel any not-yet-sent reminders and mark the order refunded so the
-        // reminder tasks skip it even if a message is already in flight.
-        await cancelOrderReminders(order);
         await payload.update({
           collection: 'orders',
           id: order.id,
           data: { refundedAt: new Date().toISOString() },
         });
+
+        // Free the seat: decrement the event's ticketsSold (floor at 0).
+        const refundedEvents = await payload.find({
+          collection: 'events',
+          disableErrors: true,
+          limit: 1,
+          where: { productId: { equals: order.productId } },
+        });
+        const refundedEvent = refundedEvents.docs[0];
+        if (refundedEvent?.id) {
+          await payload.update({
+            collection: 'events',
+            id: refundedEvent.id,
+            data: {
+              ticketsSold: Math.max(
+                0,
+                (refundedEvent.ticketsSold ?? 0) - order.quantity
+              ),
+            },
+          });
+        }
+
+        // Send the refund-confirmation email via the queue (durable + retried).
+        try {
+          await qstash.publishJSON({
+            url: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-refund-email`,
+            body: { orderId: order.id },
+            deduplicationId: `refund-email-${paymentIntentId}`,
+            retries: 3,
+            failureCallback: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-refund-email/failure`,
+          });
+        } catch (enqueueErr) {
+          await logtail.error(
+            `API /stripe/webhook: failed to enqueue refund email for order ${order.id}: ${enqueueErr}`,
+            { method: 'POST', timestamp: new Date().toISOString() }
+          );
+        }
         break;
       }
     }
