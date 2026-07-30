@@ -25,6 +25,7 @@ single Next.js app with an embedded [Payload CMS](https://payloadcms.com/) admin
   - [Environment variables](#environment-variables)
   - [Running locally](#running-locally)
   - [Testing checkout & the ticket-email queue locally](#testing-checkout--the-ticket-email-queue-locally)
+  - [QA-ing emails without payments](#qa-ing-emails-without-payments)
   - [Project structure](#project-structure)
   - [Database & migrations](#database--migrations)
   - [Testing](#testing)
@@ -251,7 +252,7 @@ browser; everything else is server-only.
 
 ```bash
 npm run dev          # Next.js dev server (http://localhost:3000) + /admin
-npm run dev:email    # preview React Email templates
+npm run dev:email    # preview the email templates with sample data (see below)
 npm test             # run the test suite (Vitest)
 npm run lint         # lint
 npm run payload      # Payload CLI (e.g. `npm run payload migrate`)
@@ -282,6 +283,43 @@ your app — so localhost needs help receiving those callbacks.
 > `NEXT_PUBLIC_BASE_URL`; keep it at `http://localhost:3000` locally so the QStash
 > dev server can reach the worker.
 
+### QA-ing emails without payments
+
+To check the **look, content, and deliverability** of the email templates you
+don't need Stripe, QStash, or an order — just the two tools below. (Reserve the
+full Stripe test-mode run above for validating the webhook/refund _wiring_.)
+
+**Visual preview:**
+
+```bash
+npm run dev:email    # http://localhost:3000
+```
+
+Renders the real templates with realistic sample data at four routes:
+`TicketPreview`, `RefundPreview`, `BroadcastPaidPreview` (paid ZVC → "Get
+Tickets" / About the Film), and `BroadcastBookClubPreview` (free → "View Details
+& RSVP" / About the Book). The templates' production default props were removed
+for safety, so the preview server is pointed at `emails/previews/` — small
+wrappers that feed each template shared sample data from
+`emails/previews/sample-data.tsx` (edit that to try different content). Each
+preview also has a built-in **Send** button.
+
+**Send the real templates to your own inbox** (true Gmail / Apple Mail rendering
+and deliverability, via your live Resend key):
+
+```bash
+npm run email:send -- you@example.com
+# or set EMAIL_QA_TO and omit the argument
+```
+
+This renders all four templates and sends them `From:` the verified ZVC address
+with sample content — so send it **to yourself, not a customer list**. Requires
+`RESEND_API_KEY` in `.env.local` (it's loaded via `--env-file`).
+
+> The sample data is dev-only; production sends always use live
+> order/event/Stripe data. `tsconfig.scripts.json` just forces the automatic JSX
+> runtime for the `tsx`-run send script.
+
 ### Project structure
 
 ```
@@ -292,9 +330,11 @@ app/
   api/                   Route handlers (stripe, tasks, subscribe, contact, lookups)
 collections/             Payload collections (Events, Orders, Locations, Merch, …)
 components/              React UI (checkout, hero, event cards, nav, footer, ui/…)
-emails/                  React Email templates (e.g. TicketEmail)
-lib/                     Integrations (stripe, qstash, mailerlite, omdb, openlibrary, logtail)
+emails/                  React Email templates (TicketEmail, RefundEmail, BroadcastEmail)
+  previews/              Sample-data wrappers for `npm run dev:email` (dev-only)
+lib/                     Integrations (stripe, qstash, resend, omdb, openlibrary, logtail)
 utils/                   Helpers (getEvents, isSoldOut, formatDate, richText, …)
+scripts/                 One-off scripts (e.g. preview-emails — send templates to your inbox)
 migrations/              Payload/Postgres migrations (run on build)
 payload.config.ts        Payload CMS config (collections, plugins, storage, email)
 middleware.ts            Adds noindex headers for the AHC section
