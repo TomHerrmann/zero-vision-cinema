@@ -249,6 +249,24 @@ export async function POST(req: Request) {
           data: { refundedAt: new Date().toISOString() },
         });
 
+        // Enqueue the refund-confirmation email first (durable + retried), before
+        // the seat-count update — so a failure there (which would 400 → Stripe
+        // retry → idempotency short-circuit) can't swallow the email.
+        try {
+          await qstash.publishJSON({
+            url: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-refund-email`,
+            body: { orderId: order.id },
+            deduplicationId: `refund-email-${paymentIntentId}`,
+            retries: 3,
+            failureCallback: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-refund-email/failure`,
+          });
+        } catch (enqueueErr) {
+          await logtail.error(
+            `API /stripe/webhook: failed to enqueue refund email for order ${order.id}: ${enqueueErr}`,
+            { method: 'POST', timestamp: new Date().toISOString() }
+          );
+        }
+
         // Free the seat: decrement the event's ticketsSold (floor at 0).
         const refundedEvents = await payload.find({
           collection: 'events',
@@ -268,22 +286,6 @@ export async function POST(req: Request) {
               ),
             },
           });
-        }
-
-        // Send the refund-confirmation email via the queue (durable + retried).
-        try {
-          await qstash.publishJSON({
-            url: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-refund-email`,
-            body: { orderId: order.id },
-            deduplicationId: `refund-email-${paymentIntentId}`,
-            retries: 3,
-            failureCallback: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-refund-email/failure`,
-          });
-        } catch (enqueueErr) {
-          await logtail.error(
-            `API /stripe/webhook: failed to enqueue refund email for order ${order.id}: ${enqueueErr}`,
-            { method: 'POST', timestamp: new Date().toISOString() }
-          );
         }
         break;
       }
