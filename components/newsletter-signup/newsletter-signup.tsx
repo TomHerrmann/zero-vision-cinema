@@ -41,14 +41,16 @@ export function NewsletterSignup() {
 
       if (!response.ok) {
         toast.error('Subscription failed. Please try again later.');
+        return;
       }
 
       toast.success('You have been subscribed to our newsletter.');
       form.reset();
     } catch (err) {
       toast.error('Failed to subscribe. Please try again later.');
+    } finally {
+      setInFlight(false);
     }
-    setInFlight(false);
   }
 
   return (
