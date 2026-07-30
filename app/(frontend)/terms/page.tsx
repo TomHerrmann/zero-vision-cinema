@@ -21,7 +21,9 @@ function Section({
 }) {
   return (
     <section className="mb-10">
-      <h2 className="font-display uppercase text-glow text-2xl mb-3">{title}</h2>
+      <h2 className="font-display uppercase text-glow text-2xl mb-3">
+        {title}
+      </h2>
       <div className="zvc-body text-glow/80 leading-relaxed space-y-3">
         {children}
       </div>
@@ -65,12 +67,12 @@ export default function TermsPage() {
             Ticket prices are shown in U.S. dollars and charged at checkout via
             our payment processor, Stripe. Your order confirmation email serves
             as your ticket and your receipt. Tickets are for the specific event,
-            date, and time listed and are non-transferable except as permitted by
-            us.
+            date, and time listed and are non-transferable except as permitted
+            by us.
           </p>
           <p>
-            We reserve the right to reschedule or cancel an event. If we cancel an
-            event, you will be refunded in full.
+            We reserve the right to reschedule or cancel an event. If we cancel
+            an event, you will be refunded in full.
           </p>
         </Section>
 
@@ -95,12 +97,12 @@ export default function TermsPage() {
             >
               {ZVC_EMAIL_ADDRESS}
             </a>{' '}
-            and we&apos;ll review your request. Refunding a ticket invalidates it —
-            you will no longer be admitted to the event.
+            and we&apos;ll review your request. Refunding a ticket invalidates
+            it — you will no longer be admitted to the event.
           </p>
           <p>
-            If we cancel or materially reschedule an event, you are entitled to a
-            full refund regardless of timing.
+            If we cancel or materially reschedule an event, you are entitled to
+            a full refund regardless of timing.
           </p>
         </Section>
 
@@ -115,9 +117,9 @@ export default function TermsPage() {
         <Section title="Payments & Data">
           <p>
             Payments are processed by Stripe; we do not store your card details.
-            We use your email only to deliver tickets, receipts, event reminders,
-            and — if you opt in — our newsletter. You can unsubscribe from
-            marketing email at any time.
+            We use your email only to deliver tickets, receipts, and — if you
+            opt in — our newsletter. You can unsubscribe from marketing email at
+            any time.
           </p>
         </Section>
 
