@@ -100,6 +100,7 @@ export const refundSample = {
 /** BroadcastEmail — paid ZVC announcement (→ "Get Tickets" / About the Film). */
 export const broadcastPaidSample = {
   kind: 'announcement' as const,
+  eventType: 'zvc' as const,
   paid: true,
   headerImage: EMAIL_HEADER_IMAGE_ZVC_URL,
   eventName: zvcTitle,
@@ -113,12 +114,31 @@ export const broadcastPaidSample = {
   movie: zvcMovie,
   book: null,
   eventUrl: `${ZVC_SITE_URL}/events/42`,
-  unsubscribeUrl: `${ZVC_SITE_URL}/unsubscribe?sample`,
 };
 
-/** BroadcastEmail — free Astoria Horror Club reminder (→ "View Details & RSVP" / About the Film). */
+/** BroadcastEmail — free ZVC screening announcement ($0, no CTA / About the Film). */
+export const broadcastZvcFreeSample = {
+  kind: 'announcement' as const,
+  eventType: 'zvc' as const,
+  paid: false,
+  headerImage: EMAIL_HEADER_IMAGE_ZVC_URL,
+  eventName: zvcTitle,
+  eventImage: zvcMovie.poster,
+  eventDate: EVENT_DATE,
+  eventLocation: 'The Astoria Vault',
+  eventAddress: '34-21 31st Ave, Astoria, NY 11106',
+  eventDescription: sampleRichText(
+    'A special free Zero Vision Cinema screening — open to all, no ticket required. Doors at 7, feature at 7:30.'
+  ),
+  movie: zvcMovie,
+  book: null,
+  eventUrl: `${ZVC_SITE_URL}/events/42`,
+};
+
+/** BroadcastEmail — free Astoria Horror Club reminder (no CTA / About the Film). */
 export const broadcastAhcSample = {
   kind: 'reminder' as const,
+  eventType: 'ahc' as const,
   paid: false,
   headerImage: EMAIL_HEADER_IMAGE_AHC_URL,
   eventName: ahcTitle,
@@ -127,17 +147,17 @@ export const broadcastAhcSample = {
   eventLocation: 'Q.E.D. Astoria',
   eventAddress: '27-16 23rd Ave, Astoria, NY 11105',
   eventDescription: sampleRichText(
-    'Free monthly horror night with the Astoria Horror Club. Grab a seat, no ticket needed — just RSVP so we know you’re coming.'
+    'Free monthly horror night with the Astoria Horror Club. No ticket needed — just come hang and watch something scary with us.'
   ),
   movie: ahcMovie,
   book: null,
   eventUrl: AHC_SITE_URL,
-  unsubscribeUrl: `${ZVC_SITE_URL}/unsubscribe?sample`,
 };
 
-/** BroadcastEmail — free book-club reminder (→ "View Details & RSVP" / About the Book). */
+/** BroadcastEmail — free book-club reminder (no CTA / About the Book). */
 export const broadcastBookClubSample = {
   kind: 'reminder' as const,
+  eventType: 'bookclub' as const,
   paid: false,
   headerImage: EMAIL_HEADER_IMAGE_BOOKCLUB_URL,
   eventName: bookTitle,
@@ -149,5 +169,4 @@ export const broadcastBookClubSample = {
   movie: null,
   book: bookInfo,
   eventUrl: AHC_SITE_URL,
-  unsubscribeUrl: `${ZVC_SITE_URL}/unsubscribe?sample`,
 };

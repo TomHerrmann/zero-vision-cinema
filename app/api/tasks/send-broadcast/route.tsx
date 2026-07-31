@@ -134,6 +134,7 @@ export async function POST(req: Request) {
     const html = await render(
       <BroadcastEmail
         kind={kind}
+        eventType={event_.eventType}
         paid={isPaid}
         headerImage={headerFor(event_.eventType)}
         eventName={event_.name}

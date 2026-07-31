@@ -164,10 +164,11 @@ const filmMovie = {
 };
 
 describe('BroadcastEmail', () => {
-  it('paid (ZVC) → buy-tickets CTA, with film details + unsubscribe', async () => {
+  it('paid ZVC → buy-tickets CTA, with film details + unsubscribe', async () => {
     const html = await render(
       <BroadcastEmail
         kind="announcement"
+        eventType="zvc"
         paid
         headerImage="https://cdn.test/header.png"
         eventName="The Thing"
@@ -186,13 +187,35 @@ describe('BroadcastEmail', () => {
     expect(html).not.toContain('RSVP');
   });
 
-  it('free (AHC / book club) → attend CTA, no buy language, no film details when movie is null', async () => {
+  it('free ZVC ($0) → no CTA at all, still shows film details', async () => {
+    const html = await render(
+      <BroadcastEmail
+        kind="announcement"
+        eventType="zvc"
+        paid={false}
+        headerImage="https://cdn.test/header.png"
+        eventName="The Thing"
+        eventDate="2026-08-15T23:00:00.000Z"
+        eventLocation="SingleCut"
+        eventUrl="https://zerovisioncinema.com/events/1"
+        movie={filmMovie}
+      />,
+      { pretty: true }
+    );
+    expect(html).not.toContain('Get Tickets');
+    expect(html).not.toContain('RSVP');
+    expect(html).toContain('free'); // free-screening blurb
+    expect(html).toContain('John Carpenter'); // film details still shown
+  });
+
+  it('free AHC → no CTA, no buy language, no film details when movie is null', async () => {
     const html = await render(
       <BroadcastEmail
         kind="reminder"
+        eventType="ahc"
         paid={false}
         headerImage="https://cdn.test/header.png"
-        eventName="Astoria Horror Book Club"
+        eventName="Astoria Horror Club"
         eventDate="2026-08-15T23:00:00.000Z"
         eventLocation="The Back Room"
         eventUrl="https://zerovisioncinema.com/astoriahorrorclub"
@@ -200,17 +223,18 @@ describe('BroadcastEmail', () => {
       />,
       { pretty: true }
     );
-    expect(html).toContain('RSVP');
     expect(html).not.toContain('Get Tickets');
+    expect(html).not.toContain('RSVP');
     // null movie → the preview default (Terminator 2) must NOT leak in.
     expect(html).not.toContain('James Cameron');
     expect(html).not.toContain('About the Film');
   });
 
-  it('book club → "About the Book" with Open Library details, not film', async () => {
+  it('book club → "About the Book" with Open Library details, not film, no CTA', async () => {
     const html = await render(
       <BroadcastEmail
         kind="announcement"
+        eventType="bookclub"
         paid={false}
         headerImage="https://cdn.test/header.png"
         eventName="The Shining — Book Club"

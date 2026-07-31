@@ -295,14 +295,17 @@ full Stripe test-mode run above for validating the webhook/refund _wiring_.)
 npm run dev:email    # http://localhost:3000
 ```
 
-Renders the real templates with realistic sample data at five routes:
-`TicketPreview`, `RefundPreview`, `BroadcastPaidPreview` (paid ZVC → "Get
-Tickets" / About the Film), `BroadcastAhcPreview` (free Astoria Horror Club movie
-→ "View Details & RSVP" / About the Film), and `BroadcastBookClubPreview` (free →
-"View Details & RSVP" / About the Book). The templates' production default props
-were removed for safety, so the preview server is pointed at `emails/previews/` —
-small wrappers that feed each template shared sample data from
-`emails/previews/sample-data.tsx` (edit that to try different content). Each
+Renders the real templates with realistic sample data at six routes:
+`TicketPreview`, `RefundPreview`, and one per broadcast copy variant —
+`BroadcastPaidPreview` (paid ZVC → "Get Tickets"), `BroadcastZvcFreePreview`
+(free ZVC $0), `BroadcastAhcPreview` (free Astoria Horror Club movie), and
+`BroadcastBookClubPreview` (free book club). Broadcast copy is keyed by event
+type, and **only paid ZVC screenings show a CTA** — every free event (ZVC $0,
+AHC, book club) renders no call to action, since the email itself carries all
+the details and there's nothing to buy or RSVP to. The templates' production
+default props were removed for safety, so the preview server is pointed at
+`emails/previews/` — small wrappers that feed each template shared sample data
+from `emails/previews/sample-data.tsx` (edit that to try different content). Each
 preview also has a built-in **Send** button.
 
 The film/book content (plot, poster, rating, cover, synopsis) is **real OMDB /

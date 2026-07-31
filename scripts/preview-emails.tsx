@@ -18,6 +18,7 @@ import {
   ticketSample,
   refundSample,
   broadcastPaidSample,
+  broadcastZvcFreeSample,
   broadcastAhcSample,
   broadcastBookClubSample,
 } from '../emails/previews/sample-data';
@@ -51,6 +52,10 @@ async function main() {
     {
       subject: `[QA] Coming up: ${broadcastPaidSample.eventName} — Zero Vision Cinema`,
       react: <BroadcastEmail {...broadcastPaidSample} />,
+    },
+    {
+      subject: `[QA] Free screening: ${broadcastZvcFreeSample.eventName} — Zero Vision Cinema`,
+      react: <BroadcastEmail {...broadcastZvcFreeSample} />,
     },
     {
       subject: `[QA] Tonight (AHC): ${broadcastAhcSample.eventName} — Zero Vision Cinema`,

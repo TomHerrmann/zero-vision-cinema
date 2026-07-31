@@ -22,6 +22,7 @@ import { richTextIsEmpty } from '@/utils/richText';
 import type { MovieData } from '@/lib/omdb';
 
 export type BroadcastKind = 'announcement' | 'reminder';
+export type BroadcastEventType = 'zvc' | 'ahc' | 'bookclub';
 
 /** Book details for book-club events (title/author from the event, cover/synopsis from Open Library). */
 export type BookInfo = {
@@ -33,7 +34,13 @@ export type BookInfo = {
 
 interface Props {
   kind: BroadcastKind;
-  /** Paid ZVC screening (→ buy tickets) vs free AHC / book-club event (→ attend). */
+  /** Event type — drives the copy voice (ZVC / Astoria Horror Club / Book Club). */
+  eventType: BroadcastEventType;
+  /**
+   * Whether the event is paid. Only a paid ZVC screening gets a "Get Tickets"
+   * CTA; every free event (ZVC $0, AHC, book club) renders no CTA — the email
+   * itself carries all the details, and there's nothing to buy or RSVP to.
+   */
   paid?: boolean;
   /** Per-event-type header banner. */
   headerImage: string;
@@ -54,38 +61,76 @@ interface Props {
   book?: BookInfo | null;
   /** Absolute link to the event page (tickets / details). */
   eventUrl?: string;
-  /** Resend injects the recipient's topic-scoped unsubscribe URL for this tag. */
-  unsubscribeUrl?: string;
 }
 
-// Copy varies by paid vs free, and by announcement vs day-of reminder.
-const COPY = {
-  paid: {
+type VoiceKey = 'zvcPaid' | 'zvcFree' | 'ahc' | 'bookclub';
+type Voice = {
+  /** Only paid ZVC has a CTA; free events render none. */
+  cta?: string;
+  announcement: { kicker: string; blurb: string };
+  reminder: { kicker: string; blurb: string };
+};
+
+// Copy is distinct per event type — and, for ZVC, whether it's a paid
+// screening (the only case with a CTA). Free events carry every detail inline,
+// so there's nothing to click through to.
+const COPY: Record<VoiceKey, Voice> = {
+  zvcPaid: {
     cta: 'Get Tickets',
     announcement: {
       kicker: 'On sale now',
       blurb:
-        'Tickets are live for our next screening — grab yours before we sell out.',
+        "Tickets are live for our next Zero Vision Cinema screening — grab your seat before they're gone.",
     },
     reminder: {
       kicker: 'Tonight',
       blurb:
-        'Last call — get your tickets before showtime and we’ll see you there.',
+        "Last call — tonight's screening is almost here. Get your tickets now.",
     },
   },
-  free: {
-    cta: 'View Details & RSVP',
+  zvcFree: {
     announcement: {
       kicker: 'Coming up',
       blurb:
-        'Join us — this one’s free to attend. Here’s everything you need to know.',
+        'Our next Zero Vision Cinema screening is free and open to all — no ticket needed. Here are the details.',
     },
     reminder: {
-      kicker: 'Today',
-      blurb: 'It’s today — here are the details. Come hang with us.',
+      kicker: 'Tonight',
+      blurb:
+        "Tonight's free Zero Vision Cinema screening is almost here. Just show up — we'll see you there.",
     },
   },
-} as const;
+  ahc: {
+    announcement: {
+      kicker: 'Coming up',
+      blurb:
+        "The Astoria Horror Club's next free movie night is on the calendar. Here's what we're watching.",
+    },
+    reminder: {
+      kicker: 'Tonight',
+      blurb:
+        'Astoria Horror Club is tonight — come watch something scary with us. No ticket needed.',
+    },
+  },
+  bookclub: {
+    announcement: {
+      kicker: 'Next read',
+      blurb:
+        'Here’s the next Astoria Horror Book Club pick. Grab a copy, get reading, and join the discussion.',
+    },
+    reminder: {
+      kicker: 'Tonight',
+      blurb:
+        'Astoria Horror Book Club meets tonight — come chat about this month’s read with us.',
+    },
+  },
+};
+
+function voiceKey(eventType: BroadcastEventType, paid?: boolean): VoiceKey {
+  if (eventType === 'ahc') return 'ahc';
+  if (eventType === 'bookclub') return 'bookclub';
+  return paid ? 'zvcPaid' : 'zvcFree';
+}
 
 function formatEventDate(iso: string): string {
   return new Date(iso).toLocaleString('en-US', {
@@ -97,6 +142,7 @@ function formatEventDate(iso: string): string {
 
 export default function BroadcastEmail({
   kind,
+  eventType,
   paid,
   headerImage,
   eventName,
@@ -109,7 +155,7 @@ export default function BroadcastEmail({
   book,
   eventUrl,
 }: Props) {
-  const variant = paid ? COPY.paid : COPY.free;
+  const variant = COPY[voiceKey(eventType, paid)];
   const c = variant[kind];
   const descriptionIsEmpty = richTextIsEmpty(eventDescription);
   const hasBook = Boolean(book && (book.author || book.description));
@@ -196,7 +242,9 @@ export default function BroadcastEmail({
               </Text>
             </Section>
 
-            {eventUrl && (
+            {/* CTA only for paid ZVC screenings — free events have nothing to
+                buy or RSVP to, so the email itself is the full detail. */}
+            {variant.cta && eventUrl && (
               <Link href={eventUrl} style={button}>
                 {variant.cta}
               </Link>
