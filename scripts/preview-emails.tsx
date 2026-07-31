@@ -18,6 +18,7 @@ import {
   ticketSample,
   refundSample,
   broadcastPaidSample,
+  broadcastAhcSample,
   broadcastBookClubSample,
 } from '../emails/previews/sample-data';
 import { ZVC_EMAIL_ADDRESS } from '../app/contsants/constants';
@@ -40,19 +41,23 @@ async function main() {
 
   const emails = [
     {
-      subject: '[QA] Your tickets for The Thing (1982) — Zero Vision Cinema',
+      subject: `[QA] Your tickets for ${ticketSample.eventName} — Zero Vision Cinema`,
       react: <TicketEmail {...ticketSample} />,
     },
     {
-      subject: '[QA] Your refund for The Thing (1982) — Zero Vision Cinema',
+      subject: `[QA] Your refund for ${refundSample.eventName} — Zero Vision Cinema`,
       react: <RefundEmail {...refundSample} />,
     },
     {
-      subject: '[QA] Coming up: The Thing (1982) — Zero Vision Cinema',
+      subject: `[QA] Coming up: ${broadcastPaidSample.eventName} — Zero Vision Cinema`,
       react: <BroadcastEmail {...broadcastPaidSample} />,
     },
     {
-      subject: '[QA] Today: Astoria Horror Book Club — Zero Vision Cinema',
+      subject: `[QA] Tonight (AHC): ${broadcastAhcSample.eventName} — Zero Vision Cinema`,
+      react: <BroadcastEmail {...broadcastAhcSample} />,
+    },
+    {
+      subject: `[QA] Book Club: ${broadcastBookClubSample.eventName} — Zero Vision Cinema`,
       react: <BroadcastEmail {...broadcastBookClubSample} />,
     },
   ];

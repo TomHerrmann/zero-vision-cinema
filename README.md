@@ -295,14 +295,24 @@ full Stripe test-mode run above for validating the webhook/refund _wiring_.)
 npm run dev:email    # http://localhost:3000
 ```
 
-Renders the real templates with realistic sample data at four routes:
+Renders the real templates with realistic sample data at five routes:
 `TicketPreview`, `RefundPreview`, `BroadcastPaidPreview` (paid ZVC → "Get
-Tickets" / About the Film), and `BroadcastBookClubPreview` (free → "View Details
-& RSVP" / About the Book). The templates' production default props were removed
-for safety, so the preview server is pointed at `emails/previews/` — small
-wrappers that feed each template shared sample data from
+Tickets" / About the Film), `BroadcastAhcPreview` (free Astoria Horror Club movie
+→ "View Details & RSVP" / About the Film), and `BroadcastBookClubPreview` (free →
+"View Details & RSVP" / About the Book). The templates' production default props
+were removed for safety, so the preview server is pointed at `emails/previews/` —
+small wrappers that feed each template shared sample data from
 `emails/previews/sample-data.tsx` (edit that to try different content). Each
 preview also has a built-in **Send** button.
+
+The film/book content (plot, poster, rating, cover, synopsis) is **real OMDB /
+Open Library data**, captured in `emails/previews/fixtures.generated.ts` (a
+committed file, so previews work offline). Refresh it — or swap in different
+titles by editing the ids at the top of the generator — with:
+
+```bash
+npm run email:fixtures    # needs OMDB_API_KEY (loaded via --env-file)
+```
 
 **Send the real templates to your own inbox** (true Gmail / Apple Mail rendering
 and deliverability, via your live Resend key):

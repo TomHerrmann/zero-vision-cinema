@@ -7,6 +7,7 @@
     "dev": "next dev --turbopack",
     "dev:email": "email dev --dir emails/previews",
     "email:send": "tsx --tsconfig tsconfig.scripts.json --env-file=.env.local scripts/preview-emails.tsx",
+    "email:fixtures": "tsx --tsconfig tsconfig.scripts.json --env-file=.env.local scripts/gen-email-fixtures.tsx",
     "build": "payload migrate && next build",
     "postbuild": "next-sitemap",
     "payload": "payload",
