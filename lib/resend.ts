@@ -1,6 +1,7 @@
 import { CreateContactOptions, Resend } from 'resend';
+import { logtail } from './logtail';
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
+export const resend = new Resend(process.env.RESEND_FULL_API_KEY);
 
 /**
  * Add (or update) a newsletter contact in the Resend audience segment, opted in
@@ -13,6 +14,7 @@ export async function addResendContact({
   firstName,
   lastName,
 }: CreateContactOptions) {
+  console.log(`Adding Resend contact: ${email}, ${firstName}, ${lastName}`);
   const { data, error } = await resend.contacts.create({
     email,
     firstName,
@@ -29,7 +31,18 @@ export async function addResendContact({
     ],
   });
 
+  console.log(`Resend contact create response: ${JSON.stringify(data)}`);
+
   if (error) {
+    logtail.error(
+      `Resend contact create failed: ${error.message ?? JSON.stringify(error)}`,
+      {
+        email,
+        firstName,
+        lastName,
+        timestamp: new Date().toISOString(),
+      }
+    );
     throw new Error(
       `Resend contact create failed: ${error.message ?? JSON.stringify(error)}`
     );
