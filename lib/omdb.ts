@@ -2,6 +2,8 @@
  * OMDB API helper.
  */
 
+import { OMDB_API_URL } from '@/app/contsants/constants';
+
 export type MovieData = {
   title: string;
   year: string;
@@ -42,7 +44,7 @@ export async function fetchMovieDataByImdbId(
   const apiKey = process.env.OMDB_API_KEY;
   if (!apiKey || !imdbId) return null;
 
-  const url = `https://www.omdbapi.com/?i=${encodeURIComponent(
+  const url = `${OMDB_API_URL}/?i=${encodeURIComponent(
     imdbId
   )}&plot=short&apikey=${apiKey}`;
 

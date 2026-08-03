@@ -5,8 +5,8 @@ import payloadConfig from '@payload-config';
 import { headers } from 'next/headers';
 import { logtail } from '@/lib/logtail';
 import { stripe, stripeCheckout } from '@/lib/stripe';
-import { subscribeEmail } from '@/lib/mailerlite';
 import { qstash, QSTASH_TARGET_BASE_URL } from '@/lib/qstash';
+import { addResendContact } from '@/lib/resend';
 
 export async function POST(req: Request) {
   try {
@@ -112,8 +112,10 @@ export async function POST(req: Request) {
 
         // Newsletter opt-in captured on our ticket page (PaymentIntent metadata).
         if (newsletterOptin && email) {
+          const firstName = name?.split(' ')[0] ?? undefined;
+          const lastName = name?.split(' ').slice(1).join(' ') || undefined;
           try {
-            await subscribeEmail(email);
+            await addResendContact({ email, firstName, lastName });
           } catch (subErr) {
             await logtail.error(
               `API /stripe/webhook: newsletter opt-in failed for ${email}: ${subErr}`
@@ -218,6 +220,73 @@ export async function POST(req: Request) {
           }
         }
 
+        break;
+      }
+
+      case 'charge.refunded': {
+        const charge = event.data.object as Stripe.Charge;
+        // Only handle FULL refunds — `charge.refunded` also fires for partial
+        // refunds (which shouldn't invalidate the whole ticket / free the seat).
+        if (!charge.refunded) break;
+        const paymentIntentId =
+          typeof charge.payment_intent === 'string'
+            ? charge.payment_intent
+            : (charge.payment_intent?.id ?? null);
+        if (!paymentIntentId) break;
+
+        const payload = await getPayload({ config: payloadConfig });
+        const { docs } = await payload.find({
+          collection: 'orders',
+          where: { paymentIntentId: { equals: paymentIntentId } },
+          limit: 1,
+        });
+        const order = docs[0];
+        if (!order || order.refundedAt) break;
+
+        await payload.update({
+          collection: 'orders',
+          id: order.id,
+          data: { refundedAt: new Date().toISOString() },
+        });
+
+        // Enqueue the refund-confirmation email first (durable + retried), before
+        // the seat-count update — so a failure there (which would 400 → Stripe
+        // retry → idempotency short-circuit) can't swallow the email.
+        try {
+          await qstash.publishJSON({
+            url: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-refund-email`,
+            body: { orderId: order.id },
+            deduplicationId: `refund-email-${paymentIntentId}`,
+            retries: 3,
+            failureCallback: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-refund-email/failure`,
+          });
+        } catch (enqueueErr) {
+          await logtail.error(
+            `API /stripe/webhook: failed to enqueue refund email for order ${order.id}: ${enqueueErr}`,
+            { method: 'POST', timestamp: new Date().toISOString() }
+          );
+        }
+
+        // Free the seat: decrement the event's ticketsSold (floor at 0).
+        const refundedEvents = await payload.find({
+          collection: 'events',
+          disableErrors: true,
+          limit: 1,
+          where: { productId: { equals: order.productId } },
+        });
+        const refundedEvent = refundedEvents.docs[0];
+        if (refundedEvent?.id) {
+          await payload.update({
+            collection: 'events',
+            id: refundedEvent.id,
+            data: {
+              ticketsSold: Math.max(
+                0,
+                (refundedEvent.ticketsSold ?? 0) - order.quantity
+              ),
+            },
+          });
+        }
         break;
       }
     }

@@ -41,14 +41,16 @@ export function NewsletterSignup() {
 
       if (!response.ok) {
         toast.error('Subscription failed. Please try again later.');
+        return;
       }
 
       toast.success('You have been subscribed to our newsletter.');
       form.reset();
     } catch (err) {
       toast.error('Failed to subscribe. Please try again later.');
+    } finally {
+      setInFlight(false);
     }
-    setInFlight(false);
   }
 
   return (
@@ -57,9 +59,18 @@ export function NewsletterSignup() {
       className="relative pt-24 md:pt-32 pb-16 md:pb-20 overflow-hidden bg-blackout"
     >
       {/* Blue riso wash + texture */}
-      <div className="absolute inset-0 bg-blue-light/10 pointer-events-none" aria-hidden="true" />
-      <div className="absolute inset-0 zvc-halftone pointer-events-none" aria-hidden="true" />
-      <div className="absolute inset-0 zvc-grain pointer-events-none" aria-hidden="true" />
+      <div
+        className="absolute inset-0 bg-blue-light/10 pointer-events-none"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 zvc-halftone pointer-events-none"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 zvc-grain pointer-events-none"
+        aria-hidden="true"
+      />
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 md:px-12">
         <div className="flex flex-col items-center text-center mb-12">

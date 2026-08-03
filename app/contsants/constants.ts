@@ -7,7 +7,8 @@ export const ADDRESS_LINE_1 = '418 Broadway Ste N';
 export const ADDRESS_LINE_2 = 'Albany, Albany County, NY 12207 US';
 
 export const AHC_SITE_URL = `${ZVC_SITE_URL}/astoriahorrorclub`;
-
+export const ZERO_VISION_BLOB_URL =
+  'https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com';
 export const AHC_EMAIL_ADDRESS = 'boo@astoriahorrorclub.com';
 
 export const DISCORD_ICON_SVG_URL =
@@ -19,8 +20,8 @@ export const DISCORD_ICON_PNG_URL =
 export const AHC_DISCORD_URL =
   'https://discord.com/invite/x35BPgmPyb?fbclid=PAZXh0bgNhZW0CMTEAAafUzenp36jVZ_O95VA30EZDlPtO0qxHgeSHCdU4X8jTzwm9hwtHxXKwUDw0hg_aem_38kZ29hr4jhaISSUtC8IXA';
 
-export const AHC_INSTAGRAM_URL = 'https://www.instagram.com/astoriahorrorclub/';
-export const ZVC_INSTAGRAM_URL = 'https://www.instagram.com/zerovisioncinema/';
+export const AHC_INSTAGRAM_URL = 'https://www.instagram.com/astoriahorrorclub';
+export const ZVC_INSTAGRAM_URL = 'https://www.instagram.com/zerovisioncinema';
 
 export const AHC_LOGO_PNG_URL =
   'https://fzuxxxhgqwm9izz9.public.blob.vercel-storage.com/ahc_logo_transparent_yellow-SITE.png';
@@ -31,8 +32,7 @@ export const AHC_INSTAGRAM_ICON_SVG_URL =
 export const INSTAGRAM_ICON_PNG_URL =
   'https://fzuxxxhgqwm9izz9.public.blob.vercel-storage.com/Instagram_Glyph_Gradient-f1H8nHmWH5InPn0jgDAxscCxtVphBD.png';
 
-export const PARTIFUL_ICON_PNG_URL =
-  'https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/partiful_logo.jpeg';
+export const PARTIFUL_ICON_PNG_URL = `${ZERO_VISION_BLOB_URL}/partiful_logo.jpeg`;
 
 export const PARTIFUL_URL = 'https://partiful.com/u/GGfjIuDoDw3xgbwzkTmf';
 
@@ -100,3 +100,15 @@ export const STATUS_CODES = {
   NotExtended: 510,
   NetworkAuthenticationRequired: 511,
 };
+
+export const EMAIL_HEADER_IMAGE_ZVC_URL = `${ZERO_VISION_BLOB_URL}/emailheader_zvc.png`;
+export const EMAIL_HEADER_IMAGE_AHC_URL = `${ZERO_VISION_BLOB_URL}/emailheader_ahc.png`;
+export const EMAIL_HEADER_IMAGE_BOOKCLUB_URL = `${ZERO_VISION_BLOB_URL}/emailheader_bookclub.png`;
+export const WEB_PAGE_HEADER_IMAGE_ZVC_URL = `${ZERO_VISION_BLOB_URL}/zvc_blank_header.png`;
+
+export const RESEND_BROADCASTS_API_URL = 'https://api.resend.com/broadcasts';
+export const OMDB_API_URL = 'https://www.omdbapi.com';
+export const OPEN_LIBRARY_BASE_URL = 'https://openlibrary.org';
+export const OPEN_LIBRARY_COVER_BASE_URL = 'https://covers.openlibrary.org';
+
+export const RESEND_UNSUBSCRIBE_URL = '{{{RESEND_UNSUBSCRIBE_URL}}}';

@@ -74,6 +74,20 @@ export const Orders: CollectionConfig = {
       admin: { readOnly: true },
     },
     {
+      // Set when the order is refunded.
+      name: 'refundedAt',
+      type: 'date',
+      required: false,
+      admin: { readOnly: true },
+    },
+    {
+      // Idempotency guard for the refund-confirmation email.
+      name: 'refundEmailSentAt',
+      type: 'date',
+      required: false,
+      admin: { readOnly: true },
+    },
+    {
       name: 'productId',
       type: 'text',
       required: true,

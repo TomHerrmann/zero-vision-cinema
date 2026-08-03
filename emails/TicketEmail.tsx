@@ -15,7 +15,17 @@ import {
   AHC_DISCORD_URL,
   PARTIFUL_URL,
   ZVC_INSTAGRAM_URL,
+  LLC_NAME,
+  ZVC_EMAIL_ADDRESS,
+  ZVC_SITE_URL,
+  ADDRESS_LINE_1,
+  ADDRESS_LINE_2,
+  EMAIL_HEADER_IMAGE_ZVC_URL,
 } from '@/app/contsants/constants';
+import { richTextIsEmpty } from '@/utils/richText';
+import type { MovieData } from '@/lib/omdb';
+
+const TERMS_URL = `${ZVC_SITE_URL}/terms`;
 
 interface Props {
   eventName: string;
@@ -28,6 +38,20 @@ interface Props {
   customerName?: string;
   totalAmount: number;
   purchaseDate: string;
+  /** Receipt fields — resolved from Stripe at send time, never stored by us. */
+  orderNumber?: number;
+  cardBrand?: string;
+  cardLast4?: string;
+  currency?: string;
+  /** Stripe-hosted receipt URL. */
+  receiptUrl?: string;
+  /** Signed refund-request page URL (order prefilled). */
+  refundUrl?: string;
+  /**
+   * OMDB film data when the event has an IMDb id. Pass `null` (not undefined) to
+   * render no film details — undefined lets the preview default apply.
+   */
+  movie?: MovieData | null;
 }
 
 export default function TicketEmail({
@@ -41,12 +65,23 @@ export default function TicketEmail({
   customerName,
   totalAmount,
   purchaseDate,
+  orderNumber,
+  cardBrand,
+  cardLast4,
+  currency,
+  receiptUrl,
+  refundUrl,
+  movie,
 }: Props) {
   const date = new Date(eventDate);
   const plural = quantity > 1 ? 's' : '';
   const purchaseDateFormatted = purchaseDate
     ? new Date(purchaseDate).toLocaleDateString('en-US')
     : null;
+  const paymentMethod =
+    cardBrand && cardLast4 ? `${cardBrand} ending in ${cardLast4}` : null;
+  const descriptionIsEmpty = richTextIsEmpty(eventDescription);
+  const hasFilmDetails = Boolean(movie && (movie.director || movie.plot));
 
   return (
     <Html>
@@ -70,7 +105,7 @@ export default function TicketEmail({
             
             /* Gmail background color fixes */
             .gmail-bg-fix {
-              background-color: #ffffff !important;
+              background-color: #1F1F1F !important;
             }
             
             /* Mobile Gmail specific overrides */
@@ -151,7 +186,7 @@ export default function TicketEmail({
                     <tr>
                       <td style={headerCell}>
                         <Img
-                          src="https://s7qtxjaxzhtgrxvy.public.blob.vercel-storage.com/email%20header.png"
+                          src={EMAIL_HEADER_IMAGE_ZVC_URL}
                           width="100%"
                           alt="Zero Vision Cinema Logo"
                           style={headerImage}
@@ -232,7 +267,8 @@ export default function TicketEmail({
                                       <td
                                         style={{
                                           textAlign: 'center',
-                                          borderTop: '1px solid #cccccc',
+                                          borderTop:
+                                            '1px solid rgba(255,253,246,0.15)',
                                           paddingTop: '16px',
                                         }}
                                       >
@@ -281,7 +317,8 @@ export default function TicketEmail({
                                         style={{
                                           textAlign: 'center',
                                           paddingBottom: '20px',
-                                          borderBottom: '1px solid #cccccc',
+                                          borderBottom:
+                                            '1px solid rgba(255,253,246,0.15)',
                                           marginBottom: '20px',
                                         }}
                                       >
@@ -425,7 +462,8 @@ export default function TicketEmail({
                         </tr>
                       </table>
 
-                      {eventDescription && (
+                      {/* About — the event's own description (if any) */}
+                      {!descriptionIsEmpty && (
                         <table
                           width="100%"
                           cellPadding="0"
@@ -440,12 +478,69 @@ export default function TicketEmail({
                               >
                                 ABOUT
                               </Text>
-                              <Text
+                              <div
                                 style={detailValue}
                                 className="gmail-font-fix"
                               >
-                                <RichText data={eventDescription} />
-                              </Text>
+                                <RichText data={eventDescription!} />
+                              </div>
+                            </td>
+                          </tr>
+                        </table>
+                      )}
+
+                      {/* OMDB film details — mirrors the event page */}
+                      {hasFilmDetails && (
+                        <table
+                          width="100%"
+                          cellPadding="0"
+                          cellSpacing="0"
+                          style={detailsGrid}
+                        >
+                          <tr>
+                            <td style={detailCard}>
+                              <table
+                                width="100%"
+                                cellPadding="0"
+                                cellSpacing="0"
+                              >
+                                <tr>
+                                  <td
+                                    style={detailLabel}
+                                    className="gmail-font-fix"
+                                  >
+                                    ABOUT THE FILM
+                                  </td>
+                                  {movie?.imdbRating && (
+                                    <td
+                                      style={ratingCell}
+                                      className="gmail-font-fix"
+                                    >
+                                      ★ {movie.imdbRating}
+                                    </td>
+                                  )}
+                                </tr>
+                              </table>
+                              {movie?.plot && (
+                                <Text
+                                  style={filmPlot}
+                                  className="gmail-font-fix"
+                                >
+                                  {movie.plot}
+                                </Text>
+                              )}
+                              <SpecRow
+                                label="Director"
+                                value={movie?.director}
+                              />
+                              <SpecRow label="Year" value={movie?.year} />
+                              <SpecRow
+                                label="Rated · Runtime"
+                                value={[movie?.rated, movie?.runtime]
+                                  .filter(Boolean)
+                                  .join(' · ')}
+                              />
+                              <SpecRow label="Genre" value={movie?.genre} />
                             </td>
                           </tr>
                         </table>
@@ -520,6 +615,29 @@ export default function TicketEmail({
                         >
                           <tr>
                             <td style={summaryContent}>
+                              {orderNumber && (
+                                <table
+                                  width="100%"
+                                  cellPadding="0"
+                                  cellSpacing="0"
+                                  style={summaryRow}
+                                >
+                                  <tr>
+                                    <td
+                                      style={summaryLabel}
+                                      className="gmail-font-fix"
+                                    >
+                                      Order #
+                                    </td>
+                                    <td
+                                      style={summaryValue}
+                                      className="gmail-font-fix"
+                                    >
+                                      {orderNumber}
+                                    </td>
+                                  </tr>
+                                </table>
+                              )}
                               {purchaseDateFormatted && (
                                 <table
                                   width="100%"
@@ -585,6 +703,29 @@ export default function TicketEmail({
                                   </td>
                                 </tr>
                               </table>
+                              {paymentMethod && (
+                                <table
+                                  width="100%"
+                                  cellPadding="0"
+                                  cellSpacing="0"
+                                  style={summaryRow}
+                                >
+                                  <tr>
+                                    <td
+                                      style={summaryLabel}
+                                      className="gmail-font-fix"
+                                    >
+                                      Payment Method
+                                    </td>
+                                    <td
+                                      style={summaryValue}
+                                      className="gmail-font-fix"
+                                    >
+                                      {paymentMethod}
+                                    </td>
+                                  </tr>
+                                </table>
+                              )}
                               {totalAmount && (
                                 <table
                                   width="100%"
@@ -603,7 +744,7 @@ export default function TicketEmail({
                                       style={summaryValueTotal}
                                       className="gmail-font-fix"
                                     >
-                                      ${totalAmount.toFixed(2)}
+                                      {`$${totalAmount.toFixed(2)} ${currency}`}
                                     </td>
                                   </tr>
                                 </table>
@@ -661,7 +802,7 @@ export default function TicketEmail({
                               className="gmail-font-fix"
                             >
                               <Link
-                                href="https://zerovisioncinema.com#newsletter"
+                                href={`${ZVC_SITE_URL}#newsletter`}
                                 style={contactLink}
                               >
                                 Join our Mailing List
@@ -719,10 +860,7 @@ export default function TicketEmail({
                               style={contactItem}
                               className="gmail-font-fix"
                             >
-                              <Link
-                                href="https://www.zerovisioncinema.com"
-                                style={contactLink}
-                              >
+                              <Link href={ZVC_SITE_URL} style={contactLink}>
                                 zerovisioncinema.com
                               </Link>
                             </Text>
@@ -733,7 +871,7 @@ export default function TicketEmail({
                   </tr>
                 </table>
 
-                {/* Cancellation Policy */}
+                {/* Refund & Cancellation Policy */}
                 <table
                   width="100%"
                   cellPadding="0"
@@ -743,11 +881,37 @@ export default function TicketEmail({
                   <tr>
                     <td style={policyContent}>
                       <Text style={policyText} className="gmail-font-fix">
-                        <strong>Cancellation Policy:</strong> Zero Vision Cinema
-                        will provide a refund if you cancel at least 48 hours
-                        before the scheduled event time. Cancellations made less
-                        than 48 hours in advance are not eligible for a refund.
+                        <strong>Refund &amp; Cancellation Policy:</strong>{' '}
+                        Refunds are automatic when requested at least 48 hours
+                        before the scheduled event start time. Within 48 hours
+                        of the event, email{' '}
+                        <Link
+                          href={`mailto:${ZVC_EMAIL_ADDRESS}`}
+                          style={policyLink}
+                        >
+                          {ZVC_EMAIL_ADDRESS}
+                        </Link>{' '}
+                        to request one. Full{' '}
+                        <Link href={TERMS_URL} style={policyLink}>
+                          Terms of Service
+                        </Link>
+                        .
                       </Text>
+                      {refundUrl && (
+                        <table width="100%" cellPadding="0" cellSpacing="0">
+                          <tr>
+                            <td align="center" style={{ paddingTop: '14px' }}>
+                              <Link
+                                href={refundUrl}
+                                style={refundButton}
+                                className="gmail-font-fix"
+                              >
+                                Request a refund
+                              </Link>
+                            </td>
+                          </tr>
+                        </table>
+                      )}
                     </td>
                   </tr>
                 </table>
@@ -762,32 +926,39 @@ export default function TicketEmail({
                   <tr>
                     <td style={footerContent}>
                       <Text style={footerText} className="gmail-font-fix">
-                        © 2025 Zero Vision Cinema LLC
+                        {LLC_NAME}
                       </Text>
                       <Text style={footerText} className="gmail-font-fix">
-                        418 Broadway Ste N, Albany, NY 12207
+                        {ADDRESS_LINE_1}, {ADDRESS_LINE_2}
+                      </Text>
+                      <Text style={footerText} className="gmail-font-fix">
+                        Support:{' '}
+                        <Link
+                          href={`mailto:${ZVC_EMAIL_ADDRESS}`}
+                          style={footerLink}
+                        >
+                          {ZVC_EMAIL_ADDRESS}
+                        </Link>
                       </Text>
                       <Text style={footerLinks} className="gmail-font-fix">
-                        <Link
-                          href="mailto:info@zerovisioncinema.com"
-                          style={footerLink}
-                        >
-                          Email Us
+                        {receiptUrl && (
+                          <>
+                            <Link href={receiptUrl} style={footerLink}>
+                              View official receipt
+                            </Link>
+                            {' • '}
+                          </>
+                        )}
+                        <Link href={TERMS_URL} style={footerLink}>
+                          Terms of Service
                         </Link>
                         {' • '}
-                        <Link
-                          href="https://www.zerovisioncinema.com"
-                          style={footerLink}
-                        >
+                        <Link href={ZVC_SITE_URL} style={footerLink}>
                           Website
                         </Link>
-                        {' • '}
-                        <Link
-                          href="https://dashboard.mailerlite.com/forms/1563255/156426258501076293/share"
-                          style={footerLink}
-                        >
-                          Mailing List
-                        </Link>
+                      </Text>
+                      <Text style={footerText} className="gmail-font-fix">
+                        © {new Date().getFullYear()} {LLC_NAME}
                       </Text>
                     </td>
                   </tr>
@@ -801,34 +972,55 @@ export default function TicketEmail({
   );
 }
 
-// Gmail-compatible styles - removed border-radius and simplified fonts
+/** A label/value row for the film-details block (skipped when the value is empty). */
+function SpecRow({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
+  return (
+    <table width="100%" cellPadding="0" cellSpacing="0" style={summaryRow}>
+      <tr>
+        <td style={summaryLabel} className="gmail-font-fix">
+          {label}
+        </td>
+        <td style={summaryValue} className="gmail-font-fix">
+          {value}
+        </td>
+      </tr>
+    </table>
+  );
+}
+
+// Dark "grindhouse" theme to match the refund / broadcast emails. Table
+// structure kept for cross-client (Gmail/Outlook) rendering.
+const GLOW = '#FFFDF6';
+const BLUE = '#4A8CC6';
+
 const main = {
-  backgroundColor: '#fafafa',
-  fontFamily: 'Arial, Helvetica, sans-serif', // Simplified for Gmail
+  backgroundColor: '#141414',
+  fontFamily: 'Arial, Helvetica, sans-serif',
   margin: '0',
   padding: '0',
-  lineHeight: '1.4', // Add explicit line height
+  lineHeight: '1.4',
 };
 
 const outerContainer = {
   width: '100%',
   maxWidth: '600px',
   margin: '0 auto',
-  backgroundColor: '#fafafa',
+  backgroundColor: '#141414',
 };
 
 const container = {
-  backgroundColor: '#ffffff',
+  backgroundColor: '#1F1F1F',
   width: '100%',
   maxWidth: '600px',
   margin: '0 auto',
-  borderRadius: '0', // Remove for Gmail
+  borderRadius: '0',
   overflow: 'hidden',
-  border: '1px solid #e4e4e7',
+  border: '1px solid rgba(255,253,246,0.12)',
 };
 
 const headerSection = {
-  backgroundColor: '#ffffff',
+  backgroundColor: '#1F1F1F',
   width: '100%',
 };
 
@@ -844,7 +1036,7 @@ const headerImage = {
 };
 
 const mainContent = {
-  backgroundColor: '#ffffff',
+  backgroundColor: '#1F1F1F',
   width: '100%',
 };
 
@@ -858,10 +1050,10 @@ const heroSection = {
 };
 
 const heroTitle = {
-  color: '#09090b',
-  fontSize: '24px', // Reduced from 28px for mobile Gmail
-  fontWeight: 'bold', // Use 'bold' instead of '700'
-  lineHeight: '1.2', // Simplified line height
+  color: GLOW,
+  fontSize: '24px',
+  fontWeight: 'bold',
+  lineHeight: '1.2',
   margin: '0 0 16px 0',
   fontFamily: 'Arial, Helvetica, sans-serif',
   textAlign: 'center' as const,
@@ -869,7 +1061,7 @@ const heroTitle = {
 };
 
 const thankYouText = {
-  color: '#6366f1',
+  color: BLUE,
   fontSize: '16px',
   fontWeight: '500',
   margin: '0 0 12px 0',
@@ -878,7 +1070,7 @@ const thankYouText = {
 };
 
 const subtitleText = {
-  color: '#71717a',
+  color: 'rgba(255,253,246,0.6)',
   fontSize: '16px',
   fontWeight: '400',
   lineHeight: '24px',
@@ -895,16 +1087,16 @@ const gmailMobileTable = {
 };
 
 const gmailTicketCard = {
-  backgroundColor: '#f5f5f5',
-  border: '2px solid #cccccc',
-  borderRadius: '0', // No rounded corners for Gmail
-  width: '100%', // Full width for mobile
+  backgroundColor: '#262626',
+  border: '2px solid #4A8CC6',
+  borderRadius: '0',
+  width: '100%',
   maxWidth: '320px',
   margin: '0 auto',
 };
 
 const gmailDateText = {
-  color: '#000000',
+  color: GLOW,
   fontSize: '14px',
   fontWeight: 'bold',
   marginBottom: '4px',
@@ -912,7 +1104,7 @@ const gmailDateText = {
 };
 
 const gmailTimeText = {
-  color: '#666666',
+  color: 'rgba(255,253,246,0.6)',
   fontSize: '13px',
   fontFamily: 'Arial, Helvetica, sans-serif',
 };
@@ -921,13 +1113,13 @@ const gmailEventImageStyle = {
   display: 'block',
   maxWidth: '100%',
   height: 'auto',
-  border: '1px solid #cccccc',
+  border: '1px solid rgba(255,253,246,0.2)',
   margin: '0 auto',
-  width: '200px', // Explicit width for Gmail
+  width: '200px',
 };
 
 const gmailAdmitLabel = {
-  color: '#666666',
+  color: BLUE,
   fontSize: '11px',
   fontWeight: 'bold',
   marginBottom: '4px',
@@ -935,15 +1127,15 @@ const gmailAdmitLabel = {
 };
 
 const gmailAdmitNumber = {
-  color: '#000000',
+  color: GLOW,
   fontSize: '28px',
   fontWeight: 'bold',
   fontFamily: 'Arial, Helvetica, sans-serif',
 };
 
 const quickDetails = {
-  backgroundColor: '#f4f4f5',
-  borderRadius: '0', // Remove for Gmail
+  backgroundColor: '#262626',
+  borderRadius: '0',
   width: '100%',
 };
 
@@ -953,7 +1145,7 @@ const quickDetailsContent = {
 };
 
 const quickDetailsText = {
-  color: '#52525b',
+  color: 'rgba(255,253,246,0.85)',
   fontSize: '14px',
   fontWeight: '500',
   margin: '0',
@@ -962,18 +1154,18 @@ const quickDetailsText = {
 };
 
 const section = {
-  backgroundColor: '#fafafa',
+  backgroundColor: '#1F1F1F',
   width: '100%',
   marginTop: '2px',
 };
 
 const sectionContent = {
   padding: '32px 24px',
-  backgroundColor: '#ffffff',
+  backgroundColor: '#1F1F1F',
 };
 
 const sectionTitle = {
-  color: '#09090b',
+  color: GLOW,
   fontSize: '20px',
   fontWeight: 'bold',
   margin: '0 0 20px 0',
@@ -988,15 +1180,15 @@ const detailsGrid = {
 };
 
 const detailCard = {
-  backgroundColor: '#f5f5f5', // Lighter gray works better in Gmail
-  border: '1px solid #cccccc',
-  borderRadius: '0', // Remove border radius
+  backgroundColor: '#262626',
+  border: '1px solid rgba(255,253,246,0.12)',
+  borderRadius: '0',
   padding: '16px',
   marginBottom: '8px',
 };
 
 const detailLabel = {
-  color: '#71717a',
+  color: BLUE,
   fontSize: '11px',
   fontWeight: 'bold',
   letterSpacing: '0.1em',
@@ -1005,8 +1197,26 @@ const detailLabel = {
   fontFamily: 'Arial, Helvetica, sans-serif',
 };
 
+const ratingCell = {
+  color: BLUE,
+  fontSize: '13px',
+  fontWeight: 'bold',
+  textAlign: 'right' as const,
+  whiteSpace: 'nowrap' as const,
+  fontFamily: 'Arial, Helvetica, sans-serif',
+};
+
+const filmPlot = {
+  color: 'rgba(255,253,246,0.8)',
+  fontSize: '13px',
+  fontWeight: '400',
+  lineHeight: '20px',
+  margin: '10px 0 14px 0',
+  fontFamily: 'Arial, Helvetica, sans-serif',
+};
+
 const detailValue = {
-  color: '#09090b',
+  color: 'rgba(255,253,246,0.9)',
   fontSize: '14px',
   fontWeight: '500',
   margin: '0 0 4px 0',
@@ -1015,7 +1225,7 @@ const detailValue = {
 };
 
 const detailSubtext = {
-  color: '#71717a',
+  color: 'rgba(255,253,246,0.6)',
   fontSize: '13px',
   fontWeight: '400',
   margin: '0',
@@ -1024,9 +1234,9 @@ const detailSubtext = {
 };
 
 const alertBox = {
-  backgroundColor: '#fef3c7',
-  border: '1px solid #f59e0b',
-  borderRadius: '0', // Remove for Gmail
+  backgroundColor: '#22303a',
+  border: '1px solid #4A8CC6',
+  borderRadius: '0',
   width: '100%',
 };
 
@@ -1035,7 +1245,7 @@ const alertContent = {
 };
 
 const alertText = {
-  color: '#92400e',
+  color: 'rgba(255,253,246,0.85)',
   fontSize: '14px',
   fontWeight: '400',
   margin: '0 0 8px 0',
@@ -1044,9 +1254,9 @@ const alertText = {
 };
 
 const summaryCard = {
-  backgroundColor: '#f5f5f5',
-  border: '1px solid #cccccc',
-  borderRadius: '0', // Remove for Gmail
+  backgroundColor: '#262626',
+  border: '1px solid rgba(255,253,246,0.12)',
+  borderRadius: '0',
   width: '100%',
 };
 
@@ -1063,11 +1273,11 @@ const summaryRowTotal = {
   width: '100%',
   marginTop: '8px',
   paddingTop: '8px',
-  borderTop: '1px solid #cccccc',
+  borderTop: '1px solid rgba(255,253,246,0.15)',
 };
 
 const summaryLabel = {
-  color: '#71717a',
+  color: 'rgba(255,253,246,0.6)',
   fontSize: '14px',
   fontWeight: '400',
   padding: '0 8px 0 0',
@@ -1078,7 +1288,7 @@ const summaryLabel = {
 };
 
 const summaryValue = {
-  color: '#09090b',
+  color: GLOW,
   fontSize: '14px',
   fontWeight: '500',
   textAlign: 'right' as const,
@@ -1089,17 +1299,18 @@ const summaryValue = {
 
 const summaryLabelTotal = {
   ...summaryLabel,
+  color: 'rgba(255,253,246,0.85)',
   fontWeight: 'bold',
 };
 
 const summaryValueTotal = {
   ...summaryValue,
   fontWeight: 'bold',
-  color: '#09090b',
+  color: BLUE,
 };
 
 const contactDescription = {
-  color: '#71717a',
+  color: 'rgba(255,253,246,0.6)',
   fontSize: '14px',
   fontWeight: '400',
   textAlign: 'center' as const,
@@ -1109,7 +1320,7 @@ const contactDescription = {
 };
 
 const contactItem = {
-  color: '#52525b',
+  color: 'rgba(255,253,246,0.75)',
   fontSize: '14px',
   fontWeight: '400',
   margin: '0 0 8px 0',
@@ -1119,28 +1330,45 @@ const contactItem = {
 };
 
 const contactLink = {
-  color: '#6366f1',
+  color: BLUE,
   textDecoration: 'none',
   fontWeight: '500',
 };
 
 const policySection = {
-  backgroundColor: '#fafafa',
+  backgroundColor: '#1F1F1F',
   width: '100%',
   marginTop: '2px',
 };
 
 const policyContent = {
   padding: '24px',
-  backgroundColor: '#f9fafb',
+  backgroundColor: '#141414',
 };
 
 const policyText = {
-  color: '#374151',
+  color: 'rgba(255,253,246,0.55)',
   fontSize: '12px',
   fontWeight: '400',
   margin: '0',
   lineHeight: '18px',
+  fontFamily: 'Arial, Helvetica, sans-serif',
+};
+
+const policyLink = {
+  color: BLUE,
+  textDecoration: 'underline',
+  fontFamily: 'Arial, Helvetica, sans-serif',
+};
+
+const refundButton = {
+  display: 'inline-block',
+  border: '1px solid rgba(255,253,246,0.3)',
+  color: 'rgba(255,253,246,0.75)',
+  fontSize: '12px',
+  fontWeight: '600',
+  textDecoration: 'none',
+  padding: '8px 16px',
   fontFamily: 'Arial, Helvetica, sans-serif',
 };
 

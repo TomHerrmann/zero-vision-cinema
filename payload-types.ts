@@ -102,9 +102,10 @@ export interface Config {
   globals: {};
   globalsSelect: {};
   locale: null;
-  user: User & {
-    collection: 'users';
+  widgets: {
+    collections: CollectionsWidget;
   };
+  user: User;
   jobs: {
     tasks: unknown;
     workflows: unknown;
@@ -151,6 +152,7 @@ export interface User {
       }[]
     | null;
   password?: string | null;
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -253,6 +255,10 @@ export interface Event {
    */
   priceId?: string | null;
   ticketsSold?: number | null;
+  announcementMessageId?: string | null;
+  reminderMessageId?: string | null;
+  announcementSentAt?: string | null;
+  reminderSentAt?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -285,6 +291,8 @@ export interface Order {
   checkoutSessionId?: string | null;
   paymentIntentId?: string | null;
   ticketEmailSentAt?: string | null;
+  refundedAt?: string | null;
+  refundEmailSentAt?: string | null;
   productId: string;
   customerId: string;
   price: number;
@@ -522,6 +530,10 @@ export interface EventsSelect<T extends boolean = true> {
   productId?: T;
   priceId?: T;
   ticketsSold?: T;
+  announcementMessageId?: T;
+  reminderMessageId?: T;
+  announcementSentAt?: T;
+  reminderSentAt?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -546,6 +558,8 @@ export interface OrdersSelect<T extends boolean = true> {
   checkoutSessionId?: T;
   paymentIntentId?: T;
   ticketEmailSentAt?: T;
+  refundedAt?: T;
+  refundEmailSentAt?: T;
   productId?: T;
   customerId?: T;
   price?: T;
@@ -624,6 +638,16 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_widget".
+ */
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
