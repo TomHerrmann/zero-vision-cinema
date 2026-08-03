@@ -92,19 +92,19 @@ const COPY: Record<VoiceKey, Voice> = {
     announcement: {
       kicker: 'Coming up',
       blurb:
-        'Our next Zero Vision Cinema screening is free and open to all — no ticket needed. Here are the details.',
+        'Our next Zero Vision Cinema event is free and open to all — no ticket needed. Here are the details.',
     },
     reminder: {
       kicker: 'Tonight',
       blurb:
-        "Tonight's free Zero Vision Cinema screening is almost here. Just show up — we'll see you there.",
+        "Tonight's free Zero Vision Cinema event is almost here. Just show up — we'll see you there.",
     },
   },
   ahc: {
     announcement: {
       kicker: 'Coming up',
       blurb:
-        "The Astoria Horror Club's next free movie night is on the calendar. Here's what we're watching.",
+        "Astoria Horror Club's next movie night is set. Here's what we're watching.",
     },
     reminder: {
       kicker: 'Tonight',
