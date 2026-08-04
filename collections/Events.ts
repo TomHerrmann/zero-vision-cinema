@@ -9,7 +9,6 @@ import {
   fetchBookDataByOpenLibraryId,
 } from '@/lib/openlibrary';
 import { plotToLexical, richTextIsBlank } from '@/utils/omdbFill';
-import { rescheduleEventBroadcasts } from '@/lib/broadcasts';
 import { Location } from '@/payload-types';
 
 export const Events: CollectionConfig = {
@@ -223,43 +222,9 @@ export const Events: CollectionConfig = {
         return data;
       },
     ],
-    afterChange: [
-      async ({ doc, previousDoc, operation, req }) => {
-        // Schedule/reschedule the announcement + reminder broadcasts (all event
-        // types) when the event is published, its date moves, or it's
-        // unpublished. `skipBroadcastReschedule` guards the internal message-id
-        // write below from recursing.
-        const dateChanged = previousDoc?.datetime !== doc.datetime;
-        const statusChanged = previousDoc?._status !== doc._status;
-        if (
-          !req.context?.skipBroadcastReschedule &&
-          (operation === 'create' || dateChanged || statusChanged)
-        ) {
-          try {
-            await rescheduleEventBroadcasts(req.payload, doc);
-          } catch (err) {
-            await logtail.error(
-              `Events afterChange: failed to (re)schedule broadcasts for event ${doc.id}: ${err}`
-            );
-          }
-        }
-        return doc;
-      },
-    ],
-    afterDelete: [
-      async ({ doc, req }) => {
-        try {
-          await rescheduleEventBroadcasts(req.payload, doc, {
-            cancelOnly: true,
-          });
-        } catch (err) {
-          await logtail.error(
-            `Events afterDelete: failed to cancel broadcasts for event ${doc.id}: ${err}`
-          );
-        }
-        return doc;
-      },
-    ],
+    // No broadcast hooks: the daily send-due-broadcasts task queries by date
+    // each morning, so moving an event's date, unpublishing it, or deleting it
+    // needs no reconciliation here — the next run simply sees current data.
   },
   fields: [
     {
@@ -425,21 +390,10 @@ export const Events: CollectionConfig = {
       defaultValue: 0,
       admin: { readOnly: true },
     },
-    // Announcement (−6d) + reminder (day-of) broadcast state. Message ids are the
-    // scheduled QStash messages (for cancel/reschedule); *SentAt are the
-    // idempotency guards. Managed by lib/broadcasts + the send-broadcast task.
-    {
-      name: 'announcementMessageId',
-      type: 'text',
-      required: false,
-      admin: { readOnly: true, position: 'sidebar' },
-    },
-    {
-      name: 'reminderMessageId',
-      type: 'text',
-      required: false,
-      admin: { readOnly: true, position: 'sidebar' },
-    },
+    // Announcement (−6d) + reminder (day-of) broadcast state. The daily
+    // send-due-broadcasts task decides what's due by date each morning, so these
+    // stamps are the only thing preventing a repeat send — nothing else tracks
+    // whether an event's broadcast already went out.
     {
       name: 'announcementSentAt',
       type: 'date',

@@ -1,22 +1,24 @@
 /**
- * When to send the two per-event announcement broadcasts, in the venue timezone
- * (America/New_York):
+ * Which events are due a broadcast on a given morning, in the venue timezone
+ * (America/New_York). The daily 9am ET schedule asks for two windows:
  *
- *  - announcement: 6 days before the event, 9:00 AM ET (e.g. a Wed 7pm event →
- *    the prior Thursday 9am ET).
- *  - reminder: the morning of the event, 9:00 AM ET.
+ *  - offset 0 → events happening today          → the "reminder" broadcast
+ *  - offset 6 → events happening in 6 days      → the "announcement" broadcast
  *
- * Both return null when the slot is already past relative to `from` (event
- * published too late, or the event is over). For an event that starts before
- * ~11am ET the reminder's 9am slot would land at/after start, so it falls back
- * to 2h before start. DST-correct via Intl — no dependency needed.
+ * `datetime` is a timestamptz, so selecting "events on an ET calendar day" means
+ * converting that day's local midnight boundaries to UTC — which shifts by an
+ * hour across DST. Done via Intl, so no date library is needed.
+ *
+ * This replaced a per-event `notBefore` schedule computed at event-creation
+ * time: QStash rejects delays beyond 7 days (`maxDelay ... 604800`), so an
+ * announcement 6 days ahead of an event could only ever be scheduled for events
+ * created inside a 7-day horizon. Asking each morning has no such limit.
  */
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
 const TZ = 'America/New_York';
-const HOUR_OF_DAY = 9; // 9am local
-const ANNOUNCE_DAYS_BEFORE = 6;
+export const ANNOUNCE_DAYS_BEFORE = 6;
 
 function tzOffsetMs(instant: Date, tz: string): number {
   const parts = new Intl.DateTimeFormat('en-US', {
@@ -73,37 +75,41 @@ function zonedWallTimeToUtc(
   return new Date(utcGuess - offset);
 }
 
-export function computeBroadcastSchedule(
-  from: Date,
-  eventStart: Date
-): { announcementAt: Date | null; reminderAt: Date | null } {
-  const { year, month, day } = zonedDateParts(eventStart, TZ);
+/**
+ * UTC bounds of the ET calendar day `daysFromNow` days after `now`, as a
+ * half-open range: `start` inclusive, `end` exclusive. `daysFromNow: 0` is
+ * today in ET, `6` is the day six days out.
+ *
+ * Both edges are resolved independently, so a window spanning a DST transition
+ * is 23 or 25 hours wide rather than a naive 24 — which is what keeps an event
+ * at 11pm on the night the clocks change from falling outside its own day.
+ */
+export function etDayRangeUtc(
+  now: Date,
+  daysFromNow: number
+): { start: Date; end: Date } {
+  const today = zonedDateParts(now, TZ);
 
-  // Reminder: 9am ET on the event's date (fallback: 2h before an early start).
-  let reminderAt: Date | null = zonedWallTimeToUtc(
-    year,
-    month,
-    day,
-    HOUR_OF_DAY,
-    0,
-    TZ
+  // Step the calendar date in UTC (no DST) and read the result back as a plain
+  // Y/M/D, so month and year rollovers come for free.
+  const target = new Date(
+    Date.UTC(today.year, today.month - 1, today.day) + daysFromNow * DAY
   );
-  if (reminderAt.getTime() >= eventStart.getTime()) {
-    reminderAt = new Date(eventStart.getTime() - 2 * HOUR);
-  }
-  if (reminderAt.getTime() <= from.getTime()) reminderAt = null;
+  const y = target.getUTCFullYear();
+  const m = target.getUTCMonth() + 1;
+  const d = target.getUTCDate();
 
-  // Announcement: 9am ET on the event's date − 6 calendar days.
-  const annAnchor = new Date(Date.UTC(year, month - 1, day) - ANNOUNCE_DAYS_BEFORE * DAY);
-  let announcementAt: Date | null = zonedWallTimeToUtc(
-    annAnchor.getUTCFullYear(),
-    annAnchor.getUTCMonth() + 1,
-    annAnchor.getUTCDate(),
-    HOUR_OF_DAY,
-    0,
-    TZ
-  );
-  if (announcementAt.getTime() <= from.getTime()) announcementAt = null;
+  const next = new Date(target.getTime() + DAY);
 
-  return { announcementAt, reminderAt };
+  return {
+    start: zonedWallTimeToUtc(y, m, d, 0, 0, TZ),
+    end: zonedWallTimeToUtc(
+      next.getUTCFullYear(),
+      next.getUTCMonth() + 1,
+      next.getUTCDate(),
+      0,
+      0,
+      TZ
+    ),
+  };
 }

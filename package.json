@@ -8,6 +8,7 @@
     "dev:email": "email dev --dir emails/previews",
     "email:send": "tsx --tsconfig tsconfig.scripts.json --env-file=.env.local scripts/preview-emails.tsx",
     "email:fixtures": "tsx --tsconfig tsconfig.scripts.json --env-file=.env.local scripts/gen-email-fixtures.tsx",
+    "schedule:broadcasts": "PROD_ENV_FALLBACK=QSTASH_TOKEN scripts/with-prod-env.sh tsx --tsconfig tsconfig.scripts.json --env-file=.env.production.local scripts/ensure-broadcast-schedule.tsx",
     "build": "payload migrate && next build",
     "postbuild": "next-sitemap",
     "payload": "payload",

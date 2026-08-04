@@ -255,8 +255,6 @@ export interface Event {
    */
   priceId?: string | null;
   ticketsSold?: number | null;
-  announcementMessageId?: string | null;
-  reminderMessageId?: string | null;
   announcementSentAt?: string | null;
   reminderSentAt?: string | null;
   updatedAt: string;
@@ -530,8 +528,6 @@ export interface EventsSelect<T extends boolean = true> {
   productId?: T;
   priceId?: T;
   ticketsSold?: T;
-  announcementMessageId?: T;
-  reminderMessageId?: T;
   announcementSentAt?: T;
   reminderSentAt?: T;
   updatedAt?: T;

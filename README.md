@@ -169,6 +169,9 @@ and calls the failure endpoint (logged to BetterStack).
 | `POST /api/stripe/webhook`                    | Stripe fulfillment (`payment_intent.succeeded`) → order + enqueue email |
 | `POST /api/tasks/send-ticket-email`           | QStash worker: sends the ticket email (idempotent, retried)             |
 | `POST /api/tasks/send-ticket-email/failure`   | QStash dead-letter callback (alerting)                                  |
+| `POST /api/tasks/send-refund-email`           | QStash worker: sends the refund email (idempotent, retried)             |
+| `POST /api/tasks/send-due-broadcasts`         | QStash schedule (daily 9am ET): dispatches the broadcasts due that day  |
+| `POST /api/tasks/send-broadcast`              | QStash worker: sends one event announcement/reminder broadcast          |
 | `POST /api/subscribe`                         | Newsletter sign-up → MailerLite                                         |
 | `POST /api/contact`                           | Contact form                                                            |
 | `GET  /api/attendees`                         | Attendee data for check-in                                              |
@@ -282,6 +285,102 @@ your app — so localhost needs help receiving those callbacks.
 > Tip: `QSTASH_TARGET_BASE_URL` (in `lib/qstash.ts`) resolves from
 > `NEXT_PUBLIC_BASE_URL`; keep it at `http://localhost:3000` locally so the QStash
 > dev server can reach the worker.
+
+#### The local-publishing guard
+
+Cloud QStash can't call `localhost`. Without the dev server running, a local event
+save would queue messages aimed at `http://localhost:3000` that burn their retries
+and dead-letter — and, worse, `rescheduleEventBroadcasts` would first *cancel* the
+event's real messages (cancelling works from anywhere) and null out its ids.
+
+`QSTASH_DELIVERY_ENABLED` in `lib/qstash.ts` prevents that: when the target is
+localhost and `QSTASH_URL` isn't itself a local dev server, broadcast
+scheduling/rescheduling is skipped with a `console.warn` and existing messages are
+left untouched. Start `npx @upstash/qstash-cli dev` and point `QSTASH_URL` at it to
+exercise the queue locally.
+
+### Event broadcasts (announcement + reminder)
+
+One QStash **schedule** runs every morning and asks which events are due a
+broadcast:
+
+```
+QStash schedule  CRON_TZ=America/New_York 0 9 * * *
+   └─► POST /api/tasks/send-due-broadcasts
+          ├─ events happening today      → kind: 'reminder'      "Today: …"
+          └─ events happening in 6 days  → kind: 'announcement'  "Coming up: …"
+                 └─► one immediate message each to
+                     POST /api/tasks/send-broadcast → Resend broadcast
+```
+
+`send-broadcast` sends to the audience segment scoped to the event type's topic.
+The dispatcher publishes rather than sending inline so each event keeps its own
+retries and dead-letter entry — one flaky OMDB lookup can't strand the rest of the
+morning.
+
+**Why a daily schedule and not one message per event.** The original design
+published a delayed message per event from the `Events` `afterChange` hook. QStash
+caps delays at 7 days on this plan (`quota maxDelay exceeded, current limit:
+604800`), and the announcement fires 6 days out, so an event created more than a
+week ahead — nearly all of them — could never be scheduled. The hook logged and
+swallowed the error, so it failed silently for every event. Querying by date each
+morning has no horizon, and it also means **moving, unpublishing, or deleting an
+event needs no reconciliation**: the next run just sees current data. That's why
+there are no broadcast hooks on the collection and no stored message ids.
+
+**Why QStash's scheduler and not Vercel cron.** Vercel cron expressions are always
+UTC, so a 9am ET job would be an hour off for half the year unless you run hourly
+and redo the DST logic in code (and Hobby is capped at once per day). QStash takes
+an IANA zone in the expression, and its scheduled requests are signed, so
+`verifyQstashRequest` covers auth with no `CRON_SECRET` path.
+
+`announcementSentAt` / `reminderSentAt` on the event are now the **only** thing
+preventing a repeat send — nothing else records that a broadcast went out. The
+dispatcher also sets a `deduplicationId` of `broadcast-<id>-<kind>-<YYYYMMDD>` to
+close the gap where a retried dispatch could publish twice before the first stamp
+lands. (Note: a `:` in a `deduplicationId` makes `publishJSON` throw.)
+
+**Managing the schedule:**
+
+```bash
+npm run schedule:broadcasts -- --dry-run   # show it, and what's on the account
+npm run schedule:broadcasts                # create or update
+npm run schedule:broadcasts -- --delete    # remove
+```
+
+Idempotent — a fixed `scheduleId` means create() updates the existing schedule
+instead of stacking duplicates.
+
+**Testing delivery in production without sending an email:** publish a QStash
+message by hand (from the Upstash console, so it's signed — a direct `curl` will
+401 by design) to `https://zerovisioncinema.com/api/tasks/send-due-broadcasts` with
+an empty body, on a day nothing is due. A `200` with `{"dispatched":0}` proves
+signature verification, routing, and the DB query all work in production, with no
+email sent. A `401` means the signing keys in Vercel don't match the Upstash
+project. The same trick works on `send-broadcast` with a **past** event's id, which
+that route skips.
+
+#### Running scripts against production
+
+`npm run schedule:broadcasts` goes through `scripts/with-prod-env.sh`, which pulls
+the production env from Vercel, runs with `NODE_ENV=production`, and deletes the
+pulled file on the way out (an `EXIT` trap, so it goes even on failure or Ctrl-C).
+Requires the project to be linked — `vercel link` if the pull fails.
+
+> ⚠️ `NODE_ENV=production` is not cosmetic. `payload.config.ts` passes no `push`
+> option to `vercelPostgresAdapter`, so without it Payload treats the connection as
+> a dev database and tries to **push schema changes** — aimed at production, that
+> means offering to DROP columns before the script does any work. Reuse
+> `with-prod-env.sh` for anything that opens the prod database; the older
+> `scripts/backfill-*/` route-style helpers predate it and carry the original risk.
+
+> ⚠️ Env vars marked **Sensitive** in Vercel cannot be pulled — `vercel env pull`
+> returns the literal string `[SENSITIVE]`, and whatever needs them fails as though
+> the credential were wrong (QStash reports `invalid token`). The wrapper lists them
+> on every run. Fill a specific one from `.env.local` with
+> `PROD_ENV_FALLBACK=NAME`, but only where the local credential targets the same
+> upstream account — a blanket fallback would happily run production work against a
+> Stripe test key.
 
 ### QA-ing emails without payments
 

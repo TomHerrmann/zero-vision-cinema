@@ -172,7 +172,6 @@ export async function POST(req: Request) {
       collection: 'events',
       id: eventId,
       data: { [sentField]: new Date().toISOString() },
-      context: { skipBroadcastReschedule: true },
     });
 
     return NextResponse.json({ received: true }, { status: 200 });

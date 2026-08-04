@@ -23,6 +23,28 @@ const receiver = new Receiver({
 export const QSTASH_TARGET_BASE_URL =
   process.env.NEXT_PUBLIC_BASE_URL ?? ZVC_SITE_URL;
 
+function isLocalUrl(url?: string | null): boolean {
+  if (!url) return false;
+  try {
+    const { hostname } = new URL(url);
+    return (
+      hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]'
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Whether QStash could actually deliver to `QSTASH_TARGET_BASE_URL`. Cloud QStash
+ * can't reach localhost, so publishing from a local dev server that isn't pointed
+ * at the QStash dev server (`npx @upstash/qstash-cli dev`, which sets a localhost
+ * QSTASH_URL) only creates messages that burn their retries and dead-letter.
+ * True when the target is public, or when the target and QStash are both local.
+ */
+export const QSTASH_DELIVERY_ENABLED =
+  !isLocalUrl(QSTASH_TARGET_BASE_URL) || isLocalUrl(process.env.QSTASH_URL);
+
 /**
  * Verify an incoming QStash request and return its parsed JSON body. Throws if
  * the `Upstash-Signature` header is missing or invalid so task routes can 401.
