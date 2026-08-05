@@ -33,9 +33,20 @@ const SENT_FIELD = {
   reminder: 'reminderSentAt',
 } as const;
 
+// Typed against Event['eventType'] so adding a fourth event type is a compile
+// error here, rather than silently mailing the segment a "— undefined" subject.
+const EventTypeMap: Record<Event['eventType'], string> = {
+  zvc: 'Zero Vision Cinema',
+  ahc: 'Astoria Horror Club',
+  bookclub: 'Astoria Horror Book Club',
+};
+
+// One line each: a newline in a subject header gets stripped or mangled.
 const SUBJECT = {
-  announcement: (n: string) => `Coming up: ${n} — Zero Vision Cinema`,
-  reminder: (n: string) => `Today: ${n} — Zero Vision Cinema`,
+  announcement: (event_: Event) =>
+    `Coming up: ${event_.name} — ${EventTypeMap[event_.eventType]}`,
+  reminder: (event_: Event) =>
+    `Today: ${event_.name} — ${EventTypeMap[event_.eventType]}`,
 };
 
 /**
@@ -171,7 +182,7 @@ export async function POST(req: Request) {
         segment_id: segmentId,
         topic_id: topicIdForEventType(event_.eventType),
         from: ZVC_EMAIL_ADDRESS,
-        subject: SUBJECT[kind](event_.name),
+        subject: SUBJECT[kind](event_),
         html,
         send: true,
       }),

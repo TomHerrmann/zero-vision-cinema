@@ -105,6 +105,24 @@ describe('send-broadcast task', () => {
     expect(h.update.mock.calls[0][0].data).toHaveProperty('announcementSentAt');
   });
 
+  it('brands the subject with the event type and keeps it on one line', async () => {
+    await POST(req());
+    const { subject } = JSON.parse(h.fetch.mock.calls[0][1].body);
+    expect(subject).toBe('Coming up: The Thing — Zero Vision Cinema');
+    // A newline in a subject header gets stripped or mangled in transit.
+    expect(subject).not.toMatch(/[\r\n]/);
+  });
+
+  it('uses the Astoria Horror Club name for an AHC event', async () => {
+    h.findByID.mockResolvedValue({ ...event, eventType: 'ahc', price: 0 });
+    h.verify.mockResolvedValue({ eventId: 3, kind: 'reminder' });
+
+    await POST(req());
+
+    const { subject } = JSON.parse(h.fetch.mock.calls[0][1].body);
+    expect(subject).toBe('Today: The Thing — Astoria Horror Club');
+  });
+
   it('fails loudly when the full-access key is missing', async () => {
     delete process.env.RESEND_FULL_API_KEY;
     const res = await POST(req());
