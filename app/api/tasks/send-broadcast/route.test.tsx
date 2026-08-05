@@ -44,7 +44,9 @@ const req = () => new Request('http://localhost/api/tasks/send-broadcast');
 
 beforeEach(() => {
   process.env.RESEND_SEGMENT_ID = 'seg_1';
-  process.env.RESEND_API_KEY = 're_test';
+  // Sending-only key — present, but the broadcasts endpoint must NOT use it.
+  process.env.RESEND_API_KEY = 're_restricted';
+  process.env.RESEND_FULL_API_KEY = 're_full';
   h.verify.mockReset().mockResolvedValue({ eventId: 3, kind: 'announcement' });
   h.findByID.mockReset().mockResolvedValue({ ...event });
   h.update.mockReset().mockResolvedValue({});
@@ -97,7 +99,18 @@ describe('send-broadcast task', () => {
       topic_id: 'topic_zvc',
       send: true,
     });
+    // Must be the full-access key: the broadcasts endpoint 401s the
+    // sending-only RESEND_API_KEY with `restricted_api_key`.
+    expect(init.headers.Authorization).toBe('Bearer re_full');
     expect(h.update.mock.calls[0][0].data).toHaveProperty('announcementSentAt');
+  });
+
+  it('fails loudly when the full-access key is missing', async () => {
+    delete process.env.RESEND_FULL_API_KEY;
+    const res = await POST(req());
+    expect(res.status).toBe(500);
+    expect(h.fetch).not.toHaveBeenCalled();
+    expect(h.update).not.toHaveBeenCalled();
   });
 
   it('returns 500 (retry) and does not stamp when Resend errors', async () => {

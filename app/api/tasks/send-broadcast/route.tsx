@@ -149,10 +149,22 @@ export async function POST(req: Request) {
       />
     );
 
+    // Must be the FULL-access key. RESEND_API_KEY is sending-only, and the
+    // broadcasts endpoint rejects it with
+    // `401 restricted_api_key: This API key is restricted to only send emails`.
+    // Same key lib/resend.ts uses for audience/contact writes.
+    const resendKey = process.env.RESEND_FULL_API_KEY;
+    if (!resendKey) {
+      throw new Error(
+        'RESEND_FULL_API_KEY is not set — the broadcasts API rejects the ' +
+          'sending-only RESEND_API_KEY'
+      );
+    }
+
     const res = await fetch(RESEND_BROADCASTS_API_URL, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        Authorization: `Bearer ${resendKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
