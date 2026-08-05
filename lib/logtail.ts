@@ -29,6 +29,24 @@ async function safe(
   message: string,
   context?: Context
 ): Promise<void> {
+  // Mirror to the console FIRST, always. BetterStack has been silently
+  // rejecting our token, and because this wrapper swallows that, every
+  // logtail.error in the app became a no-op — a 500 in a task route left no
+  // trace anywhere. Vercel captures console output per request, so this is the
+  // channel that actually works. Errors and warnings only: info would be noise.
+  if (level === 'error' || level === 'warn') {
+    let line = message;
+    if (context) {
+      try {
+        line = `${message} ${JSON.stringify(context)}`;
+      } catch {
+        // Circular or otherwise unserialisable context — the message matters more.
+      }
+    }
+    if (level === 'error') console.error(line);
+    else console.warn(line);
+  }
+
   if (!client) return;
   try {
     await client[level](message, context);
