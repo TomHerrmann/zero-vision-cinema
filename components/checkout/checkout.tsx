@@ -61,6 +61,10 @@ const appearance: Appearance = {
   },
 };
 
+// Basic email sanity check — the ticket email has no recipient without one, so
+// every checkout path must yield a deliverable address before we charge.
+const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
 type Props = {
   eventId: number;
   eventName: string;
@@ -273,46 +277,61 @@ export function CheckoutForm({
     void syncIntent(quantity, value);
   };
 
-  const confirm = useCallback(async () => {
-    if (!stripe || !elements) return;
-    // Bail if a charge is already in flight (checked/set synchronously so it
-    // holds even before the button's disabled state renders).
-    if (submittingRef.current) return;
-    submittingRef.current = true;
-    setSubmitting(true);
-    setMessage(null);
+  const confirm = useCallback(
+    async (overrideEmail?: string) => {
+      if (!stripe || !elements) return;
+      // Bail if a charge is already in flight (checked/set synchronously so it
+      // holds even before the button's disabled state renders).
+      if (submittingRef.current) return;
 
-    // Wait for any in-flight quantity/newsletter sync to finish so the
-    // PaymentIntent's amount and metadata are current before we charge. The
-    // wallet (Express Checkout) button isn't blocked by React's disabled state,
-    // so without this a fast tap could confirm against a stale PaymentIntent.
-    if (pendingSync.current) await pendingSync.current;
+      // Require a deliverable email before charging so the post-purchase ticket
+      // email always has a recipient. Wallet payments supply it via
+      // `overrideEmail` (ExpressCheckoutElement is set with emailRequired); the
+      // card path uses the LinkAuthenticationElement value in `email`. Guard
+      // before the in-flight flag so an invalid email doesn't lock the button.
+      const effectiveEmail = (overrideEmail ?? email).trim();
+      if (!isValidEmail(effectiveEmail)) {
+        setMessage('Please enter a valid email so we can send your ticket.');
+        return;
+      }
 
-    const { error, paymentIntent } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: returnUrl,
-        receipt_email: email || undefined,
-      },
-      redirect: 'if_required',
-    });
+      submittingRef.current = true;
+      setSubmitting(true);
+      setMessage(null);
 
-    if (error) {
-      // Payment failed — allow another attempt.
-      submittingRef.current = false;
-      setMessage(error.message ?? 'Payment failed. Please try again.');
-      setSubmitting(false);
-      return;
-    }
+      // Wait for any in-flight quantity/newsletter sync to finish so the
+      // PaymentIntent's amount and metadata are current before we charge. The
+      // wallet (Express Checkout) button isn't blocked by React's disabled state,
+      // so without this a fast tap could confirm against a stale PaymentIntent.
+      if (pendingSync.current) await pendingSync.current;
 
-    if (paymentIntent && paymentIntent.status === 'succeeded') {
-      onComplete();
-      return;
-    }
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: returnUrl,
+          receipt_email: effectiveEmail,
+        },
+        redirect: 'if_required',
+      });
 
-    // Redirecting to complete (e.g. 3DS) — leave the submitting state (and the
-    // guard) set; the page is navigating away.
-  }, [stripe, elements, returnUrl, email, onComplete]);
+      if (error) {
+        // Payment failed — allow another attempt.
+        submittingRef.current = false;
+        setMessage(error.message ?? 'Payment failed. Please try again.');
+        setSubmitting(false);
+        return;
+      }
+
+      if (paymentIntent && paymentIntent.status === 'succeeded') {
+        onComplete();
+        return;
+      }
+
+      // Redirecting to complete (e.g. 3DS) — leave the submitting state (and the
+      // guard) set; the page is navigating away.
+    },
+    [stripe, elements, returnUrl, email, onComplete]
+  );
 
   const handleCardSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -353,7 +372,8 @@ export function CheckoutForm({
             payment sheet can't open against a stale amount. */}
         <div className={syncing ? 'pointer-events-none opacity-60' : undefined}>
           <ExpressCheckoutElement
-            onConfirm={confirm}
+            options={{ emailRequired: true }}
+            onConfirm={(e) => confirm(e.billingDetails?.email)}
             onReady={(e: StripeExpressCheckoutElementReadyEvent) =>
               setWalletAvailable(Boolean(e.availablePaymentMethods))
             }

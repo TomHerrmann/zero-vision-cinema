@@ -199,7 +199,7 @@ export const Events: CollectionConfig = {
                     minimum: 1,
                     maximum: Math.min(
                       5,
-                      data.location.capacity - data.ticketsSold
+                      locationDoc.capacity - (data.ticketsSold ?? 0) || 5
                     ),
                   },
                 },
@@ -217,6 +217,14 @@ export const Events: CollectionConfig = {
               method: 'POST',
               timestamp: new Date().toISOString(),
             }
+          );
+          // A paid event with no Stripe priceId/productId is unpurchasable on
+          // the site, so fail the save loudly rather than silently persisting a
+          // broken event. The admin sees the error and can retry.
+          throw new Error(
+            `Could not set up Stripe checkout for this event: ${
+              err instanceof Error ? err.message : String(err)
+            }`
           );
         }
         return data;
