@@ -1,3 +1,5 @@
+import type { Event } from '@/payload-types';
+
 export const SITE_NAME = 'Zero Vision Cinema';
 export const LLC_NAME = 'Zero Vision Cinema LLC';
 export const ZVC_SITE_URL = 'https://zerovisioncinema.com';
@@ -19,6 +21,25 @@ export const DISCORD_ICON_PNG_URL =
 
 export const AHC_DISCORD_URL =
   'https://discord.com/invite/x35BPgmPyb?fbclid=PAZXh0bgNhZW0CMTEAAafUzenp36jVZ_O95VA30EZDlPtO0qxHgeSHCdU4X8jTzwm9hwtHxXKwUDw0hg_aem_38kZ29hr4jhaISSUtC8IXA';
+
+/**
+ * Accent stripe for a Discord embed, as the webhook API wants it — a decimal
+ * int, so the ZVC brand hexes from tailwind.config.ts are written as 0x literals.
+ * Typed against Event['eventType'] so a fourth event type is a compile error
+ * here rather than an embed that silently loses its color.
+ */
+export const DISCORD_EMBED_COLORS: Record<Event['eventType'], number> = {
+  zvc: 0x4a8cc6, // blue-light
+  ahc: 0x7f0028, // cult-classic
+  bookclub: 0x9eb7cc, // retro-blue
+};
+
+/** Human name for an event type, for broadcast subjects and Discord embeds. */
+export const EVENT_TYPE_LABELS: Record<Event['eventType'], string> = {
+  zvc: 'Zero Vision Cinema',
+  ahc: 'Astoria Horror Club',
+  bookclub: 'Astoria Horror Book Club',
+};
 
 export const AHC_INSTAGRAM_URL = 'https://www.instagram.com/astoriahorrorclub';
 export const ZVC_INSTAGRAM_URL = 'https://www.instagram.com/zerovisioncinema';

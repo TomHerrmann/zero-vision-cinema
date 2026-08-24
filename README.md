@@ -172,6 +172,8 @@ and calls the failure endpoint (logged to BetterStack).
 | `POST /api/tasks/send-refund-email`           | QStash worker: sends the refund email (idempotent, retried)             |
 | `POST /api/tasks/send-due-broadcasts`         | QStash schedule (daily 9am ET): dispatches the broadcasts due that day  |
 | `POST /api/tasks/send-broadcast`              | QStash worker: sends one event announcement/reminder broadcast          |
+| `POST /api/tasks/send-discord-broadcast`      | QStash worker: posts one event announcement/reminder to Discord         |
+| `POST /api/tasks/send-discord-broadcast/failure` | QStash dead-letter callback for the Discord post                     |
 | `POST /api/subscribe`                         | Newsletter sign-up → MailerLite                                         |
 | `POST /api/contact`                           | Contact form                                                            |
 | `GET  /api/attendees`                         | Attendee data for check-in                                              |
@@ -249,6 +251,7 @@ browser; everything else is server-only.
 | `BETTERSTACK_SOURCE_TOKEN` | BetterStack (Logtail) source token |
 | `BETTERSTACK_INGESTING_HOST` | BetterStack source ingesting host (bare host or full URL) |
 | `DISCORD_INVITE_URL` | AHC Discord invite link |
+| `DISCORD_WEBHOOK_URL` | Incoming webhook for the channel that gets event announcements/reminders (Discord → Channel settings → Integrations → Webhooks). Unset = the Discord task logs and skips. Mark **Sensitive** in Vercel. |
 | `SEERR_HOME_HOST` | Optional host rewrite for `requests.zerovisioncinema.com` |
 
 ### Running locally
@@ -288,16 +291,16 @@ your app — so localhost needs help receiving those callbacks.
 
 #### The local-publishing guard
 
-Cloud QStash can't call `localhost`. Without the dev server running, a local event
-save would queue messages aimed at `http://localhost:3000` that burn their retries
-and dead-letter — and, worse, `rescheduleEventBroadcasts` would first *cancel* the
-event's real messages (cancelling works from anywhere) and null out its ids.
+Cloud QStash can't call `localhost`. Without the dev server running, a local run of
+the daily dispatcher would queue messages aimed at `http://localhost:3000` that
+burn their retries and dead-letter.
 
 `QSTASH_DELIVERY_ENABLED` in `lib/qstash.ts` prevents that: when the target is
-localhost and `QSTASH_URL` isn't itself a local dev server, broadcast
-scheduling/rescheduling is skipped with a `console.warn` and existing messages are
-left untouched. Start `npx @upstash/qstash-cli dev` and point `QSTASH_URL` at it to
-exercise the queue locally.
+localhost and `QSTASH_URL` isn't itself a local dev server,
+`send-due-broadcasts` stops before publishing anything and returns
+`200 {"skippedAll":true}` — not an error, just a report. Start
+`npx @upstash/qstash-cli dev` and point `QSTASH_URL` at it to exercise the queue
+locally.
 
 ### Event broadcasts (announcement + reminder)
 
@@ -309,14 +312,24 @@ QStash schedule  CRON_TZ=America/New_York 0 9 * * *
    └─► POST /api/tasks/send-due-broadcasts
           ├─ events happening today      → kind: 'reminder'      "Today: …"
           └─ events happening in 6 days  → kind: 'announcement'  "Coming up: …"
-                 └─► one immediate message each to
-                     POST /api/tasks/send-broadcast → Resend broadcast
+                 └─► one immediate message per event PER CHANNEL to
+                     ├─ POST /api/tasks/send-broadcast         → Resend broadcast
+                     └─ POST /api/tasks/send-discord-broadcast → Discord webhook
 ```
 
 `send-broadcast` sends to the audience segment scoped to the event type's topic.
+`send-discord-broadcast` posts an embed (poster, a `<t:…>` timestamp that renders
+in each member's own timezone, location, ticket link) to the channel named by
+`DISCORD_WEBHOOK_URL`; it never pings, and `allowed_mentions: { parse: [] }` means
+an `@everyone` typed into an event description can't either.
+
 The dispatcher publishes rather than sending inline so each event keeps its own
 retries and dead-letter entry — one flaky OMDB lookup can't strand the rest of the
-morning.
+morning. **The two channels are separate messages with separate stamps**, so a
+Discord outage can't block an email or cause one to go out twice, and vice versa.
+Everything both channels need beyond the event's own columns — OMDB/Open Library
+metadata, the poster, the event URL — comes from `resolveEventBroadcastData` in
+`lib/broadcasts.ts`, so the two can't drift on what they say about an event.
 
 **Why a daily schedule and not one message per event.** The original design
 published a delayed message per event from the `Events` `afterChange` hook. QStash
@@ -334,11 +347,28 @@ and redo the DST logic in code (and Hobby is capped at once per day). QStash tak
 an IANA zone in the expression, and its scheduled requests are signed, so
 `verifyQstashRequest` covers auth with no `CRON_SECRET` path.
 
-`announcementSentAt` / `reminderSentAt` on the event are now the **only** thing
-preventing a repeat send — nothing else records that a broadcast went out. The
-dispatcher also sets a `deduplicationId` of `broadcast-<id>-<kind>-<YYYYMMDD>` to
-close the gap where a retried dispatch could publish twice before the first stamp
-lands. (Note: a `:` in a `deduplicationId` makes `publishJSON` throw.)
+The four `*SentAt` stamps on the event — `announcementSentAt`, `reminderSentAt`,
+`discordAnnouncementSentAt`, `discordReminderSentAt` — are the **only** thing
+preventing a repeat send; nothing else records that a broadcast went out. Each
+task stamps its own field, and only after a successful send, so a failed send is
+retried. The dispatcher also sets a `deduplicationId` of
+`<prefix>-<id>-<kind>-<YYYYMMDD>` (`broadcast-…` for email, `discord-broadcast-…`
+for Discord) to close the gap where a retried dispatch could publish twice before
+the first stamp lands. (Note: a `:` in a `deduplicationId` makes `publishJSON`
+throw. The email prefix is deliberately unchanged from before Discord existed —
+renaming it would let a retry spanning a deploy slip past dedup.)
+
+**Re-driving one event by hand** (a missed window, or a Discord smoke test):
+
+```bash
+npm run broadcast:send -- --event 47 --kind announcement --dry-run
+npm run broadcast:send -- --event 47 --kind announcement --channel discord
+```
+
+`--channel` takes `email`, `discord`, or `both` (the default). The script mirrors
+the tasks' guards, so a dry run tells the truth about what would actually go out,
+and it does not bypass the `*SentAt` stamps — clear the stamp in the admin first
+if you genuinely want to re-send.
 
 **Managing the schedule:**
 

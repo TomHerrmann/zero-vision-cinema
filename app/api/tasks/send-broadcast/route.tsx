@@ -4,20 +4,21 @@ import payloadConfig from '@payload-config';
 import { render } from '@react-email/render';
 import { logtail } from '@/lib/logtail';
 import { verifyQstashRequest } from '@/lib/qstash';
-import { topicIdForEventType, type BroadcastKind } from '@/lib/broadcasts';
-import { fetchMovieDataByImdbId } from '@/lib/omdb';
-import { fetchBookDataByOpenLibraryId } from '@/lib/openlibrary';
+import {
+  topicIdForEventType,
+  resolveEventBroadcastData,
+  type BroadcastKind,
+} from '@/lib/broadcasts';
 import {
   ZVC_EMAIL_ADDRESS,
-  ZVC_SITE_URL,
-  AHC_SITE_URL,
   EMAIL_HEADER_IMAGE_ZVC_URL,
   EMAIL_HEADER_IMAGE_AHC_URL,
   EMAIL_HEADER_IMAGE_BOOKCLUB_URL,
   RESEND_BROADCASTS_API_URL,
+  EVENT_TYPE_LABELS,
 } from '@/app/contsants/constants';
 import BroadcastEmail from '@/emails/BroadcastEmail';
-import type { Event, Location, Media } from '@/payload-types';
+import type { Event } from '@/payload-types';
 
 type Body = { eventId?: number; kind?: BroadcastKind };
 
@@ -33,20 +34,14 @@ const SENT_FIELD = {
   reminder: 'reminderSentAt',
 } as const;
 
-// Typed against Event['eventType'] so adding a fourth event type is a compile
-// error here, rather than silently mailing the segment a "— undefined" subject.
-const EventTypeMap: Record<Event['eventType'], string> = {
-  zvc: 'Zero Vision Cinema',
-  ahc: 'Astoria Horror Club',
-  bookclub: 'Astoria Horror Book Club',
-};
-
 // One line each: a newline in a subject header gets stripped or mangled.
+// EVENT_TYPE_LABELS is typed against Event['eventType'], so adding a fourth
+// event type is a compile error rather than a "— undefined" subject.
 const SUBJECT = {
   announcement: (event_: Event) =>
-    `Coming up: ${event_.name} — ${EventTypeMap[event_.eventType]}`,
+    `Coming up: ${event_.name} — ${EVENT_TYPE_LABELS[event_.eventType]}`,
   reminder: (event_: Event) =>
-    `Today: ${event_.name} — ${EventTypeMap[event_.eventType]}`,
+    `Today: ${event_.name} — ${EVENT_TYPE_LABELS[event_.eventType]}`,
 };
 
 /**
@@ -106,41 +101,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const isBookClub = event_.eventType === 'bookclub';
-
-    // OMDB film data (film screenings), or Open Library book data (book club) —
-    // shown in the broadcast and used as the poster fallback.
-    const movie =
-      !isBookClub && event_.imdbId
-        ? await fetchMovieDataByImdbId(event_.imdbId)
-        : null;
-    const bookData =
-      isBookClub && event_.openLibraryId
-        ? await fetchBookDataByOpenLibraryId(event_.openLibraryId)
-        : null;
-    const book =
-      isBookClub && (event_.bookTitle || event_.bookAuthor || bookData)
-        ? {
-            title: event_.bookTitle ?? undefined,
-            author: event_.bookAuthor ?? undefined,
-            cover: bookData?.cover,
-            description: bookData?.description,
-          }
-        : null;
-
-    // Poster: uploaded blob image if present, else the OMDB / book cover.
-    const image =
-      typeof event_.image === 'object' ? (event_.image as Media) : null;
-    const posterUrl = image?.filename
-      ? `${process.env.VERCEL_BLOB_URL}${image.filename}`
-      : movie?.poster || book?.cover || undefined;
-
-    const location = event_.location as Location;
-    const isPaid = (event_.price ?? 0) > 0; // paid ZVC vs free AHC / book club
-    const eventUrl =
-      event_.eventType === 'zvc'
-        ? `${ZVC_SITE_URL}/events/${event_.id}`
-        : AHC_SITE_URL;
+    const { movie, book, posterUrl, eventUrl, location, isPaid } =
+      await resolveEventBroadcastData(event_);
 
     const html = await render(
       <BroadcastEmail

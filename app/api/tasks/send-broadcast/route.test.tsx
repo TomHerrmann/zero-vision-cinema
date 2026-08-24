@@ -11,7 +11,11 @@ const h = vi.hoisted(() => ({
 
 vi.mock('@/lib/qstash', () => ({ verifyQstashRequest: h.verify }));
 vi.mock('@react-email/render', () => ({ render: h.render }));
-vi.mock('@/lib/broadcasts', () => ({
+// Only the topic lookup is stubbed — `resolveEventBroadcastData` runs for real
+// (over the mocked OMDB client) so the poster/event-URL resolution this route
+// used to do inline stays covered here.
+vi.mock('@/lib/broadcasts', async (importActual) => ({
+  ...(await importActual<typeof import('@/lib/broadcasts')>()),
   topicIdForEventType: () => 'topic_zvc',
 }));
 vi.mock('payload', () => ({
@@ -103,6 +107,11 @@ describe('send-broadcast task', () => {
     // sending-only RESEND_API_KEY with `restricted_api_key`.
     expect(init.headers.Authorization).toBe('Bearer re_full');
     expect(h.update.mock.calls[0][0].data).toHaveProperty('announcementSentAt');
+    // Resolved by lib/broadcasts and handed to the email template.
+    expect(h.render.mock.calls[0][0].props).toMatchObject({
+      eventUrl: 'https://zerovisioncinema.com/events/3',
+      eventLocation: 'SingleCut',
+    });
   });
 
   it('brands the subject with the event type and keeps it on one line', async () => {

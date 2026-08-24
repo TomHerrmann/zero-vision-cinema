@@ -390,10 +390,12 @@ export const Events: CollectionConfig = {
       defaultValue: 0,
       admin: { readOnly: true },
     },
-    // Announcement (−6d) + reminder (day-of) broadcast state. The daily
-    // send-due-broadcasts task decides what's due by date each morning, so these
-    // stamps are the only thing preventing a repeat send — nothing else tracks
-    // whether an event's broadcast already went out.
+    // Announcement (−6d) + reminder (day-of) broadcast state, per channel. The
+    // daily send-due-broadcasts task decides what's due by date each morning, so
+    // these stamps are the only thing preventing a repeat send — nothing else
+    // tracks whether an event's broadcast already went out. Email and Discord
+    // stamp separately so an outage on one channel can't block or duplicate the
+    // other.
     {
       name: 'announcementSentAt',
       type: 'date',
@@ -402,6 +404,18 @@ export const Events: CollectionConfig = {
     },
     {
       name: 'reminderSentAt',
+      type: 'date',
+      required: false,
+      admin: { readOnly: true, position: 'sidebar' },
+    },
+    {
+      name: 'discordAnnouncementSentAt',
+      type: 'date',
+      required: false,
+      admin: { readOnly: true, position: 'sidebar' },
+    },
+    {
+      name: 'discordReminderSentAt',
       type: 'date',
       required: false,
       admin: { readOnly: true, position: 'sidebar' },

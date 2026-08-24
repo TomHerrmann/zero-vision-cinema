@@ -257,6 +257,8 @@ export interface Event {
   ticketsSold?: number | null;
   announcementSentAt?: string | null;
   reminderSentAt?: string | null;
+  discordAnnouncementSentAt?: string | null;
+  discordReminderSentAt?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -530,6 +532,8 @@ export interface EventsSelect<T extends boolean = true> {
   ticketsSold?: T;
   announcementSentAt?: T;
   reminderSentAt?: T;
+  discordAnnouncementSentAt?: T;
+  discordReminderSentAt?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

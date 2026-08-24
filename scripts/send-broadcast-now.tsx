@@ -3,33 +3,51 @@
  *
  *   npm run broadcast:send -- --event 47 --kind announcement --dry-run
  *   npm run broadcast:send -- --event 47 --kind announcement
+ *   npm run broadcast:send -- --event 47 --kind announcement --channel discord
  *
  * For when a window was missed — an event published fewer than 6 days out, or
  * created after that morning's run — and the announcement would otherwise never
  * go out, since the dispatcher only ever looks at today and today+6.
  *
- * This publishes a QStash message to /api/tasks/send-broadcast exactly as the
+ * This publishes a QStash message to the channel task(s) exactly as the
  * dispatcher would, so it goes through the same signature check, the same
- * already-sent guard, and the same retries. It does NOT bypass
- * `announcementSentAt` / `reminderSentAt`: if the broadcast already went out,
- * the task will skip it. Clear the stamp in the admin first if you genuinely
- * want to re-send.
+ * already-sent guard, and the same retries. It does NOT bypass the `*SentAt`
+ * stamps: if that channel's broadcast already went out, the task will skip it.
+ * Clear the stamp in the admin first if you genuinely want to re-send.
  *
- * ⚠️ This mails the whole audience segment, scoped to the event type's topic.
- * Always --dry-run first and read back the event it found.
+ * `--channel` defaults to `both`. Use `--channel discord` to smoke-test the
+ * Discord post without mailing the segment, or `--channel email` for the
+ * reverse.
+ *
+ * ⚠️ The email channel mails the whole audience segment, scoped to the event
+ * type's topic. Always --dry-run first and read back the event it found.
  */
 import { getPayload } from 'payload';
 import payloadConfig from '@/payload.config';
 import { qstash, QSTASH_TARGET_BASE_URL } from '@/lib/qstash';
 import type { BroadcastKind } from '@/lib/broadcasts';
 
-const TASK_URL = `${QSTASH_TARGET_BASE_URL}/api/tasks/send-broadcast`;
-const FAILURE_URL = `${QSTASH_TARGET_BASE_URL}/api/tasks/send-broadcast/failure`;
-
-const SENT_FIELD = {
-  announcement: 'announcementSentAt',
-  reminder: 'reminderSentAt',
+/** Keep in sync with CHANNELS in app/api/tasks/send-due-broadcasts/route.ts. */
+const CHANNELS = {
+  email: {
+    url: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-broadcast`,
+    failureUrl: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-broadcast/failure`,
+    sentField: {
+      announcement: 'announcementSentAt',
+      reminder: 'reminderSentAt',
+    },
+  },
+  discord: {
+    url: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-discord-broadcast`,
+    failureUrl: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-discord-broadcast/failure`,
+    sentField: {
+      announcement: 'discordAnnouncementSentAt',
+      reminder: 'discordReminderSentAt',
+    },
+  },
 } as const;
+
+type ChannelName = keyof typeof CHANNELS;
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
@@ -40,10 +58,19 @@ async function main() {
   const dryRun = process.argv.includes('--dry-run');
   const eventId = Number(arg('event'));
   const kind = arg('kind') as BroadcastKind | undefined;
+  const channelArg = arg('channel') ?? 'both';
 
-  if (!eventId || (kind !== 'announcement' && kind !== 'reminder')) {
+  const channels: ChannelName[] =
+    channelArg === 'both' ? ['email', 'discord'] : [channelArg as ChannelName];
+
+  if (
+    !eventId ||
+    (kind !== 'announcement' && kind !== 'reminder') ||
+    channels.some((c) => !CHANNELS[c])
+  ) {
     console.error(
-      'usage: --event <id> --kind <announcement|reminder> [--dry-run]'
+      'usage: --event <id> --kind <announcement|reminder> ' +
+        '[--channel email|discord|both] [--dry-run]'
     );
     process.exit(2);
   }
@@ -56,8 +83,8 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`mode    ${dryRun ? 'DRY RUN' : 'SEND'}`);
-  console.log(`target  ${TASK_URL}`);
+  console.log(`mode     ${dryRun ? 'DRY RUN' : 'SEND'}`);
+  console.log(`channels ${channels.join(', ')}`);
   console.log('');
 
   const payload = await getPayload({ config: payloadConfig });
@@ -73,8 +100,6 @@ async function main() {
     process.exit(1);
   }
 
-  const sentField = SENT_FIELD[kind];
-  const alreadySent = event[sentField as keyof typeof event];
   const start = new Date(event.datetime);
   const location = event.location as { name?: string } | null;
 
@@ -91,13 +116,18 @@ async function main() {
     }).format(start)} ET   at ${location?.name ?? '—'}`
   );
   console.log(`  kind       ${kind}`);
-  console.log(`  ${sentField}  ${alreadySent ?? '(not yet sent)'}`);
+  for (const name of channels) {
+    const field = CHANNELS[name].sentField[kind];
+    console.log(
+      `  ${field.padEnd(26)} ${event[field as keyof typeof event] ?? '(not yet sent)'}`
+    );
+  }
   console.log('');
 
-  // Mirror the task's own guards so the dry run tells the truth about what
-  // would happen, rather than promising a send the task would skip.
+  // Mirror the tasks' own guards so the dry run tells the truth about what
+  // would happen, rather than promising a send the task would skip. Event-wide
+  // blockers stop everything; an already-set stamp only drops its own channel.
   const blockers: string[] = [];
-  if (alreadySent) blockers.push(`${sentField} is already set — task will skip`);
   if (event._status !== 'published') blockers.push('event is not published');
   if (start.getTime() < Date.now()) blockers.push('event is in the past');
 
@@ -107,23 +137,44 @@ async function main() {
     process.exit(1);
   }
 
+  const todo = channels.filter((name) => {
+    const field = CHANNELS[name].sentField[kind];
+    if (event[field as keyof typeof event]) {
+      console.log(`  · skipping ${name}: ${field} is already set`);
+      return false;
+    }
+    return true;
+  });
+
+  if (todo.length === 0) {
+    console.log('\nNothing to send — every requested channel already went out.');
+    process.exit(1);
+  }
+
   if (dryRun) {
     console.log(
-      'DRY RUN — would publish this broadcast to the whole audience segment,\n' +
-        `scoped to the ${event.eventType} topic. Re-run without --dry-run to send.`
+      `DRY RUN — would publish to: ${todo.join(', ')}.\n` +
+        (todo.includes('email')
+          ? `The email goes to the whole audience segment, scoped to the ${event.eventType} topic.\n`
+          : '') +
+        'Re-run without --dry-run to send.'
     );
     return;
   }
 
-  const res = await qstash.publishJSON({
-    url: TASK_URL,
-    body: { eventId: event.id, kind },
-    retries: 3,
-    failureCallback: FAILURE_URL,
-  });
-
-  console.log(`Published ${res.messageId}.`);
-  console.log(`Broadcast is on its way; ${sentField} will be stamped on send.`);
+  for (const name of todo) {
+    const channel = CHANNELS[name];
+    const res = await qstash.publishJSON({
+      url: channel.url,
+      body: { eventId: event.id, kind },
+      retries: 3,
+      failureCallback: channel.failureUrl,
+    });
+    console.log(
+      `Published ${name} → ${res.messageId}; ` +
+        `${channel.sentField[kind]} will be stamped on send.`
+    );
+  }
 }
 
 main().catch((err) => {

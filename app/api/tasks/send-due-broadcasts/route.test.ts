@@ -51,21 +51,31 @@ describe('POST /api/tasks/send-due-broadcasts', () => {
     expect(h.publishJSON).not.toHaveBeenCalled();
   });
 
-  it('dispatches a reminder for an event happening today', async () => {
+  it('dispatches a reminder to both channels for an event happening today', async () => {
     findReturns([{ id: 7, reminderSentAt: null }], []);
 
     const res = await POST(req());
     const body = await res.json();
 
     expect(res.status).toBe(200);
-    expect(body.dispatched).toBe(1);
-    expect(h.publishJSON).toHaveBeenCalledTimes(1);
+    expect(body.dispatched).toBe(2);
+    expect(h.publishJSON).toHaveBeenCalledTimes(2);
     expect(h.publishJSON.mock.calls[0][0]).toMatchObject({
       url: 'https://zerovisioncinema.com/api/tasks/send-broadcast',
       body: { eventId: 7, kind: 'reminder' },
       failureCallback:
         'https://zerovisioncinema.com/api/tasks/send-broadcast/failure',
     });
+    expect(h.publishJSON.mock.calls[1][0]).toMatchObject({
+      url: 'https://zerovisioncinema.com/api/tasks/send-discord-broadcast',
+      body: { eventId: 7, kind: 'reminder' },
+      failureCallback:
+        'https://zerovisioncinema.com/api/tasks/send-discord-broadcast/failure',
+    });
+    expect(body.events).toEqual([
+      { eventId: 7, kind: 'reminder', channel: 'email' },
+      { eventId: 7, kind: 'reminder', channel: 'discord' },
+    ]);
   });
 
   it('dispatches an announcement for an event six days out', async () => {
@@ -73,7 +83,7 @@ describe('POST /api/tasks/send-due-broadcasts', () => {
 
     const body = await (await POST(req())).json();
 
-    expect(body.dispatched).toBe(1);
+    expect(body.dispatched).toBe(2);
     expect(h.publishJSON.mock.calls[0][0]).toMatchObject({
       body: { eventId: 9, kind: 'announcement' },
     });
@@ -96,14 +106,36 @@ describe('POST /api/tasks/send-due-broadcasts', () => {
     });
   });
 
-  it('skips an event whose broadcast already went out', async () => {
-    findReturns([{ id: 7, reminderSentAt: '2026-08-19T13:00:00.000Z' }], []);
+  it('skips an event whose broadcast already went out on every channel', async () => {
+    findReturns(
+      [
+        {
+          id: 7,
+          reminderSentAt: '2026-08-19T13:00:00.000Z',
+          discordReminderSentAt: '2026-08-19T13:00:00.000Z',
+        },
+      ],
+      []
+    );
 
     const body = await (await POST(req())).json();
 
     expect(body.dispatched).toBe(0);
-    expect(body.skipped).toBe(1);
+    expect(body.skipped).toBe(2);
     expect(h.publishJSON).not.toHaveBeenCalled();
+  });
+
+  it('still dispatches Discord when only the email already went out', async () => {
+    findReturns([{ id: 7, reminderSentAt: '2026-08-19T13:00:00.000Z' }], []);
+
+    const body = await (await POST(req())).json();
+
+    expect(body.dispatched).toBe(1);
+    expect(body.skipped).toBe(1);
+    expect(h.publishJSON).toHaveBeenCalledTimes(1);
+    expect(h.publishJSON.mock.calls[0][0]).toMatchObject({
+      url: 'https://zerovisioncinema.com/api/tasks/send-discord-broadcast',
+    });
   });
 
   it('dispatches nothing on a day with no due events', async () => {
@@ -112,15 +144,20 @@ describe('POST /api/tasks/send-due-broadcasts', () => {
     expect(h.publishJSON).not.toHaveBeenCalled();
   });
 
-  it('uses a per-event-per-day deduplicationId with no colons', async () => {
+  it('uses a per-event-per-day-per-channel deduplicationId with no colons', async () => {
     findReturns([{ id: 7, reminderSentAt: null }], []);
 
     await POST(req());
 
-    const { deduplicationId } = h.publishJSON.mock.calls[0][0];
-    expect(deduplicationId).toBe('broadcast-7-reminder-20260819');
+    const ids = h.publishJSON.mock.calls.map((c) => c[0].deduplicationId);
+    // The email id is unchanged from before Discord existed: renaming it would
+    // let a retry spanning the deploy slip past dedup and mail the segment twice.
+    expect(ids).toEqual([
+      'broadcast-7-reminder-20260819',
+      'discord-broadcast-7-reminder-20260819',
+    ]);
     // A ':' makes publishJSON throw — QStash rejects it outright.
-    expect(deduplicationId).not.toContain(':');
+    ids.forEach((id) => expect(id).not.toContain(':'));
   });
 
   it('500s so QStash retries when the lookup fails', async () => {

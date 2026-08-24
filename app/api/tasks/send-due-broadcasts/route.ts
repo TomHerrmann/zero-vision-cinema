@@ -11,18 +11,41 @@ import {
 import type { BroadcastKind } from '@/lib/broadcasts';
 import { etDayRangeUtc, ANNOUNCE_DAYS_BEFORE } from '@/utils/broadcastSchedule';
 
-const TASK_URL = `${QSTASH_TARGET_BASE_URL}/api/tasks/send-broadcast`;
-const FAILURE_URL = `${QSTASH_TARGET_BASE_URL}/api/tasks/send-broadcast/failure`;
-
 /** Which ET day each broadcast kind looks at, relative to this morning's run. */
-const DUE: { kind: BroadcastKind; daysFromNow: number; sentField: string }[] = [
-  { kind: 'reminder', daysFromNow: 0, sentField: 'reminderSentAt' },
-  {
-    kind: 'announcement',
-    daysFromNow: ANNOUNCE_DAYS_BEFORE,
-    sentField: 'announcementSentAt',
-  },
+const DUE: { kind: BroadcastKind; daysFromNow: number }[] = [
+  { kind: 'reminder', daysFromNow: 0 },
+  { kind: 'announcement', daysFromNow: ANNOUNCE_DAYS_BEFORE },
 ];
+
+/**
+ * Where a due broadcast gets sent. Every channel is its own QStash message with
+ * its own retries, dead-letter entry, and `*SentAt` stamp, so a Discord outage
+ * can't block an email or make one go out twice.
+ */
+const CHANNELS = [
+  {
+    name: 'email',
+    url: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-broadcast`,
+    failureUrl: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-broadcast/failure`,
+    // Deliberately not `email-` prefixed: changing this would let a retry that
+    // spans the deploy slip past dedup and mail the segment twice.
+    dedupPrefix: 'broadcast',
+    sentField: {
+      announcement: 'announcementSentAt',
+      reminder: 'reminderSentAt',
+    },
+  },
+  {
+    name: 'discord',
+    url: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-discord-broadcast`,
+    failureUrl: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-discord-broadcast/failure`,
+    dedupPrefix: 'discord-broadcast',
+    sentField: {
+      announcement: 'discordAnnouncementSentAt',
+      reminder: 'discordReminderSentAt',
+    },
+  },
+] as const;
 
 /**
  * QStash-scheduled task: run each morning at 9am ET (see
@@ -63,10 +86,14 @@ export async function POST(req: Request) {
   try {
     const payload = await getPayload({ config: payloadConfig });
     const now = new Date();
-    const dispatched: { eventId: number; kind: BroadcastKind }[] = [];
+    const dispatched: {
+      eventId: number;
+      kind: BroadcastKind;
+      channel: string;
+    }[] = [];
     let skipped = 0;
 
-    for (const { kind, daysFromNow, sentField } of DUE) {
+    for (const { kind, daysFromNow } of DUE) {
       const { start, end } = etDayRangeUtc(now, daysFromNow);
 
       const { docs: events } = await payload.find({
@@ -83,29 +110,30 @@ export async function POST(req: Request) {
         depth: 0,
       });
 
+      const day = start.toISOString().slice(0, 10).replace(/-/g, '');
+
       for (const event of events) {
-        // send-broadcast re-checks this itself; skipping here just avoids the
-        // pointless round trip.
-        if (event[sentField as keyof typeof event]) {
-          skipped++;
-          continue;
+        for (const channel of CHANNELS) {
+          // Each task re-checks its own stamp; skipping here just avoids the
+          // pointless round trip.
+          if (event[channel.sentField[kind] as keyof typeof event]) {
+            skipped++;
+            continue;
+          }
+
+          await qstash.publishJSON({
+            url: channel.url,
+            body: { eventId: event.id, kind },
+            retries: 3,
+            failureCallback: channel.failureUrl,
+            // Guards the window where a retry of this dispatcher could publish
+            // again before the first send stamps its *SentAt. Hyphens only — a
+            // ':' in a deduplicationId makes publishJSON throw.
+            deduplicationId: `${channel.dedupPrefix}-${event.id}-${kind}-${day}`,
+          });
+
+          dispatched.push({ eventId: event.id, kind, channel: channel.name });
         }
-
-        await qstash.publishJSON({
-          url: TASK_URL,
-          body: { eventId: event.id, kind },
-          retries: 3,
-          failureCallback: FAILURE_URL,
-          // Guards the window where a retry of this dispatcher could publish
-          // again before the first send stamps its *SentAt. Hyphens only — a
-          // ':' in a deduplicationId makes publishJSON throw.
-          deduplicationId: `broadcast-${event.id}-${kind}-${start
-            .toISOString()
-            .slice(0, 10)
-            .replace(/-/g, '')}`,
-        });
-
-        dispatched.push({ eventId: event.id, kind });
       }
     }
 
