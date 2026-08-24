@@ -200,23 +200,47 @@ export async function POST(req: Request) {
         // (retried on failure, dead-lettered + alerted if exhausted) and can't be
         // swallowed by this webhook request. The task does the OMDB poster lookup
         // and Resend send; see app/api/tasks/send-ticket-email.
-        if (newOrder.id && event_?.id && email) {
-          try {
-            await qstash.publishJSON({
-              url: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-ticket-email`,
-              body: { orderId: newOrder.id, email },
-              deduplicationId: `ticket-email-${pi.id}`,
-              retries: 3,
-              failureCallback: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-ticket-email/failure`,
-            });
-          } catch (enqueueErr) {
-            // Payment is captured and the order recorded; don't fail the webhook.
-            // Log so a missed enqueue is visible (still far more reliable than the
-            // previous inline send).
+        if (newOrder.id && event_?.id) {
+          // Last-resort fallback: if the charge carried no email (e.g. a wallet
+          // that didn't share one), fall back to the Stripe customer's email so
+          // the buyer still gets their ticket.
+          let ticketEmail = email;
+          if (!ticketEmail) {
+            const cust = await stripeCheckout.customers
+              .retrieve(customerId)
+              .catch(() => null);
+            if (cust && !('deleted' in cust && cust.deleted)) {
+              ticketEmail = (cust as Stripe.Customer).email ?? null;
+            }
+          }
+
+          if (!ticketEmail) {
+            // No deliverable address anywhere — the order is recorded and the
+            // seat counted, but the buyer can't be emailed. Log loudly so this
+            // is visible and can be handled manually (rather than silently
+            // skipped as before).
             await logtail.error(
-              `API /stripe/webhook: failed to enqueue ticket email for order ${newOrder.id}: ${enqueueErr}`,
+              `API /stripe/webhook: no email for order ${newOrder.id} (payment_intent ${pi.id}); ticket email NOT sent`,
               { method: 'POST', timestamp: new Date().toISOString() }
             );
+          } else {
+            try {
+              await qstash.publishJSON({
+                url: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-ticket-email`,
+                body: { orderId: newOrder.id, email: ticketEmail },
+                deduplicationId: `ticket-email-${pi.id}`,
+                retries: 3,
+                failureCallback: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-ticket-email/failure`,
+              });
+            } catch (enqueueErr) {
+              // Payment is captured and the order recorded; don't fail the webhook.
+              // Log so a missed enqueue is visible (still far more reliable than the
+              // previous inline send).
+              await logtail.error(
+                `API /stripe/webhook: failed to enqueue ticket email for order ${newOrder.id}: ${enqueueErr}`,
+                { method: 'POST', timestamp: new Date().toISOString() }
+              );
+            }
           }
         }
 

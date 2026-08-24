@@ -17,9 +17,35 @@ vi.mock('@stripe/react-stripe-js', () => ({
   useElements: () => ({ fetchUpdates: h.fetchUpdates }),
   Elements: ({ children }: { children: React.ReactNode }) => children,
   PaymentElement: () => <div data-testid="payment-element" />,
-  LinkAuthenticationElement: () => <div data-testid="email-element" />,
-  ExpressCheckoutElement: ({ onConfirm }: { onConfirm?: () => void }) => (
-    <button type="button" data-testid="wallet" onClick={() => onConfirm?.()} />
+  // Clicking it simulates the buyer entering a valid email (fires onChange), so
+  // tests can satisfy the required-email guard on the card path.
+  LinkAuthenticationElement: ({
+    onChange,
+  }: {
+    onChange?: (e: { value: { email: string }; complete: boolean }) => void;
+  }) => (
+    <button
+      type="button"
+      data-testid="email-element"
+      onClick={() =>
+        onChange?.({ value: { email: 'buyer@example.com' }, complete: true })
+      }
+    />
+  ),
+  // The wallet supplies its own email (emailRequired), mirrored here via the
+  // onConfirm event's billingDetails.
+  ExpressCheckoutElement: ({
+    onConfirm,
+  }: {
+    onConfirm?: (e: { billingDetails?: { email?: string } }) => void;
+  }) => (
+    <button
+      type="button"
+      data-testid="wallet"
+      onClick={() =>
+        onConfirm?.({ billingDetails: { email: 'buyer@example.com' } })
+      }
+    />
   ),
 }));
 
@@ -53,6 +79,8 @@ describe('CheckoutForm double-submit guard', () => {
     h.confirmPayment.mockReturnValue(d.promise);
 
     render(<CheckoutForm {...props} />);
+    // Satisfy the required-email guard before charging.
+    fireEvent.click(screen.getByTestId('email-element'));
     const payButton = screen.getByRole('button', { name: /pay \$10/i });
 
     // Fire several rapid clicks before the (still-pending) charge resolves.
@@ -76,6 +104,8 @@ describe('CheckoutForm double-submit guard', () => {
     h.confirmPayment.mockReturnValue(d.promise);
 
     render(<CheckoutForm {...props} />);
+    // Satisfy the required-email guard before charging.
+    fireEvent.click(screen.getByTestId('email-element'));
 
     // Card submit starts the charge, then the wallet fires its onConfirm — the
     // race the synchronous ref guard exists to close (the wallet button is not
@@ -97,6 +127,8 @@ describe('CheckoutForm double-submit guard', () => {
     });
 
     render(<CheckoutForm {...props} />);
+    // Satisfy the required-email guard before charging.
+    fireEvent.click(screen.getByTestId('email-element'));
     fireEvent.click(screen.getByRole('button', { name: /pay \$10/i }));
 
     // Error surfaces and the button returns to the payable state.
@@ -112,6 +144,42 @@ describe('CheckoutForm double-submit guard', () => {
     expect(h.confirmPayment).toHaveBeenCalledTimes(2);
 
     d.resolve({ paymentIntent: { status: 'succeeded' } });
+    await waitFor(() => expect(props.onComplete).toHaveBeenCalledTimes(1));
+  });
+});
+
+describe('CheckoutForm required-email guard', () => {
+  it('does not charge and prompts for an email when the card button is clicked without one', async () => {
+    render(<CheckoutForm {...props} />);
+
+    // No email entered → clicking Pay must not reach Stripe.
+    fireEvent.click(screen.getByRole('button', { name: /pay \$10/i }));
+
+    await screen.findByText(/enter a valid email/i);
+    expect(h.confirmPayment).not.toHaveBeenCalled();
+    // Button stays payable so the buyer can fix it and retry.
+    expect(
+      screen.getByRole('button', { name: /pay \$10/i })
+    ).not.toBeDisabled();
+  });
+
+  it('charges via the wallet using the email it supplies, even if the card email field is untouched', async () => {
+    h.confirmPayment.mockResolvedValue({
+      paymentIntent: { status: 'succeeded' },
+    });
+
+    render(<CheckoutForm {...props} />);
+    // Never touch the card email field; the wallet provides its own email.
+    fireEvent.click(screen.getByTestId('wallet'));
+
+    await waitFor(() => expect(h.confirmPayment).toHaveBeenCalledTimes(1));
+    expect(h.confirmPayment).toHaveBeenCalledWith(
+      expect.objectContaining({
+        confirmParams: expect.objectContaining({
+          receipt_email: 'buyer@example.com',
+        }),
+      })
+    );
     await waitFor(() => expect(props.onComplete).toHaveBeenCalledTimes(1));
   });
 });
