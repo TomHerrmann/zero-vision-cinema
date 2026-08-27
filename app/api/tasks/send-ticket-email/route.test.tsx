@@ -9,6 +9,7 @@ const h = vi.hoisted(() => ({
   send: vi.fn(),
   fetchMovie: vi.fn(),
   getReceipt: vi.fn(),
+  getCustomerEmail: vi.fn(),
 }));
 
 vi.mock('@/lib/qstash', () => ({
@@ -16,7 +17,10 @@ vi.mock('@/lib/qstash', () => ({
   qstash: {},
   QSTASH_TARGET_BASE_URL: '',
 }));
-vi.mock('@/lib/stripe', () => ({ getReceiptDetails: h.getReceipt }));
+vi.mock('@/lib/stripe', () => ({
+  getReceiptDetails: h.getReceipt,
+  getCustomerEmail: h.getCustomerEmail,
+}));
 vi.mock('payload', () => ({
   getPayload: vi.fn().mockResolvedValue({
     findByID: h.findByID,
@@ -38,6 +42,7 @@ import { POST } from './route';
 const order = {
   id: 7,
   productId: 'prod_123',
+  customerId: 'cus_123',
   quantity: 2,
   amountPaid: 20,
   transactionDate: '2026-07-29T00:00:00.000Z',
@@ -66,6 +71,7 @@ beforeEach(() => {
   h.update.mockReset().mockResolvedValue({});
   h.send.mockReset().mockResolvedValue({ data: { id: 'email_1' }, error: null });
   h.fetchMovie.mockReset().mockResolvedValue(null);
+  h.getCustomerEmail.mockReset().mockResolvedValue('customer@test.com');
   h.getReceipt.mockReset().mockResolvedValue({
     cardBrand: 'Visa',
     cardLast4: '4242',
@@ -93,6 +99,28 @@ describe('send-ticket-email task', () => {
     expect(h.send.mock.calls[0][0]).toMatchObject({ to: 'buyer@test.com' });
     expect(h.update).toHaveBeenCalledTimes(1);
     expect(h.update.mock.calls[0][0].data).toHaveProperty('ticketEmailSentAt');
+  });
+
+  it('falls back to the Stripe customer email when the enqueue carries none', async () => {
+    // What the repair script publishes: an orderId and nothing else.
+    h.verify.mockResolvedValue({ orderId: 7 });
+
+    const res = await POST(req());
+
+    expect(res.status).toBe(200);
+    expect(h.getCustomerEmail).toHaveBeenCalledWith('cus_123');
+    expect(h.send.mock.calls[0][0]).toMatchObject({ to: 'customer@test.com' });
+  });
+
+  it('400s without sending when no address can be resolved at all', async () => {
+    h.verify.mockResolvedValue({ orderId: 7 });
+    h.getCustomerEmail.mockResolvedValue(null);
+
+    const res = await POST(req());
+
+    expect(res.status).toBe(400);
+    expect(h.send).not.toHaveBeenCalled();
+    expect(h.update).not.toHaveBeenCalled();
   });
 
   it('returns 500 (so QStash retries) and does not stamp when Resend fails', async () => {

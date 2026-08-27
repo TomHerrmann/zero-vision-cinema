@@ -182,20 +182,6 @@ export async function POST(req: Request) {
           },
         });
 
-        if (event_?.id) {
-          await payload.update({
-            collection: 'events',
-            id: event_.id,
-            data: { ticketsSold: (event_.ticketsSold ?? 0) + quantity },
-          });
-        } else if (merch_?.id) {
-          await payload.update({
-            collection: 'merch',
-            id: merch_.id,
-            data: { merchSold: (merch_.merchSold ?? 0) + quantity },
-          });
-        }
-
         // Ticket email — events only. Enqueued to QStash so delivery is durable
         // (retried on failure, dead-lettered + alerted if exhausted) and can't be
         // swallowed by this webhook request. The task does the OMDB poster lookup
@@ -215,10 +201,9 @@ export async function POST(req: Request) {
           }
 
           if (!ticketEmail) {
-            // No deliverable address anywhere — the order is recorded and the
-            // seat counted, but the buyer can't be emailed. Log loudly so this
-            // is visible and can be handled manually (rather than silently
-            // skipped as before).
+            // No deliverable address anywhere — the order is recorded, but the
+            // buyer can't be emailed. Log loudly so this is visible and can be
+            // handled manually (rather than silently skipped as before).
             await logtail.error(
               `API /stripe/webhook: no email for order ${newOrder.id} (payment_intent ${pi.id}); ticket email NOT sent`,
               { method: 'POST', timestamp: new Date().toISOString() }
@@ -242,6 +227,32 @@ export async function POST(req: Request) {
               );
             }
           }
+        }
+
+        // Sold counts last, and never fatal: the buyer is already paid, recorded
+        // and emailed, so a failure here must not 400 the webhook. It isn't
+        // retryable either — Stripe's redelivery short-circuits on the
+        // idempotency check above — so log it for manual correction instead.
+        try {
+          if (event_?.id) {
+            await payload.update({
+              collection: 'events',
+              id: event_.id,
+              data: { ticketsSold: (event_.ticketsSold ?? 0) + quantity },
+              context: { skipStripeSync: true },
+            });
+          } else if (merch_?.id) {
+            await payload.update({
+              collection: 'merch',
+              id: merch_.id,
+              data: { merchSold: (merch_.merchSold ?? 0) + quantity },
+            });
+          }
+        } catch (countErr) {
+          await logtail.error(
+            `API /stripe/webhook: failed to update sold count for order ${newOrder.id} (payment_intent ${pi.id}): ${countErr}`,
+            { method: 'POST', timestamp: new Date().toISOString() }
+          );
         }
 
         break;
@@ -309,6 +320,7 @@ export async function POST(req: Request) {
                 (refundedEvent.ticketsSold ?? 0) - order.quantity
               ),
             },
+            context: { skipStripeSync: true },
           });
         }
         break;

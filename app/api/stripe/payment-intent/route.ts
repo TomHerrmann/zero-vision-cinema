@@ -59,6 +59,11 @@ export async function POST(req: NextRequest) {
       newsletter_optin: newsletter ? 'true' : 'false',
     };
 
+    // A raw PaymentIntent has no line items, so the Stripe dashboard would show
+    // only an amount. The description is what makes a payment identifiable there
+    // (and on the buyer's receipt) without cross-referencing metadata.
+    const description = `${event.name} — ${qty} ticket${qty > 1 ? 's' : ''}`;
+
     // Update an in-progress PaymentIntent (quantity/newsletter changed) rather
     // than creating a new one, so the client secret — and any entered card /
     // open wallet sheet — stays valid.
@@ -68,7 +73,7 @@ export async function POST(req: NextRequest) {
       if (existing.status === 'requires_payment_method') {
         const updated = await stripeCheckout.paymentIntents.update(
           paymentIntentId,
-          { amount, metadata }
+          { amount, description, metadata }
         );
         return NextResponse.json({
           clientSecret: updated.client_secret,
@@ -83,6 +88,7 @@ export async function POST(req: NextRequest) {
       amount,
       currency: 'usd',
       automatic_payment_methods: { enabled: true },
+      description,
       metadata,
     });
 

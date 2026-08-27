@@ -81,8 +81,15 @@ export const Events: CollectionConfig = {
       },
     ],
     beforeChange: [
-      async ({ data, req }) => {
+      async ({ context, data, req }) => {
         if (!(Number(data.price) > 0)) return data;
+
+        // Seat-count writes (`ticketsSold`) come from the Stripe webhook, which
+        // sets this flag. Nothing Stripe mirrors changes on those writes, so
+        // re-syncing only adds a way for fulfillment to fail: an event whose
+        // payment link no longer exists in Stripe makes the throw below abort
+        // the webhook mid-fulfillment, stranding the buyer's ticket email.
+        if (context?.skipStripeSync) return data;
 
         try {
           // Get the full image URL if an image is attached

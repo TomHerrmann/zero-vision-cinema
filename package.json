@@ -10,6 +10,7 @@
     "email:fixtures": "tsx --tsconfig tsconfig.scripts.json --env-file=.env.local scripts/gen-email-fixtures.tsx",
     "schedule:broadcasts": "PROD_ENV_FALLBACK=QSTASH_TOKEN scripts/with-prod-env.sh tsx --tsconfig tsconfig.scripts.json --env-file=.env.production.local scripts/ensure-broadcast-schedule.tsx",
     "broadcast:send": "PROD_ENV_FALLBACK=QSTASH_TOKEN scripts/with-prod-env.sh tsx --tsconfig tsconfig.scripts.json --env-file=.env.production.local scripts/send-broadcast-now.tsx",
+    "orders:repair": "PROD_ENV_FALLBACK=QSTASH_TOKEN scripts/with-prod-env.sh tsx --tsconfig tsconfig.scripts.json --env-file=.env.production.local scripts/repair-stranded-orders.tsx",
     "build": "payload migrate && next build",
     "postbuild": "next-sitemap",
     "payload": "payload",

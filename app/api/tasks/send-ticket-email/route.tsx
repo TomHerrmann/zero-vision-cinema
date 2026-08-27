@@ -4,7 +4,7 @@ import payloadConfig from '@payload-config';
 import { Resend } from 'resend';
 import { logtail } from '@/lib/logtail';
 import { verifyQstashRequest } from '@/lib/qstash';
-import { getReceiptDetails } from '@/lib/stripe';
+import { getCustomerEmail, getReceiptDetails } from '@/lib/stripe';
 import { signRefundToken } from '@/lib/refundToken';
 import { ZVC_EMAIL_ADDRESS, ZVC_SITE_URL } from '@/app/contsants/constants';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
@@ -40,16 +40,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { orderId, email } = body;
-  if (!orderId || !email) {
-    await logtail.error(
-      `API /tasks/send-ticket-email: missing orderId or email`,
-      { orderId, email }
-    );
-    return NextResponse.json(
-      { error: 'Missing orderId or email' },
-      { status: 400 }
-    );
+  const { orderId } = body;
+  if (!orderId) {
+    await logtail.error(`API /tasks/send-ticket-email: missing orderId`, {
+      orderId,
+    });
+    return NextResponse.json({ error: 'Missing orderId' }, { status: 400 });
   }
 
   try {
@@ -77,6 +73,19 @@ export async function POST(req: Request) {
         { received: true, skipped: true },
         { status: 200 }
       );
+    }
+
+    // The enqueue normally carries the address the charge supplied. Fall back to
+    // the order's Stripe customer so a message published without one — the
+    // repair script, which has no Stripe credentials of its own — still lands.
+    const email =
+      body.email ??
+      (order.customerId ? await getCustomerEmail(order.customerId) : null);
+    if (!email) {
+      await logtail.error(
+        `API /tasks/send-ticket-email: no deliverable address for order ${orderId}`
+      );
+      return NextResponse.json({ error: 'No recipient' }, { status: 400 });
     }
 
     // Ticket emails are for event purchases only. depth: 1 resolves image + location.
