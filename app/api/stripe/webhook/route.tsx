@@ -8,6 +8,43 @@ import { stripe, stripeCheckout } from '@/lib/stripe';
 import { qstash, QSTASH_TARGET_BASE_URL } from '@/lib/qstash';
 import { addResendContact } from '@/lib/resend';
 
+/**
+ * Enqueue the ticket-email task for an order. Returns false (rather than
+ * throwing) when QStash refuses the message, so the caller can decide whether
+ * to fail the webhook and let Stripe retry.
+ *
+ * `deduplicationId` is keyed on the PaymentIntent so a redelivery — Stripe's or
+ * ours — can't double-publish; the task's `ticketEmailSentAt` guard covers the
+ * same ground once QStash's dedup window has passed.
+ */
+async function enqueueTicketEmail({
+  orderId,
+  paymentIntentId,
+  email,
+}: {
+  orderId: number;
+  paymentIntentId: string;
+  email?: string;
+}): Promise<boolean> {
+  try {
+    await qstash.publishJSON({
+      url: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-ticket-email`,
+      // Without `email` the task resolves it from the order's Stripe customer.
+      body: email ? { orderId, email } : { orderId },
+      deduplicationId: `ticket-email-${paymentIntentId}`,
+      retries: 3,
+      failureCallback: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-ticket-email/failure`,
+    });
+    return true;
+  } catch (enqueueErr) {
+    await logtail.error(
+      `API /stripe/webhook: failed to enqueue ticket email for order ${orderId}: ${enqueueErr}`,
+      { method: 'POST', timestamp: new Date().toISOString() }
+    );
+    return false;
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const sig = (await headers()).get('stripe-signature');
@@ -39,11 +76,45 @@ export async function POST(req: Request) {
         // Idempotency — this event can be delivered more than once.
         const { docs: existingOrders } = await payload.find({
           collection: 'orders',
+          depth: 0,
+          limit: 1,
           where: { paymentIntentId: { equals: pi.id } },
         });
-        if (existingOrders.length > 0) {
+        const existingOrder = existingOrders[0];
+        if (existingOrder) {
+          // The order is already recorded, but "recorded" doesn't mean
+          // "fulfilled": if the enqueue below failed the first time round (bad
+          // QStash credentials, an Upstash outage), returning 200 here strands
+          // the buyer permanently — Stripe never retries a 200. So retry the
+          // enqueue instead, which makes both Stripe's automatic redeliveries
+          // and a manual "Resend" from the dashboard repair the order.
+          const needsTicketEmail =
+            !existingOrder.ticketEmailSentAt &&
+            !existingOrder.refundedAt &&
+            existingOrder.item?.relationTo === 'events';
+
+          if (!needsTicketEmail) {
+            await logtail.info(
+              `API /stripe/webhook: Duplicate payment_intent ${pi.id} received. Ignoring.`
+            );
+            return NextResponse.json({ received: true }, { status: 200 });
+          }
+
+          // No `email`: the charge's address isn't refetched here, so the task
+          // resolves it from the order's Stripe customer.
+          const requeued = await enqueueTicketEmail({
+            orderId: existingOrder.id,
+            paymentIntentId: pi.id,
+          });
+          if (!requeued) {
+            return NextResponse.json(
+              { error: 'Failed to enqueue ticket email' },
+              { status: 500 }
+            );
+          }
+
           await logtail.info(
-            `API /stripe/webhook: Duplicate payment_intent ${pi.id} received. Ignoring.`
+            `API /stripe/webhook: Duplicate payment_intent ${pi.id} received; re-enqueued the unsent ticket email for order ${existingOrder.id}.`
           );
           return NextResponse.json({ received: true }, { status: 200 });
         }
@@ -182,6 +253,11 @@ export async function POST(req: Request) {
           },
         });
 
+        // Set when QStash refused the message. Reported as a 500 *after* the
+        // sold count is updated below, so Stripe retries the whole event and
+        // the duplicate branch above gets another chance at the enqueue.
+        let enqueueFailed = false;
+
         // Ticket email — events only. Enqueued to QStash so delivery is durable
         // (retried on failure, dead-lettered + alerted if exhausted) and can't be
         // swallowed by this webhook request. The task does the OMDB poster lookup
@@ -209,23 +285,11 @@ export async function POST(req: Request) {
               { method: 'POST', timestamp: new Date().toISOString() }
             );
           } else {
-            try {
-              await qstash.publishJSON({
-                url: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-ticket-email`,
-                body: { orderId: newOrder.id, email: ticketEmail },
-                deduplicationId: `ticket-email-${pi.id}`,
-                retries: 3,
-                failureCallback: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-ticket-email/failure`,
-              });
-            } catch (enqueueErr) {
-              // Payment is captured and the order recorded; don't fail the webhook.
-              // Log so a missed enqueue is visible (still far more reliable than the
-              // previous inline send).
-              await logtail.error(
-                `API /stripe/webhook: failed to enqueue ticket email for order ${newOrder.id}: ${enqueueErr}`,
-                { method: 'POST', timestamp: new Date().toISOString() }
-              );
-            }
+            enqueueFailed = !(await enqueueTicketEmail({
+              orderId: newOrder.id,
+              paymentIntentId: pi.id,
+              email: ticketEmail,
+            }));
           }
         }
 
@@ -252,6 +316,16 @@ export async function POST(req: Request) {
           await logtail.error(
             `API /stripe/webhook: failed to update sold count for order ${newOrder.id} (payment_intent ${pi.id}): ${countErr}`,
             { method: 'POST', timestamp: new Date().toISOString() }
+          );
+        }
+
+        // Everything durable is written; the only thing missing is the queued
+        // ticket email. Fail the webhook so Stripe redelivers (for up to ~3
+        // days) rather than losing the buyer's ticket to a log line.
+        if (enqueueFailed) {
+          return NextResponse.json(
+            { error: 'Failed to enqueue ticket email' },
+            { status: 500 }
           );
         }
 
