@@ -131,10 +131,46 @@ describe('send-broadcast task', () => {
     expect(h.update).not.toHaveBeenCalled();
   });
 
-  it('returns 500 (retry) and does not stamp when Resend errors', async () => {
+  it('claims the send before calling Resend, so no post-send failure can re-blast', async () => {
+    await POST(req());
+
+    // Ordering is the whole point: a stamp written after the send left the
+    // guard unset when the stamp itself threw, and QStash's retry mailed the
+    // entire segment a second time.
+    expect(h.update.mock.invocationCallOrder[0]).toBeLessThan(
+      h.fetch.mock.invocationCallOrder[0]
+    );
+  });
+
+  it('stamps with skipStripeSync, so a stale Stripe payment link cannot abort it', async () => {
+    await POST(req());
+
+    // The Events beforeChange hook re-syncs to Stripe and throws when the
+    // event's payment link no longer exists there.
+    expect(h.update.mock.calls[0][0].context).toEqual({ skipStripeSync: true });
+  });
+
+  it('releases the claim and 500s when Resend rejects the request', async () => {
     h.fetch.mockResolvedValue({ ok: false, status: 500, text: async () => 'boom' });
+
     const res = await POST(req());
+
     expect(res.status).toBe(500);
-    expect(h.update).not.toHaveBeenCalled();
+    // Nothing was sent, so the retry must not be skipped by the guard.
+    expect(h.update).toHaveBeenCalledTimes(2);
+    expect(h.update.mock.calls[1][0].data).toEqual({ announcementSentAt: null });
+    expect(h.update.mock.calls[1][0].context).toEqual({ skipStripeSync: true });
+  });
+
+  it('keeps the claim and does not retry when the send fails in flight', async () => {
+    // Outcome unknown — Resend may have accepted it. Never retry into that.
+    h.fetch.mockRejectedValue(new Error('socket hang up'));
+
+    const res = await POST(req());
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ ambiguous: true });
+    expect(h.update).toHaveBeenCalledTimes(1);
+    expect(h.update.mock.calls[0][0].data).toHaveProperty('announcementSentAt');
   });
 });

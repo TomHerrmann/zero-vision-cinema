@@ -172,30 +172,70 @@ export async function POST(req: Request) {
       );
     }
 
-    const res = await fetch(RESEND_BROADCASTS_API_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${resendKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        segment_id: segmentId,
-        topic_id: topicIdForEventType(event_.eventType),
-        from: ZVC_EMAIL_ADDRESS,
-        subject: SUBJECT[kind](event_),
-        html,
-        send: true,
-      }),
-    });
-    if (!res.ok) {
-      throw new Error(`Resend broadcast ${res.status}: ${await res.text()}`);
-    }
-
+    // Claim the send BEFORE calling Resend, not after. A broadcast goes to the
+    // entire segment, so the one unacceptable outcome is sending it twice —
+    // and stamping afterwards produced exactly that: the stamp threw, the task
+    // 500'd, and QStash's retry re-sent to everyone because the guard above
+    // reads a stamp that never landed. With the claim written first, nothing
+    // remains after the send that can fail and trigger a retry.
+    //
+    // `skipStripeSync` is required, and is the other half of the same bug: the
+    // Events beforeChange hook re-syncs the event to Stripe, and an event whose
+    // payment link no longer exists there throws (collections/Events.ts:232).
+    // Nothing Stripe mirrors is changing here. Same guard as the webhook's
+    // ticketsSold update.
     await payload.update({
       collection: 'events',
       id: eventId,
       data: { [sentField]: new Date().toISOString() },
+      context: { skipStripeSync: true },
     });
+
+    let res: Response;
+    try {
+      res = await fetch(RESEND_BROADCASTS_API_URL, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${resendKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          segment_id: segmentId,
+          topic_id: topicIdForEventType(event_.eventType),
+          from: ZVC_EMAIL_ADDRESS,
+          subject: SUBJECT[kind](event_),
+          html,
+          send: true,
+        }),
+      });
+    } catch (sendErr) {
+      // The connection broke with the outcome unknown — Resend may well have
+      // accepted the broadcast. Keep the claim and don't retry: a silent
+      // non-delivery that can be re-sent by hand beats mailing the segment
+      // twice. 200 so QStash stops here; the log is the alert.
+      await logtail.error(
+        `API /tasks/send-broadcast: ${kind} for event ${eventId} failed in flight: ${sendErr}. ` +
+          `Claim kept and NOT retried — check Resend, and re-send by hand if nothing went out.`,
+        { method: 'POST', timestamp: new Date().toISOString() }
+      );
+      return NextResponse.json(
+        { received: true, ambiguous: true },
+        { status: 200 }
+      );
+    }
+
+    if (!res.ok) {
+      // Resend rejected the request outright, so nothing was sent and a retry
+      // is safe. Release the claim so the retry isn't skipped by the guard.
+      const detail = await res.text();
+      await payload.update({
+        collection: 'events',
+        id: eventId,
+        data: { [sentField]: null },
+        context: { skipStripeSync: true },
+      });
+      throw new Error(`Resend broadcast ${res.status}: ${detail}`);
+    }
 
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (err) {
