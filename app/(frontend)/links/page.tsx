@@ -1,6 +1,7 @@
 import {
   AHC_DISCORD_URL,
   AHC_INSTAGRAM_URL,
+  ZVC_TIKTOK_URL,
   ZVC_INSTAGRAM_URL,
   ZVC_NEWSLETTER_URL,
   ZVC_SITE_URL,
@@ -26,8 +27,8 @@ const siteLink = {
 
 const socialLins: LinkItem[] = [
   {
-    title: 'Vote for IN RED',
-    url: 'https://www.nukhufoundation.org/nuveestarterfund',
+    title: 'ZVC on TikTok',
+    url: `${ZVC_TIKTOK_URL}`,
   },
   {
     title: 'ZVC on Instagram',

@@ -23,6 +23,8 @@ export const AHC_DISCORD_URL =
 export const AHC_INSTAGRAM_URL = 'https://www.instagram.com/astoriahorrorclub';
 export const ZVC_INSTAGRAM_URL = 'https://www.instagram.com/zerovisioncinema';
 
+export const ZVC_TIKTOK_URL = 'https://www.tiktok.com/@zerovisioncinema';
+
 export const AHC_LOGO_PNG_URL =
   'https://fzuxxxhgqwm9izz9.public.blob.vercel-storage.com/ahc_logo_transparent_yellow-SITE.png';
 

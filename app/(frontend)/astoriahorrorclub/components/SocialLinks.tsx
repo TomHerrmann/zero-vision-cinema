@@ -1,6 +1,7 @@
 import {
   AHC_INSTAGRAM_ICON_SVG_URL,
   AHC_INSTAGRAM_URL,
+  ZVC_TIKTOK_URL,
   DISCORD_ICON_SVG_URL,
 } from '../../../contsants/constants';
 import Image from 'next/image';
@@ -16,6 +17,17 @@ export default function SocialLinks() {
             width={24}
             alt="discord social media icon"
             src={DISCORD_ICON_SVG_URL}
+          />
+        </a>
+      </span>
+      <span className="flex items-center mb-2">
+        Follow Us On TikTok{' '}
+        <a href={ZVC_TIKTOK_URL} target="_blank">
+          <Image
+            height={24}
+            width={24}
+            alt="tiktok social media icon"
+            src="/path/to/tiktok/icon.svg"
           />
         </a>
       </span>
