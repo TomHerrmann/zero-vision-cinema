@@ -13,6 +13,7 @@ import {
 } from '@/app/contsants/constants';
 import { cn } from '@/utils/utils';
 import { Mail, MapPin } from 'lucide-react';
+import SubstackIcon from '@/components/ui/substack-icon';
 
 const Footer = () => {
   return (
@@ -127,15 +128,7 @@ const Footer = () => {
                 )}
               >
                 <div className="zvc-icon-frame w-10 h-10 group-hover:bg-blue-light/20 transition-colors">
-                  {/* Substack mark: two stacked bars over a bookmark ribbon */}
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z" />
-                  </svg>
+                  <SubstackIcon className="w-5 h-5" />
                 </div>
                 <span className="text-lg">Subscribe to Our Substack</span>
               </Link>

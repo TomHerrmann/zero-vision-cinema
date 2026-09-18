@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { getUpcomingZvcEvents } from '@/utils/getEvents';
+import { getLatestSubstackPosts } from '@/utils/getLatestSubstackPosts';
 import { isSoldOut } from '@/utils/isSoldOut';
 import Link from 'next/link';
 
@@ -54,7 +55,10 @@ const socialLins: LinkItem[] = [
 ];
 
 export default async function TreeLinkPage() {
-  const events = await getUpcomingZvcEvents();
+  const [events, [latestPost]] = await Promise.all([
+    getUpcomingZvcEvents(),
+    getLatestSubstackPosts(1),
+  ]);
 
   const eventLinks = events
     .filter((event) => !isSoldOut(event))
@@ -62,6 +66,10 @@ export default async function TreeLinkPage() {
       title: event.name,
       url: `/events/${event.id}`,
     })) as LinkItem[];
+
+  const latestPostLinks: LinkItem[] = latestPost
+    ? [{ title: `Latest Post: ${latestPost.title}`, url: latestPost.url }]
+    : [];
 
   return (
     <div className="relative min-h-screen bg-blackout flex flex-col items-center justify-center py-32 md:py-40 px-6 md:px-12">
@@ -91,7 +99,7 @@ export default async function TreeLinkPage() {
         {/* Links sticker sheet */}
         <Card className="w-full overflow-hidden">
           <CardContent className="p-6 sm:p-8 md:p-10 space-y-4">
-            {[siteLink, ...eventLinks, ...socialLins].map((link, idx) => (
+            {[siteLink, ...eventLinks, ...latestPostLinks, ...socialLins].map((link, idx) => (
               <div
                 key={`${link.title}-link`}
                 className="animate-in fade-in slide-in-from-bottom-4 duration-500"

@@ -3,12 +3,13 @@ import '../globals.css';
 import { cn } from '@/utils/utils';
 import { Creepster } from 'next/font/google';
 import { AHC_LOGO_PNG_URL } from '@/app/contsants/constants';
-import { BookOpen, Users, Calendar, Heart } from 'lucide-react';
+import { BookOpen, Users, Calendar, Heart, Mail } from 'lucide-react';
 import {
   getUpcomingAhcEvents,
   getUpcomingBookClubEvents,
 } from '@/utils/getEvents';
 import EventCard from '@/components/event-card/event-card';
+import { NewsletterSignupForm } from '@/components/newsletter-signup/newsletter-signup-form';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -225,6 +226,51 @@ export default async function AstoriaHorrorClubPage() {
             </div>
           </section>
         )}
+
+        {/* Newsletter */}
+        <section
+          id="newsletter"
+          className="mt-24 md:mt-32 animate-in fade-in slide-in-from-bottom-8 duration-1000"
+        >
+          <div className="relative max-w-4xl mx-auto p-8 md:p-14 border-2 border-blue-light/20 bg-background/50 backdrop-blur-sm shadow-lg">
+            {/* Soft glow, echoing the logo */}
+            <div
+              className="absolute inset-0 bg-blue-light/5 blur-[60px] pointer-events-none"
+              aria-hidden="true"
+            />
+
+            <div className="relative text-center mb-10">
+              <div className="inline-flex items-center gap-3 mb-6 px-6 py-2 border border-blue-light/20 bg-blue-light/5 backdrop-blur-sm">
+                <Mail className="w-5 h-5 text-blue-light" />
+                <span className="text-sm uppercase tracking-widest text-blue-light/80">
+                  Stay in the Loop
+                </span>
+              </div>
+              <h2
+                className={cn(
+                  'text-[2.5rem] md:text-[4rem] lg:text-[5rem]',
+                  'leading-none mb-6',
+                  'bg-gradient-to-b from-foreground to-foreground/60 bg-clip-text text-transparent',
+                  creepsterfont.className
+                )}
+              >
+                Join Our Newsletter
+              </h2>
+              <div className="w-32 h-1 mx-auto mb-8 bg-gradient-to-r from-transparent via-blue-light to-transparent" />
+              <p className="text-lg md:text-xl text-foreground/80 max-w-2xl mx-auto leading-relaxed">
+                Get updates on upcoming horror screenings, book club picks, and
+                spooky events delivered to your inbox.
+              </p>
+            </div>
+
+            <div className="relative">
+              <NewsletterSignupForm
+                inputClassName="border-blue-light/20 bg-background/60 placeholder:text-foreground/40"
+                buttonClassName="border-foreground"
+              />
+            </div>
+          </div>
+        </section>
       </div>
 
       {/* Bottom fade */}

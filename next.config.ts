@@ -26,6 +26,12 @@ const nextConfig: NextConfig = {
         hostname: 'covers.openlibrary.org',
         pathname: '**',
       },
+      {
+        // Substack post cover images (homepage Substack section)
+        protocol: 'https',
+        hostname: 'substackcdn.com',
+        pathname: '**',
+      },
     ],
   },
   async rewrites() {
