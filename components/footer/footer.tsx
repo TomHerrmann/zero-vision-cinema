@@ -7,6 +7,7 @@ import {
   LLC_NAME,
   ZVC_INSTAGRAM_URL,
   ZVC_TIKTOK_URL,
+  ZVC_SUBSTACK_URL,
   PARTIFUL_URL,
   AHC_DISCORD_URL,
 } from '@/app/contsants/constants';
@@ -114,6 +115,29 @@ const Footer = () => {
                   </svg>
                 </div>
                 <span className="text-lg">Follow Us on Instagram</span>
+              </Link>
+
+              <Link
+                href={ZVC_SUBSTACK_URL}
+                target="_blank"
+                className={cn(
+                  'group flex items-center gap-3 text-foreground/70',
+                  'hover:text-blue-light transition-colors duration-200',
+                  'justify-center md:justify-start'
+                )}
+              >
+                <div className="zvc-icon-frame w-10 h-10 group-hover:bg-blue-light/20 transition-colors">
+                  {/* Substack mark: two stacked bars over a bookmark ribbon */}
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z" />
+                  </svg>
+                </div>
+                <span className="text-lg">Subscribe to Our Substack</span>
               </Link>
 
               <Link

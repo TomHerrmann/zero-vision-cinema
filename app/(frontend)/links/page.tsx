@@ -5,6 +5,7 @@ import {
   ZVC_INSTAGRAM_URL,
   ZVC_NEWSLETTER_URL,
   ZVC_SITE_URL,
+  ZVC_SUBSTACK_URL,
 } from '@/app/contsants/constants';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -37,6 +38,10 @@ const socialLins: LinkItem[] = [
   {
     title: 'AHC on Instagram',
     url: `${AHC_INSTAGRAM_URL}`,
+  },
+  {
+    title: 'ZVC on Substack',
+    url: `${ZVC_SUBSTACK_URL}`,
   },
   {
     title: 'Our Newsletter',
