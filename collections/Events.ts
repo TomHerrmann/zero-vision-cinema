@@ -404,10 +404,18 @@ export const Events: CollectionConfig = {
       },
     },
     {
+      // ZVC events only: AHC and Book Club are free, so there are no tickets to
+      // count. Hidden on those in the editor, and shown as N/A in the list.
       name: 'ticketsSold',
       type: 'number',
       defaultValue: 0,
-      admin: { readOnly: true },
+      admin: {
+        readOnly: true,
+        condition: (data) => data.eventType === 'zvc',
+        components: {
+          Cell: '/collections/components/TicketsSoldCell#TicketsSoldCell',
+        },
+      },
     },
     // Announcement (−6d) + reminder (day-of) broadcast state. The daily
     // send-due-broadcasts task decides what's due by date each morning, so these
