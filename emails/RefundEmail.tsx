@@ -18,6 +18,8 @@ import {
   ADDRESS_LINE_2,
   EMAIL_HEADER_IMAGE_ZVC_URL,
 } from '@/app/contsants/constants';
+import type { LoyaltyNotice } from '@/lib/loyalty';
+import LoyaltyProgress from './components/LoyaltyProgress';
 
 const HEADER_IMAGE = EMAIL_HEADER_IMAGE_ZVC_URL;
 const TERMS_URL = `${ZVC_SITE_URL}/terms`;
@@ -35,6 +37,8 @@ interface Props {
   refundDate: string;
   /** Stripe-hosted receipt URL (reflects the refund). */
   receiptUrl?: string;
+  /** Set when this refund changed the buyer's free-ticket status. */
+  loyalty?: LoyaltyNotice | null;
 }
 
 function fmtDate(iso: string): string {
@@ -54,6 +58,7 @@ export default function RefundEmail({
   cardLast4,
   refundDate,
   receiptUrl,
+  loyalty,
 }: Props) {
   const refundedTo =
     cardBrand && cardLast4 ? `${cardBrand} ending in ${cardLast4}` : null;
@@ -100,6 +105,8 @@ export default function RefundEmail({
                 </Link>
               </Text>
             )}
+
+            {loyalty && <LoyaltyProgress notice={loyalty} />}
 
             <Text style={policy}>
               <strong>Refund &amp; Cancellation Policy:</strong> Refunds are

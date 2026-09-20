@@ -24,6 +24,8 @@ import {
 } from '@/app/contsants/constants';
 import { richTextIsEmpty } from '@/utils/richText';
 import type { MovieData } from '@/lib/omdb';
+import type { LoyaltyNotice } from '@/lib/loyalty';
+import LoyaltyProgress from './components/LoyaltyProgress';
 
 const TERMS_URL = `${ZVC_SITE_URL}/terms`;
 
@@ -52,6 +54,8 @@ interface Props {
    * render no film details — undefined lets the preview default apply.
    */
   movie?: MovieData | null;
+  /** Free-ticket reward status (progress, earned, or this is the free ticket). */
+  loyalty?: LoyaltyNotice | null;
 }
 
 export default function TicketEmail({
@@ -72,6 +76,7 @@ export default function TicketEmail({
   receiptUrl,
   refundUrl,
   movie,
+  loyalty,
 }: Props) {
   const date = new Date(eventDate);
   const plural = quantity > 1 ? 's' : '';
@@ -726,7 +731,7 @@ export default function TicketEmail({
                                   </tr>
                                 </table>
                               )}
-                              {totalAmount && (
+                              {totalAmount != null && (
                                 <table
                                   width="100%"
                                   cellPadding="0"
@@ -744,7 +749,9 @@ export default function TicketEmail({
                                       style={summaryValueTotal}
                                       className="gmail-font-fix"
                                     >
-                                      {`$${totalAmount.toFixed(2)} ${currency}`}
+                                      {totalAmount > 0
+                                        ? `$${totalAmount.toFixed(2)} ${currency ?? 'USD'}`
+                                        : 'Free'}
                                     </td>
                                   </tr>
                                 </table>
@@ -752,6 +759,24 @@ export default function TicketEmail({
                             </td>
                           </tr>
                         </table>
+                      </td>
+                    </tr>
+                  </table>
+                )}
+
+                {loyalty && (
+                  <table
+                    width="100%"
+                    cellPadding="0"
+                    cellSpacing="0"
+                    style={section}
+                  >
+                    <tr>
+                      <td
+                        style={sectionContent}
+                        className="gmail-mobile-padding"
+                      >
+                        <LoyaltyProgress notice={loyalty} />
                       </td>
                     </tr>
                   </table>

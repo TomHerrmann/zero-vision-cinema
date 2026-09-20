@@ -18,6 +18,7 @@ import {
   AHC_SITE_URL,
 } from '@/app/contsants/constants';
 import { zvcMovie, ahcMovie, bookInfo } from './fixtures.generated';
+import type { LoyaltyNotice } from '@/lib/loyalty';
 
 /** Minimal valid Lexical rich-text state wrapping a single paragraph. */
 export function sampleRichText(text: string): SerializedEditorState {
@@ -82,6 +83,29 @@ export const ticketSample = {
   receiptUrl: 'https://pay.stripe.com/receipts/sample',
   refundUrl: `${ZVC_SITE_URL}/refund?order=1042&token=sample`,
   movie: zvcMovie,
+  loyalty: {
+    kind: 'progress',
+    remaining: 2,
+    deadline: '2026-08-29T14:12:00-04:00',
+  } as LoyaltyNotice,
+};
+
+/** TicketEmail — a free ticket paid for with a reward code. */
+export const ticketFreeSample = {
+  ...ticketSample,
+  quantity: 1,
+  totalAmount: 0,
+  cardBrand: undefined,
+  cardLast4: undefined,
+  receiptUrl: undefined,
+  refundUrl: undefined,
+  loyalty: { kind: 'redeemed', code: 'ZVC-7K3Q-M9XA' } as LoyaltyNotice,
+};
+
+/** RewardEmail — free-ticket code earned. */
+export const rewardSample = {
+  code: 'ZVC-7K3Q-M9XA',
+  expiresAt: '2026-08-29T14:12:00-04:00',
 };
 
 /** RefundEmail — refund confirmation. */
@@ -95,6 +119,12 @@ export const refundSample = {
   cardLast4: '4242',
   refundDate: REFUND_DATE,
   receiptUrl: 'https://pay.stripe.com/receipts/sample',
+  loyalty: {
+    kind: 'voided',
+    code: 'ZVC-7K3Q-M9XA',
+    remaining: 1,
+    deadline: '2026-08-22T19:00:00-04:00',
+  } as LoyaltyNotice,
 };
 
 /** BroadcastEmail — paid ZVC announcement (→ "Get Tickets" / About the Film). */

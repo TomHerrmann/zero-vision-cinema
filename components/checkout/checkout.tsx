@@ -217,8 +217,15 @@ export function CheckoutForm({
   const [syncing, setSyncing] = useState(false);
   const [walletAvailable, setWalletAvailable] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  // Free-ticket reward code: `rewardCode` is set once the server says the code
+  // is usable, which switches the form to a single free ticket (no payment).
+  const [codeOpen, setCodeOpen] = useState(false);
+  const [codeInput, setCodeInput] = useState('');
+  const [codeError, setCodeError] = useState<string | null>(null);
+  const [checkingCode, setCheckingCode] = useState(false);
+  const [rewardCode, setRewardCode] = useState<string | null>(null);
 
-  const total = price * quantity;
+  const total = rewardCode ? 0 : price * quantity;
   const returnUrl =
     typeof window !== 'undefined'
       ? `${window.location.origin}/events/${eventId}?checkout=success`
@@ -333,41 +340,202 @@ export function CheckoutForm({
     [stripe, elements, returnUrl, email, onComplete]
   );
 
+  const applyCode = async () => {
+    const code = codeInput.trim();
+    if (!code || checkingCode) return;
+    setCheckingCode(true);
+    setCodeError(null);
+    try {
+      const res = await fetch('/api/rewards/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.valid) {
+        setCodeError(data.error ?? 'That code is invalid, expired, or already used.');
+        return;
+      }
+      setRewardCode(data.code ?? code);
+      setMessage(null);
+    } catch {
+      setCodeError('Could not check that code. Please try again.');
+    } finally {
+      setCheckingCode(false);
+    }
+  };
+
+  const removeCode = () => {
+    setRewardCode(null);
+    setCodeInput('');
+    setCodeError(null);
+    setMessage(null);
+  };
+
+  // Free ticket: no Stripe charge — the server records a $0 order and emails the
+  // ticket. Shares the synchronous double-submit guard with `confirm`.
+  const redeem = async () => {
+    if (!rewardCode || submittingRef.current) return;
+    const effectiveEmail = email.trim();
+    if (!isValidEmail(effectiveEmail)) {
+      setMessage('Enter the email address you bought your tickets with.');
+      return;
+    }
+    submittingRef.current = true;
+    setSubmitting(true);
+    setMessage(null);
+    try {
+      const res = await fetch('/api/rewards/redeem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId, code: rewardCode, email: effectiveEmail }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMessage(data.error ?? 'Could not claim your free ticket. Please email us.');
+        submittingRef.current = false;
+        setSubmitting(false);
+        return;
+      }
+      onComplete();
+    } catch {
+      setMessage('Could not claim your free ticket. Please try again.');
+      submittingRef.current = false;
+      setSubmitting(false);
+    }
+  };
+
   const handleCardSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    await confirm();
+    if (rewardCode) await redeem();
+    else await confirm();
   };
 
   return (
     <form onSubmit={handleCardSubmit} className="space-y-5">
       <div className="flex items-center justify-between">
-        <label className="zvc-body text-glow/80 text-sm flex items-center gap-3">
-          Quantity
-          <select
-            value={quantity}
-            onChange={(e) => handleQuantity(Number(e.target.value))}
-            disabled={submitting}
-            className="bg-blackout border-2 border-glow/15 text-glow px-3 py-2 outline-none focus:border-blue-light disabled:opacity-60"
-          >
-            {Array.from({ length: maxQuantity }, (_, i) => i + 1).map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
-        </label>
-        <span className="text-xl font-bold text-blue-light">
-          ${total.toFixed(2)}
-        </span>
+        {rewardCode ? (
+          <span className="zvc-body text-glow/80 text-sm">1 free ticket</span>
+        ) : (
+          <label className="zvc-body text-glow/80 text-sm flex items-center gap-3">
+            Quantity
+            <select
+              value={quantity}
+              onChange={(e) => handleQuantity(Number(e.target.value))}
+              disabled={submitting}
+              className="bg-blackout border-2 border-glow/15 text-glow px-3 py-2 outline-none focus:border-blue-light disabled:opacity-60"
+            >
+              {Array.from({ length: maxQuantity }, (_, i) => i + 1).map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {rewardCode ? (
+          <span className="flex flex-col items-end leading-tight">
+            <s className="zvc-body text-sm text-glow/50">
+              <span className="sr-only">Regular price </span>$
+              {price.toFixed(2)}
+            </s>
+            <span className="text-xl font-bold text-blue-light">
+              <span className="sr-only">Your price </span>$0.00
+            </span>
+          </span>
+        ) : (
+          <span className="text-xl font-bold text-blue-light">
+            ${total.toFixed(2)}
+          </span>
+        )}
       </div>
 
-      {/* Email — needed to send the ticket and to create the Stripe customer.
-          LinkAuthenticationElement also enables Link's saved-payment prefill. */}
-      <LinkAuthenticationElement onChange={(e) => setEmail(e.value.email)} />
+      {/* Free-ticket reward code */}
+      {rewardCode ? (
+        <div className="flex items-center justify-between gap-3 border-2 border-blue-light/40 bg-blue-light/5 px-3 py-2">
+          <span className="zvc-body text-sm text-glow/80">
+            Code <span className="font-bold text-blue-light">{rewardCode}</span>{' '}
+            applied
+          </span>
+          <button
+            type="button"
+            onClick={removeCode}
+            disabled={submitting}
+            className="zvc-body text-sm text-glow/50 underline disabled:opacity-60"
+          >
+            Remove
+          </button>
+        </div>
+      ) : codeOpen ? (
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={codeInput}
+              onChange={(e) => setCodeInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  void applyCode();
+                }
+              }}
+              placeholder="ZVC-XXXX-XXXX"
+              aria-label="Free-ticket code"
+              autoComplete="off"
+              autoCapitalize="characters"
+              className="flex-1 min-w-0 bg-blackout border-2 border-glow/15 text-glow px-3 py-2 uppercase outline-none focus:border-blue-light"
+            />
+            <button
+              type="button"
+              onClick={() => void applyCode()}
+              disabled={checkingCode || !codeInput.trim()}
+              className="zvc-btn-outline text-sm px-4 py-2 disabled:opacity-60"
+            >
+              {checkingCode ? 'Checking…' : 'Apply'}
+            </button>
+          </div>
+          {codeError && (
+            <p className="zvc-body text-cult-classic text-sm">{codeError}</p>
+          )}
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setCodeOpen(true)}
+          className="zvc-body text-sm text-glow/60 underline"
+        >
+          Have a free-ticket code?
+        </button>
+      )}
+
+      {rewardCode ? (
+        // Plain email field for the free path: the code only works with the
+        // address it was earned with, and there's no payment for Link to fill.
+        <label className="block space-y-2">
+          <span className="zvc-body text-glow/70 text-sm">
+            Email (the one you bought your tickets with)
+          </span>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+            className="w-full bg-blackout border-2 border-glow/15 text-glow px-3 py-2 outline-none focus:border-blue-light"
+          />
+        </label>
+      ) : (
+        /* Email — needed to send the ticket and to create the Stripe customer.
+           LinkAuthenticationElement also enables Link's saved-payment prefill. */
+        <LinkAuthenticationElement
+          options={{ defaultValues: { email } }}
+          onChange={(e) => setEmail(e.value.email)}
+        />
+      )}
 
       {/* Wallet buttons (Apple Pay / Google Pay / Link). Hidden entirely when no
           wallet is available so the divider below doesn't dangle. */}
-      <div className={walletAvailable ? 'space-y-5' : 'hidden'}>
+      <div className={walletAvailable && !rewardCode ? 'space-y-5' : 'hidden'}>
         {/* While a quantity/newsletter sync is in flight, block the wallet so its
             payment sheet can't open against a stale amount. */}
         <div className={syncing ? 'pointer-events-none opacity-60' : undefined}>
@@ -388,9 +556,15 @@ export function CheckoutForm({
         </div>
       </div>
 
-      <PaymentElement options={{ layout: 'tabs' }} />
+      {/* Kept mounted (just hidden) while a code is applied so removing the
+          code doesn't make the buyer re-enter their card. */}
+      <div className={rewardCode ? 'hidden' : undefined}>
+        <PaymentElement options={{ layout: 'tabs' }} />
+      </div>
 
-      <label className="flex items-start gap-3 cursor-pointer select-none">
+      <label
+        className={`flex items-start gap-3 cursor-pointer select-none ${rewardCode ? 'hidden' : ''}`}
+      >
         <Checkbox
           checked={newsletter}
           onCheckedChange={(v) => handleNewsletter(v === true)}
@@ -412,7 +586,11 @@ export function CheckoutForm({
         disabled={!stripe || submitting || syncing}
         className="zvc-btn w-full text-base py-3 disabled:opacity-60"
       >
-        {submitting ? 'Processing…' : `Pay $${total.toFixed(2)}`}
+        {submitting
+          ? 'Processing…'
+          : rewardCode
+            ? 'Claim free ticket'
+            : `Pay $${total.toFixed(2)}`}
       </button>
 
       {paymentLink && (

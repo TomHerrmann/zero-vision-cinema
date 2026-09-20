@@ -10,6 +10,7 @@ const h = vi.hoisted(() => ({
   fetchMovie: vi.fn(),
   getReceipt: vi.fn(),
   getCustomerEmail: vi.fn(),
+  getTicketEmailNotice: vi.fn(),
 }));
 
 vi.mock('@/lib/qstash', () => ({
@@ -36,6 +37,7 @@ vi.mock('resend', () => ({
 }));
 vi.mock('@/lib/omdb', () => ({ fetchMovieDataByImdbId: h.fetchMovie }));
 vi.mock('@/emails/TicketEmail', () => ({ default: () => null }));
+vi.mock('@/lib/loyalty', () => ({ getTicketEmailNotice: h.getTicketEmailNotice }));
 
 import { POST } from './route';
 
@@ -72,6 +74,7 @@ beforeEach(() => {
   h.send.mockReset().mockResolvedValue({ data: { id: 'email_1' }, error: null });
   h.fetchMovie.mockReset().mockResolvedValue(null);
   h.getCustomerEmail.mockReset().mockResolvedValue('customer@test.com');
+  h.getTicketEmailNotice.mockReset().mockResolvedValue(null);
   h.getReceipt.mockReset().mockResolvedValue({
     cardBrand: 'Visa',
     cardLast4: '4242',
@@ -140,5 +143,42 @@ describe('send-ticket-email task', () => {
     expect(res.status).toBe(401);
     expect(h.findByID).not.toHaveBeenCalled();
     expect(h.send).not.toHaveBeenCalled();
+  });
+
+  it('passes the loyalty status to the email', async () => {
+    const notice = { kind: 'progress', remaining: 2, deadline: '2026-08-28T00:00:00.000Z' };
+    h.getTicketEmailNotice.mockResolvedValue(notice);
+
+    await POST(req());
+
+    const props = h.send.mock.calls[0][0].react.props;
+    expect(props.loyalty).toEqual(notice);
+    expect(props.refundUrl).toMatch(/\/refund\?order=7&token=/);
+  });
+
+  it('still sends the ticket when the loyalty lookup fails', async () => {
+    h.getTicketEmailNotice.mockRejectedValue(new Error('db down'));
+
+    const res = await POST(req());
+
+    expect(res.status).toBe(200);
+    expect(h.send.mock.calls[0][0].react.props.loyalty).toBeNull();
+  });
+
+  it('omits the refund link and receipt for a free (reward) ticket', async () => {
+    h.findByID.mockResolvedValue({
+      ...order,
+      amountPaid: 0,
+      paymentIntentId: null,
+      receiptUrl: null,
+      redeemedReward: 5,
+    });
+
+    await POST(req());
+
+    const props = h.send.mock.calls[0][0].react.props;
+    expect(props.refundUrl).toBeUndefined();
+    expect(props.receiptUrl).toBeUndefined();
+    expect(h.getReceipt).not.toHaveBeenCalled();
   });
 });

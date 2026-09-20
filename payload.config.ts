@@ -18,6 +18,8 @@ import { Orders } from './collections/Orders';
 import { Merch } from './collections/Merch';
 import { Authors } from './collections/Authors';
 import { Articles } from './collections/Articles';
+import { Rewards } from './collections/Rewards';
+import { Settings } from './globals/Settings';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -36,9 +38,11 @@ export default buildConfig({
     Events,
     Merch,
     Orders,
+    Rewards,
     Authors,
     Articles,
   ],
+  globals: [Settings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

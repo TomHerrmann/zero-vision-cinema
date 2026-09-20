@@ -14,8 +14,11 @@ import { Resend } from 'resend';
 import TicketEmail from '../emails/TicketEmail';
 import RefundEmail from '../emails/RefundEmail';
 import BroadcastEmail from '../emails/BroadcastEmail';
+import RewardEmail from '../emails/RewardEmail';
 import {
   ticketSample,
+  ticketFreeSample,
+  rewardSample,
   refundSample,
   broadcastPaidSample,
   broadcastZvcFreeSample,
@@ -44,6 +47,14 @@ async function main() {
     {
       subject: `[QA] Your tickets for ${ticketSample.eventName} — Zero Vision Cinema`,
       react: <TicketEmail {...ticketSample} />,
+    },
+    {
+      subject: `[QA] Your free ticket for ${ticketFreeSample.eventName} — Zero Vision Cinema`,
+      react: <TicketEmail {...ticketFreeSample} />,
+    },
+    {
+      subject: '[QA] You earned a free ticket — Zero Vision Cinema',
+      react: <RewardEmail {...rewardSample} />,
     },
     {
       subject: `[QA] Your refund for ${refundSample.eventName} — Zero Vision Cinema`,

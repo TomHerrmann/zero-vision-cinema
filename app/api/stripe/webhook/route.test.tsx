@@ -12,6 +12,8 @@ const h = vi.hoisted(() => ({
   update: vi.fn(),
   publishJSON: vi.fn(),
   addResendContact: vi.fn(),
+  maybeIssueReward: vi.fn(),
+  voidRewardForRefund: vi.fn(),
 }));
 
 vi.mock('next/headers', () => ({
@@ -33,6 +35,10 @@ vi.mock('@/lib/qstash', () => ({
   QSTASH_TARGET_BASE_URL: 'https://zvc.test',
 }));
 vi.mock('@/lib/resend', () => ({ addResendContact: h.addResendContact }));
+vi.mock('@/lib/loyalty', () => ({
+  maybeIssueReward: h.maybeIssueReward,
+  voidRewardForRefund: h.voidRewardForRefund,
+}));
 vi.mock('payload', () => ({
   getPayload: vi.fn().mockResolvedValue({
     find: h.find,
@@ -103,6 +109,8 @@ beforeEach(() => {
   h.update.mockReset().mockResolvedValue({});
   h.publishJSON.mockReset().mockResolvedValue({ messageId: 'msg_1' });
   h.addResendContact.mockReset().mockResolvedValue(undefined);
+  h.maybeIssueReward.mockReset().mockResolvedValue(null);
+  h.voidRewardForRefund.mockReset().mockResolvedValue(null);
   // Default: no existing order, and the product is an event.
   findReturns([], [event_]);
 });
@@ -190,5 +198,84 @@ describe('stripe webhook — payment_intent.succeeded', () => {
 
     expect(res.status).toBe(200);
     expect(h.publishJSON).not.toHaveBeenCalled();
+  });
+});
+
+describe('stripe webhook — loyalty rewards', () => {
+  it('checks the buyer for a reward and enqueues the reward email when earned', async () => {
+    h.maybeIssueReward.mockResolvedValue({ id: 77, code: 'ZVC-AAAA-BBBB' });
+
+    const res = await POST(req());
+
+    expect(res.status).toBe(200);
+    expect(h.maybeIssueReward).toHaveBeenCalledWith(expect.anything(), 'cus_123');
+    const urls = h.publishJSON.mock.calls.map((c) => c[0].url);
+    expect(urls).toEqual([
+      // Reward first, so the ticket email can say it was earned.
+      'https://zvc.test/api/tasks/send-reward-email',
+      'https://zvc.test/api/tasks/send-ticket-email',
+    ]);
+    expect(h.publishJSON.mock.calls[0][0]).toMatchObject({
+      body: { rewardId: 77 },
+      deduplicationId: 'reward-email-77',
+    });
+  });
+
+  it('sends no reward email below the threshold', async () => {
+    await POST(req());
+    expect(h.publishJSON).toHaveBeenCalledTimes(1); // ticket only
+  });
+
+  it('still fulfils the order when the loyalty check throws', async () => {
+    h.maybeIssueReward.mockRejectedValue(new Error('db down'));
+
+    const res = await POST(req());
+
+    expect(res.status).toBe(200);
+    expect(h.publishJSON.mock.calls[0][0].url).toBe(
+      'https://zvc.test/api/tasks/send-ticket-email'
+    );
+  });
+
+  it('skips the loyalty check for merch', async () => {
+    findReturns([], [], [{ id: 9, merchSold: 0 }]);
+
+    await POST(req());
+
+    expect(h.maybeIssueReward).not.toHaveBeenCalled();
+  });
+
+  describe('charge.refunded', () => {
+    const refundEvent = {
+      type: 'charge.refunded',
+      data: { object: { refunded: true, payment_intent: PI_ID } },
+    };
+
+    it('voids the reward a refunded order earned, before enqueuing the refund email', async () => {
+      h.constructEvent.mockReturnValue(refundEvent);
+      const order = { id: 42, productId: 'prod_123', quantity: 1, earnedReward: 77 };
+      findReturns([order], [event_]);
+      h.voidRewardForRefund.mockImplementation(async () => {
+        expect(h.publishJSON).not.toHaveBeenCalled();
+        return { kind: 'voided', code: 'ZVC-AAAA-BBBB' };
+      });
+
+      const res = await POST(req());
+
+      expect(res.status).toBe(200);
+      expect(h.voidRewardForRefund).toHaveBeenCalledWith(expect.anything(), order);
+      expect(h.publishJSON.mock.calls[0][0].url).toBe(
+        'https://zvc.test/api/tasks/send-refund-email'
+      );
+    });
+
+    it('does not touch rewards for an order that earned none', async () => {
+      h.constructEvent.mockReturnValue(refundEvent);
+      findReturns([{ id: 42, productId: 'prod_123', quantity: 1, earnedReward: null }], [event_]);
+
+      await POST(req());
+
+      expect(h.voidRewardForRefund).not.toHaveBeenCalled();
+    });
   });
 });

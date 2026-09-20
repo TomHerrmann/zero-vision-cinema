@@ -108,6 +108,9 @@ export const STATUS_CODES = {
 export const EMAIL_HEADER_IMAGE_ZVC_URL = `${ZERO_VISION_BLOB_URL}/emailheader_zvc.png`;
 export const EMAIL_HEADER_IMAGE_AHC_URL = `${ZERO_VISION_BLOB_URL}/emailheader_ahc.png`;
 export const EMAIL_HEADER_IMAGE_BOOKCLUB_URL = `${ZERO_VISION_BLOB_URL}/emailheader_bookclub.png`;
+// Slashed eyeball ("zero vision") shown beside loyalty progress in emails.
+// PNG (not SVG) because Gmail/Outlook block SVG; source: public/logos/zvc_logo_logomark_slashed.svg
+export const EMAIL_EYEBALL_SLASHED_PNG_URL = `${ZVC_SITE_URL}/logos/zvc_eyeball_slashed.png`;
 export const WEB_PAGE_HEADER_IMAGE_ZVC_URL = `${ZERO_VISION_BLOB_URL}/zvc_blank_header.png`;
 
 export const RESEND_BROADCASTS_API_URL = 'https://api.resend.com/broadcasts';

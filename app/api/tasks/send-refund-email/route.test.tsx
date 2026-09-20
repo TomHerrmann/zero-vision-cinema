@@ -8,6 +8,7 @@ const h = vi.hoisted(() => ({
   send: vi.fn(),
   getEmail: vi.fn(),
   getReceipt: vi.fn(),
+  getRefundEmailNotice: vi.fn(),
 }));
 
 vi.mock('@/lib/qstash', () => ({ verifyQstashRequest: h.verify }));
@@ -29,6 +30,7 @@ vi.mock('resend', () => ({
   },
 }));
 vi.mock('@/emails/RefundEmail', () => ({ default: () => null }));
+vi.mock('@/lib/loyalty', () => ({ getRefundEmailNotice: h.getRefundEmailNotice }));
 
 import { POST } from './route';
 
@@ -52,6 +54,7 @@ beforeEach(() => {
   h.update.mockReset().mockResolvedValue({});
   h.send.mockReset().mockResolvedValue({ data: { id: 'e1' }, error: null });
   h.getEmail.mockReset().mockResolvedValue('buyer@test.com');
+  h.getRefundEmailNotice.mockReset().mockResolvedValue(null);
   h.getReceipt.mockReset().mockResolvedValue({
     cardBrand: 'Visa',
     cardLast4: '4242',
@@ -99,5 +102,23 @@ describe('send-refund-email task', () => {
     const res = await POST(req());
     expect(res.status).toBe(500);
     expect(h.update).not.toHaveBeenCalled();
+  });
+
+  it('passes a voided-reward notice to the email', async () => {
+    const notice = { kind: 'voided', code: 'ZVC-7K3Q-M9XA', remaining: 1, deadline: null };
+    h.getRefundEmailNotice.mockResolvedValue(notice);
+
+    await POST(req());
+
+    expect(h.send.mock.calls[0][0].react.props.loyalty).toEqual(notice);
+  });
+
+  it('still sends the refund email when the loyalty lookup fails', async () => {
+    h.getRefundEmailNotice.mockRejectedValue(new Error('db down'));
+
+    const res = await POST(req());
+
+    expect(res.status).toBe(200);
+    expect(h.send.mock.calls[0][0].react.props.loyalty).toBeNull();
   });
 });

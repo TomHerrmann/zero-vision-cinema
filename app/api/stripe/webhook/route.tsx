@@ -7,43 +7,10 @@ import { logtail } from '@/lib/logtail';
 import { stripe, stripeCheckout } from '@/lib/stripe';
 import { qstash, QSTASH_TARGET_BASE_URL } from '@/lib/qstash';
 import { addResendContact } from '@/lib/resend';
+import { enqueueRewardEmail, enqueueTicketEmail } from '@/lib/tasks';
+import { maybeIssueReward, voidRewardForRefund } from '@/lib/loyalty';
 
-/**
- * Enqueue the ticket-email task for an order. Returns false (rather than
- * throwing) when QStash refuses the message, so the caller can decide whether
- * to fail the webhook and let Stripe retry.
- *
- * `deduplicationId` is keyed on the PaymentIntent so a redelivery — Stripe's or
- * ours — can't double-publish; the task's `ticketEmailSentAt` guard covers the
- * same ground once QStash's dedup window has passed.
- */
-async function enqueueTicketEmail({
-  orderId,
-  paymentIntentId,
-  email,
-}: {
-  orderId: number;
-  paymentIntentId: string;
-  email?: string;
-}): Promise<boolean> {
-  try {
-    await qstash.publishJSON({
-      url: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-ticket-email`,
-      // Without `email` the task resolves it from the order's Stripe customer.
-      body: email ? { orderId, email } : { orderId },
-      deduplicationId: `ticket-email-${paymentIntentId}`,
-      retries: 3,
-      failureCallback: `${QSTASH_TARGET_BASE_URL}/api/tasks/send-ticket-email/failure`,
-    });
-    return true;
-  } catch (enqueueErr) {
-    await logtail.error(
-      `API /stripe/webhook: failed to enqueue ticket email for order ${orderId}: ${enqueueErr}`,
-      { method: 'POST', timestamp: new Date().toISOString() }
-    );
-    return false;
-  }
-}
+const SOURCE = 'API /stripe/webhook';
 
 export async function POST(req: Request) {
   try {
@@ -104,7 +71,8 @@ export async function POST(req: Request) {
           // resolves it from the order's Stripe customer.
           const requeued = await enqueueTicketEmail({
             orderId: existingOrder.id,
-            paymentIntentId: pi.id,
+            dedupKey: pi.id,
+            source: SOURCE,
           });
           if (!requeued) {
             return NextResponse.json(
@@ -253,6 +221,21 @@ export async function POST(req: Request) {
           },
         });
 
+        // Loyalty: this purchase may complete a free-ticket reward. Runs before
+        // the ticket email is enqueued so that email can say it was earned.
+        // Never fatal — the buyer is paid and recorded; log for follow-up.
+        if (newOrder.id && event_?.id) {
+          try {
+            const reward = await maybeIssueReward(payload, customerId);
+            if (reward) await enqueueRewardEmail(reward.id, SOURCE);
+          } catch (rewardErr) {
+            await logtail.error(
+              `${SOURCE}: loyalty check failed for order ${newOrder.id} (customer ${customerId}): ${rewardErr}`,
+              { method: 'POST', timestamp: new Date().toISOString() }
+            );
+          }
+        }
+
         // Set when QStash refused the message. Reported as a 500 *after* the
         // sold count is updated below, so Stripe retries the whole event and
         // the duplicate branch above gets another chance at the enqueue.
@@ -287,8 +270,9 @@ export async function POST(req: Request) {
           } else {
             enqueueFailed = !(await enqueueTicketEmail({
               orderId: newOrder.id,
-              paymentIntentId: pi.id,
+              dedupKey: pi.id,
               email: ticketEmail,
+              source: SOURCE,
             }));
           }
         }
@@ -357,6 +341,25 @@ export async function POST(req: Request) {
           id: order.id,
           data: { refundedAt: new Date().toISOString() },
         });
+
+        // A refund can break the purchases that earned a free-ticket reward:
+        // void it if unused (the refund email explains). Before the email is
+        // enqueued so the email task sees the new state.
+        if (order.earnedReward) {
+          try {
+            const effect = await voidRewardForRefund(payload, order);
+            if (effect?.kind === 'alreadyRedeemed') {
+              await logtail.info(
+                `${SOURCE}: order ${order.id} refunded after its reward ${effect.code} was already redeemed; free ticket left in place.`
+              );
+            }
+          } catch (voidErr) {
+            await logtail.error(
+              `${SOURCE}: failed to void reward for refunded order ${order.id}: ${voidErr}`,
+              { method: 'POST', timestamp: new Date().toISOString() }
+            );
+          }
+        }
 
         // Enqueue the refund-confirmation email first (durable + retried), before
         // the seat-count update — so a failure there (which would 400 → Stripe

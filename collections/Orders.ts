@@ -97,6 +97,7 @@ export const Orders: CollectionConfig = {
       name: 'customerId',
       type: 'text',
       required: true,
+      index: true,
       admin: { readOnly: true },
     },
     {
@@ -124,9 +125,10 @@ export const Orders: CollectionConfig = {
       admin: { readOnly: true },
     },
     {
+      // Free (reward) orders have no Stripe charge, so no receipt.
       name: 'receiptUrl',
       type: 'text',
-      required: true,
+      required: false,
       unique: true,
       admin: { readOnly: true },
     },
@@ -135,6 +137,23 @@ export const Orders: CollectionConfig = {
       type: 'relationship',
       relationTo: ['events', 'merch'],
       required: true,
+      admin: { readOnly: true },
+    },
+    {
+      // The loyalty reward this paid order was counted toward. Each order
+      // counts toward at most one reward; cleared if that reward is voided.
+      name: 'earnedReward',
+      type: 'relationship',
+      relationTo: 'rewards',
+      required: false,
+      admin: { readOnly: true },
+    },
+    {
+      // Set on free-ticket orders: the reward code that paid for it.
+      name: 'redeemedReward',
+      type: 'relationship',
+      relationTo: 'rewards',
+      required: false,
       admin: { readOnly: true },
     },
   ],
