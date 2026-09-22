@@ -15,6 +15,7 @@ import {
   EMAIL_HEADER_IMAGE_AHC_URL,
   EMAIL_HEADER_IMAGE_BOOKCLUB_URL,
   RESEND_BROADCASTS_API_URL,
+  ZVC_DISPLAY_NAME_EMAIL,
 } from '@/app/contsants/constants';
 import BroadcastEmail from '@/emails/BroadcastEmail';
 import type { Event, Location, Media } from '@/payload-types';
@@ -202,7 +203,7 @@ export async function POST(req: Request) {
         body: JSON.stringify({
           segment_id: segmentId,
           topic_id: topicIdForEventType(event_.eventType),
-          from: ZVC_EMAIL_ADDRESS,
+          from: ZVC_DISPLAY_NAME_EMAIL,
           subject: SUBJECT[kind](event_),
           html,
           send: true,

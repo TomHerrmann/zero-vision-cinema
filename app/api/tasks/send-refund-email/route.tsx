@@ -5,7 +5,7 @@ import { Resend } from 'resend';
 import { logtail } from '@/lib/logtail';
 import { verifyQstashRequest } from '@/lib/qstash';
 import { getCustomerEmail, getReceiptDetails } from '@/lib/stripe';
-import { ZVC_EMAIL_ADDRESS } from '@/app/contsants/constants';
+import { ZVC_DISPLAY_NAME_EMAIL } from '@/app/contsants/constants';
 import RefundEmail from '@/emails/RefundEmail';
 import type { Event } from '@/payload-types';
 
@@ -48,7 +48,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
     if (order.refundEmailSentAt) {
-      return NextResponse.json({ received: true, skipped: true }, { status: 200 });
+      return NextResponse.json(
+        { received: true, skipped: true },
+        { status: 200 }
+      );
     }
 
     const eventDocs = await payload.find({
@@ -68,7 +71,10 @@ export async function POST(req: Request) {
         id: orderId,
         data: { refundEmailSentAt: new Date().toISOString() },
       });
-      return NextResponse.json({ received: true, skipped: true }, { status: 200 });
+      return NextResponse.json(
+        { received: true, skipped: true },
+        { status: 200 }
+      );
     }
 
     const receipt = order.paymentIntentId
@@ -76,7 +82,7 @@ export async function POST(req: Request) {
       : {};
 
     const { error: sendError } = await resend.emails.send({
-      from: ZVC_EMAIL_ADDRESS,
+      from: ZVC_DISPLAY_NAME_EMAIL,
       subject: `Your refund for ${event_.name} — Zero Vision Cinema`,
       to: email,
       react: (

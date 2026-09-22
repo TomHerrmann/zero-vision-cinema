@@ -6,7 +6,10 @@ import { logtail } from '@/lib/logtail';
 import { verifyQstashRequest } from '@/lib/qstash';
 import { getCustomerEmail, getReceiptDetails } from '@/lib/stripe';
 import { signRefundToken } from '@/lib/refundToken';
-import { ZVC_EMAIL_ADDRESS, ZVC_SITE_URL } from '@/app/contsants/constants';
+import {
+  ZVC_DISPLAY_NAME_EMAIL,
+  ZVC_SITE_URL,
+} from '@/app/contsants/constants';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import TicketEmail from '@/emails/TicketEmail';
 import type { Event, Location, Media } from '@/payload-types';
@@ -135,7 +138,7 @@ export async function POST(req: Request) {
     const refundUrl = `${ZVC_SITE_URL}/refund?order=${order.id}&token=${signRefundToken(order.id)}`;
 
     const { error: sendError } = await resend.emails.send({
-      from: ZVC_EMAIL_ADDRESS,
+      from: ZVC_DISPLAY_NAME_EMAIL,
       subject: `Your ZVC Ticket & Receipt: ${event_.name}`,
       to: email,
       react: (

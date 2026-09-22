@@ -22,7 +22,10 @@ import {
   broadcastAhcSample,
   broadcastBookClubSample,
 } from '../emails/previews/sample-data';
-import { ZVC_EMAIL_ADDRESS } from '../app/contsants/constants';
+import {
+  ZVC_DISPLAY_NAME_EMAIL,
+  ZVC_EMAIL_ADDRESS,
+} from '../app/contsants/constants';
 
 async function main() {
   const to = process.argv[2] ?? process.env.EMAIL_QA_TO;
@@ -70,13 +73,15 @@ async function main() {
   console.log(`Sending ${emails.length} sample emails to ${to} …`);
   for (const { subject, react } of emails) {
     const { data, error } = await resend.emails.send({
-      from: ZVC_EMAIL_ADDRESS,
+      from: ZVC_DISPLAY_NAME_EMAIL,
       to,
       subject,
       react,
     });
     if (error) {
-      console.error(`  ✗ ${subject}\n    ${error.message ?? JSON.stringify(error)}`);
+      console.error(
+        `  ✗ ${subject}\n    ${error.message ?? JSON.stringify(error)}`
+      );
     } else {
       console.log(`  ✓ ${subject}  (${data?.id})`);
     }
