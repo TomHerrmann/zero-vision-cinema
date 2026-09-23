@@ -22,10 +22,19 @@ import {
   pgEnum,
 } from "@payloadcms/db-vercel-postgres/drizzle/pg-core";
 import { sql, relations } from "@payloadcms/db-vercel-postgres/drizzle";
+export const enum_events_event_type = pgEnum("enum_events_event_type", [
+  "zvc",
+  "ahc",
+  "bookclub",
+]);
 export const enum_events_status = pgEnum("enum_events_status", [
   "draft",
   "published",
 ]);
+export const enum__events_v_version_event_type = pgEnum(
+  "enum__events_v_version_event_type",
+  ["zvc", "ahc", "bookclub"],
+);
 export const enum__events_v_version_status = pgEnum(
   "enum__events_v_version_status",
   ["draft", "published"],
@@ -174,6 +183,7 @@ export const locations = pgTable(
   {
     id: serial("id").primaryKey(),
     name: varchar("name").notNull(),
+    capacity: numeric("capacity", { mode: "number" }).notNull().default(0),
     address: varchar("address").notNull(),
     city: varchar("city").notNull(),
     state: varchar("state").notNull(),
@@ -208,12 +218,17 @@ export const events = pgTable(
   "events",
   {
     id: serial("id").primaryKey(),
+    eventType: enum_events_event_type("event_type").default("zvc"),
     name: varchar("name"),
+    imdbId: varchar("imdb_id"),
+    bookTitle: varchar("book_title"),
+    bookAuthor: varchar("book_author"),
+    openLibraryId: varchar("open_library_id"),
     description: jsonb("description"),
     image: integer("image_id").references(() => media.id, {
       onDelete: "set null",
     }),
-    price: numeric("price", { mode: "number" }),
+    price: numeric("price", { mode: "number" }).default(10),
     location: integer("location_id").references(() => locations.id, {
       onDelete: "set null",
     }),
@@ -223,10 +238,20 @@ export const events = pgTable(
       precision: 3,
     }),
     paymentLink: varchar("payment_link"),
+    paymentLinkId: varchar("payment_link_id"),
     productId: varchar("product_id"),
     priceId: varchar("price_id"),
-    ticketLimit: numeric("ticket_limit", { mode: "number" }),
     ticketsSold: numeric("tickets_sold", { mode: "number" }).default(0),
+    announcementSentAt: timestamp("announcement_sent_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
+    reminderSentAt: timestamp("reminder_sent_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -247,6 +272,7 @@ export const events = pgTable(
     index("events_image_idx").on(columns.image),
     index("events_location_idx").on(columns.location),
     uniqueIndex("events_payment_link_idx").on(columns.paymentLink),
+    uniqueIndex("events_payment_link_id_idx").on(columns.paymentLinkId),
     uniqueIndex("events_product_id_idx").on(columns.productId),
     uniqueIndex("events_price_id_idx").on(columns.priceId),
     index("events_updated_at_idx").on(columns.updatedAt),
@@ -262,12 +288,18 @@ export const _events_v = pgTable(
     parent: integer("parent_id").references(() => events.id, {
       onDelete: "set null",
     }),
+    version_eventType:
+      enum__events_v_version_event_type("version_event_type").default("zvc"),
     version_name: varchar("version_name"),
+    version_imdbId: varchar("version_imdb_id"),
+    version_bookTitle: varchar("version_book_title"),
+    version_bookAuthor: varchar("version_book_author"),
+    version_openLibraryId: varchar("version_open_library_id"),
     version_description: jsonb("version_description"),
     version_image: integer("version_image_id").references(() => media.id, {
       onDelete: "set null",
     }),
-    version_price: numeric("version_price", { mode: "number" }),
+    version_price: numeric("version_price", { mode: "number" }).default(10),
     version_location: integer("version_location_id").references(
       () => locations.id,
       {
@@ -280,12 +312,22 @@ export const _events_v = pgTable(
       precision: 3,
     }),
     version_paymentLink: varchar("version_payment_link"),
+    version_paymentLinkId: varchar("version_payment_link_id"),
     version_productId: varchar("version_product_id"),
     version_priceId: varchar("version_price_id"),
-    version_ticketLimit: numeric("version_ticket_limit", { mode: "number" }),
     version_ticketsSold: numeric("version_tickets_sold", {
       mode: "number",
     }).default(0),
+    version_announcementSentAt: timestamp("version_announcement_sent_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
+    version_reminderSentAt: timestamp("version_reminder_sent_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,
@@ -322,6 +364,9 @@ export const _events_v = pgTable(
     ),
     index("_events_v_version_version_payment_link_idx").on(
       columns.version_paymentLink,
+    ),
+    index("_events_v_version_version_payment_link_id_idx").on(
+      columns.version_paymentLinkId,
     ),
     index("_events_v_version_version_product_id_idx").on(
       columns.version_productId,
@@ -374,7 +419,23 @@ export const orders = pgTable(
   "orders",
   {
     id: serial("id").primaryKey(),
-    checkoutSessionId: varchar("checkout_session_id").notNull(),
+    checkoutSessionId: varchar("checkout_session_id"),
+    paymentIntentId: varchar("payment_intent_id"),
+    ticketEmailSentAt: timestamp("ticket_email_sent_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
+    refundedAt: timestamp("refunded_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
+    refundEmailSentAt: timestamp("refund_email_sent_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
     productId: varchar("product_id").notNull(),
     customerId: varchar("customer_id").notNull(),
     price: numeric("price", { mode: "number" }).notNull(),
@@ -403,6 +464,7 @@ export const orders = pgTable(
   },
   (columns) => [
     uniqueIndex("orders_checkout_session_id_idx").on(columns.checkoutSessionId),
+    uniqueIndex("orders_payment_intent_id_idx").on(columns.paymentIntentId),
     uniqueIndex("orders_receipt_url_idx").on(columns.receiptUrl),
     index("orders_updated_at_idx").on(columns.updatedAt),
     index("orders_created_at_idx").on(columns.createdAt),
@@ -981,7 +1043,9 @@ export const relations_payload_migrations = relations(
 );
 
 type DatabaseSchema = {
+  enum_events_event_type: typeof enum_events_event_type;
   enum_events_status: typeof enum_events_status;
+  enum__events_v_version_event_type: typeof enum__events_v_version_event_type;
   enum__events_v_version_status: typeof enum__events_v_version_status;
   enum_articles_category: typeof enum_articles_category;
   enum_articles_rating: typeof enum_articles_rating;

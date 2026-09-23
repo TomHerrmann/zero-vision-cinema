@@ -247,6 +247,10 @@ export interface Event {
    */
   paymentLink?: string | null;
   /**
+   * The `plink_…` id behind the link above — the URL alone cannot be used with the Stripe API
+   */
+  paymentLinkId?: string | null;
+  /**
    * This id is automatically generated when the event is published
    */
   productId?: string | null;
@@ -525,6 +529,7 @@ export interface EventsSelect<T extends boolean = true> {
   location?: T;
   datetime?: T;
   paymentLink?: T;
+  paymentLinkId?: T;
   productId?: T;
   priceId?: T;
   ticketsSold?: T;
