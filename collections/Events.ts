@@ -418,7 +418,7 @@ export const Events: CollectionConfig = {
       name: 'price',
       type: 'number',
       required: true,
-      defaultValue: 10,
+      defaultValue: 13,
       admin: {
         // Only ZVC events are paid — AHC / Book Club are forced to 0 on save.
         condition: (data) => data.eventType === 'zvc',
