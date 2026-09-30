@@ -10,6 +10,7 @@ import Footer from '@/components/footer/footer';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { getMainMenu } from '@/menu.config';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -58,6 +59,13 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Re-render the shell at least hourly so a seasonal nav item (see
+ * `getMainMenu`) disappears within an hour of its cutoff even on pages that
+ * would otherwise be fully static. Pages with a shorter `revalidate` win.
+ */
+export const revalidate = 3600;
+
 export default function RootLayout({
   children,
 }: {
@@ -83,7 +91,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <header className="relative">
-            <Nav />
+            <Nav menu={getMainMenu()} />
           </header>
           {children}
           <Footer />
