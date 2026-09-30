@@ -72,6 +72,14 @@ export const enum__articles_v_version_status = pgEnum(
   "enum__articles_v_version_status",
   ["draft", "published"],
 );
+export const enum_custom_broadcasts_segment = pgEnum(
+  "enum_custom_broadcasts_segment",
+  ["main", "test"],
+);
+export const enum_custom_broadcasts_status = pgEnum(
+  "enum_custom_broadcasts_status",
+  ["draft", "scheduled"],
+);
 
 export const users_sessions = pgTable(
   "users_sessions",
@@ -228,7 +236,7 @@ export const events = pgTable(
     image: integer("image_id").references(() => media.id, {
       onDelete: "set null",
     }),
-    price: numeric("price", { mode: "number" }).default(10),
+    price: numeric("price", { mode: "number" }).default(13),
     location: integer("location_id").references(() => locations.id, {
       onDelete: "set null",
     }),
@@ -299,7 +307,7 @@ export const _events_v = pgTable(
     version_image: integer("version_image_id").references(() => media.id, {
       onDelete: "set null",
     }),
-    version_price: numeric("version_price", { mode: "number" }).default(10),
+    version_price: numeric("version_price", { mode: "number" }).default(13),
     version_location: integer("version_location_id").references(
       () => locations.id,
       {
@@ -645,6 +653,72 @@ export const _articles_v = pgTable(
   ],
 );
 
+export const custom_broadcasts = pgTable(
+  "custom_broadcasts",
+  {
+    id: serial("id").primaryKey(),
+    subject: varchar("subject").notNull(),
+    heading: varchar("heading"),
+    body: jsonb("body").notNull(),
+    cta_enabled: boolean("cta_enabled").default(false),
+    cta_label: varchar("cta_label"),
+    cta_url: varchar("cta_url"),
+    segment: enum_custom_broadcasts_segment("segment").notNull(),
+    status: enum_custom_broadcasts_status("status").notNull().default("draft"),
+    sendAt: timestamp("send_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
+    resendBroadcastId: varchar("resend_broadcast_id"),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    index("custom_broadcasts_updated_at_idx").on(columns.updatedAt),
+    index("custom_broadcasts_created_at_idx").on(columns.createdAt),
+  ],
+);
+
+export const custom_broadcasts_rels = pgTable(
+  "custom_broadcasts_rels",
+  {
+    id: serial("id").primaryKey(),
+    order: integer("order"),
+    parent: integer("parent_id").notNull(),
+    path: varchar("path").notNull(),
+    mediaID: integer("media_id"),
+  },
+  (columns) => [
+    index("custom_broadcasts_rels_order_idx").on(columns.order),
+    index("custom_broadcasts_rels_parent_idx").on(columns.parent),
+    index("custom_broadcasts_rels_path_idx").on(columns.path),
+    index("custom_broadcasts_rels_media_id_idx").on(columns.mediaID),
+    foreignKey({
+      columns: [columns["parent"]],
+      foreignColumns: [custom_broadcasts.id],
+      name: "custom_broadcasts_rels_parent_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["mediaID"]],
+      foreignColumns: [media.id],
+      name: "custom_broadcasts_rels_media_fk",
+    }).onDelete("cascade"),
+  ],
+);
+
 export const payload_kv = pgTable(
   "payload_kv",
   {
@@ -697,6 +771,7 @@ export const payload_locked_documents_rels = pgTable(
     ordersID: integer("orders_id"),
     authorsID: integer("authors_id"),
     articlesID: integer("articles_id"),
+    "custom-broadcastsID": integer("custom_broadcasts_id"),
   },
   (columns) => [
     index("payload_locked_documents_rels_order_idx").on(columns.order),
@@ -713,6 +788,9 @@ export const payload_locked_documents_rels = pgTable(
     index("payload_locked_documents_rels_authors_id_idx").on(columns.authorsID),
     index("payload_locked_documents_rels_articles_id_idx").on(
       columns.articlesID,
+    ),
+    index("payload_locked_documents_rels_custom_broadcasts_id_idx").on(
+      columns["custom-broadcastsID"],
     ),
     foreignKey({
       columns: [columns["parent"]],
@@ -758,6 +836,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns["articlesID"]],
       foreignColumns: [articles.id],
       name: "payload_locked_documents_rels_articles_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["custom-broadcastsID"]],
+      foreignColumns: [custom_broadcasts.id],
+      name: "payload_locked_documents_rels_custom_broadcasts_fk",
     }).onDelete("cascade"),
   ],
 );
@@ -955,6 +1038,29 @@ export const relations__articles_v = relations(_articles_v, ({ one }) => ({
     relationName: "version_author",
   }),
 }));
+export const relations_custom_broadcasts_rels = relations(
+  custom_broadcasts_rels,
+  ({ one }) => ({
+    parent: one(custom_broadcasts, {
+      fields: [custom_broadcasts_rels.parent],
+      references: [custom_broadcasts.id],
+      relationName: "_rels",
+    }),
+    mediaID: one(media, {
+      fields: [custom_broadcasts_rels.mediaID],
+      references: [media.id],
+      relationName: "media",
+    }),
+  }),
+);
+export const relations_custom_broadcasts = relations(
+  custom_broadcasts,
+  ({ many }) => ({
+    _rels: many(custom_broadcasts_rels, {
+      relationName: "_rels",
+    }),
+  }),
+);
 export const relations_payload_kv = relations(payload_kv, () => ({}));
 export const relations_payload_locked_documents_rels = relations(
   payload_locked_documents_rels,
@@ -1003,6 +1109,11 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels.articlesID],
       references: [articles.id],
       relationName: "articles",
+    }),
+    "custom-broadcastsID": one(custom_broadcasts, {
+      fields: [payload_locked_documents_rels["custom-broadcastsID"]],
+      references: [custom_broadcasts.id],
+      relationName: "custom-broadcasts",
     }),
   }),
 );
@@ -1053,6 +1164,8 @@ type DatabaseSchema = {
   enum__articles_v_version_category: typeof enum__articles_v_version_category;
   enum__articles_v_version_rating: typeof enum__articles_v_version_rating;
   enum__articles_v_version_status: typeof enum__articles_v_version_status;
+  enum_custom_broadcasts_segment: typeof enum_custom_broadcasts_segment;
+  enum_custom_broadcasts_status: typeof enum_custom_broadcasts_status;
   users_sessions: typeof users_sessions;
   users: typeof users;
   media: typeof media;
@@ -1065,6 +1178,8 @@ type DatabaseSchema = {
   authors: typeof authors;
   articles: typeof articles;
   _articles_v: typeof _articles_v;
+  custom_broadcasts: typeof custom_broadcasts;
+  custom_broadcasts_rels: typeof custom_broadcasts_rels;
   payload_kv: typeof payload_kv;
   payload_locked_documents: typeof payload_locked_documents;
   payload_locked_documents_rels: typeof payload_locked_documents_rels;
@@ -1083,6 +1198,8 @@ type DatabaseSchema = {
   relations_authors: typeof relations_authors;
   relations_articles: typeof relations_articles;
   relations__articles_v: typeof relations__articles_v;
+  relations_custom_broadcasts_rels: typeof relations_custom_broadcasts_rels;
+  relations_custom_broadcasts: typeof relations_custom_broadcasts;
   relations_payload_kv: typeof relations_payload_kv;
   relations_payload_locked_documents_rels: typeof relations_payload_locked_documents_rels;
   relations_payload_locked_documents: typeof relations_payload_locked_documents;

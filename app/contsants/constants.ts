@@ -113,6 +113,7 @@ export const EMAIL_HEADER_IMAGE_BOOKCLUB_URL = `${ZERO_VISION_BLOB_URL}/emailhea
 export const WEB_PAGE_HEADER_IMAGE_ZVC_URL = `${ZERO_VISION_BLOB_URL}/zvc_blank_header.png`;
 
 export const RESEND_BROADCASTS_API_URL = 'https://api.resend.com/broadcasts';
+export const RESEND_EMAILS_API_URL = 'https://api.resend.com/emails';
 export const OMDB_API_URL = 'https://www.omdbapi.com';
 export const OPEN_LIBRARY_BASE_URL = 'https://openlibrary.org';
 export const OPEN_LIBRARY_COVER_BASE_URL = 'https://covers.openlibrary.org';

@@ -3,4 +3,5 @@ export const mainMenu = {
   home: '/',
   events: '/events',
   'Astoria Horror Club': '/astoriahorrorclub',
+  Halloweek: '/halloweek',
 };

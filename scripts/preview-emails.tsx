@@ -14,6 +14,7 @@ import { Resend } from 'resend';
 import TicketEmail from '../emails/TicketEmail';
 import RefundEmail from '../emails/RefundEmail';
 import BroadcastEmail from '../emails/BroadcastEmail';
+import CustomBroadcastEmail from '../emails/CustomBroadcastEmail';
 import {
   ticketSample,
   refundSample,
@@ -21,6 +22,7 @@ import {
   broadcastZvcFreeSample,
   broadcastAhcSample,
   broadcastBookClubSample,
+  customBroadcastSample,
 } from '../emails/previews/sample-data';
 import {
   ZVC_DISPLAY_NAME_EMAIL,
@@ -67,6 +69,10 @@ async function main() {
     {
       subject: `[QA] Book Club: ${broadcastBookClubSample.eventName} — Zero Vision Cinema`,
       react: <BroadcastEmail {...broadcastBookClubSample} />,
+    },
+    {
+      subject: `[QA] Custom broadcast: ${customBroadcastSample.subject}`,
+      react: <CustomBroadcastEmail {...customBroadcastSample} />,
     },
   ];
 
