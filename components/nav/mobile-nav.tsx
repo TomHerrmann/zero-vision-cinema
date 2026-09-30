@@ -20,12 +20,13 @@ import {
 } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 
-import { mainMenu } from '@/menu.config';
 import { SITE_NAME } from '@/app/contsants/constants';
 
 import { useState } from 'react';
 
-export function MobileNav() {
+type Props = { menu: Record<string, string> };
+
+export function MobileNav({ menu }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -58,7 +59,7 @@ export function MobileNav() {
               Menu
             </h3>
             <Separator className="bg-blue-light/20" />
-            {Object.entries(mainMenu).map(([key, href]) => (
+            {Object.entries(menu).map(([key, href]) => (
               <MobileLink key={key} href={href} onOpenChange={setOpen}>
                 {key.charAt(0).toUpperCase() + key.slice(1)}
               </MobileLink>

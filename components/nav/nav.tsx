@@ -4,9 +4,14 @@ import { useEffect, useState } from 'react';
 import { cn } from '@/utils/utils';
 import Link from 'next/link';
 import { MobileNav } from './mobile-nav';
-import { mainMenu } from '@/menu.config';
 
-export default function Nav() {
+/**
+ * `menu` is resolved by the root layout via `getMainMenu()` so seasonal items
+ * are judged against the server clock — see menu.config.ts.
+ */
+type Props = { menu: Record<string, string> };
+
+export default function Nav({ menu }: Props) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -52,7 +57,7 @@ export default function Nav() {
         )}
         <div className="flex items-center gap-2">
           <div className="mx-2 hidden md:flex items-center gap-1">
-            {Object.entries(mainMenu).map(([key, href]) => (
+            {Object.entries(menu).map(([key, href]) => (
               <Link
                 key={href}
                 href={href}
@@ -69,7 +74,7 @@ export default function Nav() {
               </Link>
             ))}
           </div>
-          <MobileNav />
+          <MobileNav menu={menu} />
         </div>
       </div>
     </nav>

@@ -1,4 +1,4 @@
-import { mainMenu } from '@/menu.config';
+import { getMainMenu } from '@/menu.config';
 import Link from 'next/link';
 import {
   ADDRESS_LINE_1,
@@ -16,6 +16,8 @@ import { Mail, MapPin } from 'lucide-react';
 import SubstackIcon from '@/components/ui/substack-icon';
 
 const Footer = () => {
+  const menu = getMainMenu();
+
   return (
     <footer className="relative bg-blackout border-t-2 border-blue-light/20 overflow-hidden">
       {/* Texture */}
@@ -48,7 +50,7 @@ const Footer = () => {
               Site Map
             </h5>
             <nav className="flex flex-col gap-3">
-              {Object.entries(mainMenu).map(([key, href]) => (
+              {Object.entries(menu).map(([key, href]) => (
                 <Link
                   key={href}
                   href={href}
