@@ -2,6 +2,7 @@
 export const mainMenu = {
   home: '/',
   events: '/events',
+  substack: 'https://zerovisioncinema.substack.com/',
   'Astoria Horror Club': '/astoriahorrorclub',
 };
 
