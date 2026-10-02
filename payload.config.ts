@@ -18,6 +18,7 @@ import { Orders } from './collections/Orders';
 import { Merch } from './collections/Merch';
 import { Authors } from './collections/Authors';
 import { Articles } from './collections/Articles';
+import { CustomBroadcasts } from './collections/CustomBroadcasts';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -38,6 +39,7 @@ export default buildConfig({
     Orders,
     Authors,
     Articles,
+    CustomBroadcasts,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

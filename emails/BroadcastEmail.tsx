@@ -284,20 +284,20 @@ function SpecRow({ label, value }: { label: string; value?: string | null }) {
   );
 }
 
-const main: React.CSSProperties = {
+export const main: React.CSSProperties = {
   backgroundColor: '#141414',
   fontFamily: 'Arial, Helvetica, sans-serif',
   margin: 0,
   padding: '24px 0',
 };
-const container: React.CSSProperties = {
+export const container: React.CSSProperties = {
   maxWidth: '600px',
   margin: '0 auto',
   backgroundColor: '#1F1F1F',
   border: '1px solid rgba(255,253,246,0.12)',
 };
-const header: React.CSSProperties = { display: 'block' };
-const content: React.CSSProperties = { padding: '32px 28px' };
+export const header: React.CSSProperties = { display: 'block' };
+export const content: React.CSSProperties = { padding: '32px 28px' };
 const kicker: React.CSSProperties = {
   color: '#4A8CC6',
   textTransform: 'uppercase',
@@ -305,7 +305,7 @@ const kicker: React.CSSProperties = {
   fontSize: '12px',
   margin: '0 0 8px',
 };
-const heading: React.CSSProperties = {
+export const heading: React.CSSProperties = {
   color: '#FFFDF6',
   fontSize: '30px',
   lineHeight: '1.15',
@@ -323,7 +323,7 @@ const poster: React.CSSProperties = {
   border: '2px solid rgba(255,253,246,0.15)',
   margin: '0 0 20px',
 };
-const richTextWrap: React.CSSProperties = {
+export const richTextWrap: React.CSSProperties = {
   color: 'rgba(255,253,246,0.8)',
   fontSize: '14px',
   lineHeight: '1.6',
@@ -387,7 +387,7 @@ const label: React.CSSProperties = {
   letterSpacing: '1px',
   marginBottom: '2px',
 };
-const button: React.CSSProperties = {
+export const button: React.CSSProperties = {
   display: 'inline-block',
   backgroundColor: '#4A8CC6',
   color: '#0f0f0f',
@@ -396,18 +396,18 @@ const button: React.CSSProperties = {
   textDecoration: 'none',
   padding: '14px 26px',
 };
-const footer: React.CSSProperties = {
+export const footer: React.CSSProperties = {
   backgroundColor: '#09090b',
   padding: '20px 28px',
   textAlign: 'center',
 };
-const footerText: React.CSSProperties = {
+export const footerText: React.CSSProperties = {
   color: '#a1a1aa',
   fontSize: '12px',
   lineHeight: '1.6',
   margin: '0 0 4px',
 };
-const footerLink: React.CSSProperties = {
+export const footerLink: React.CSSProperties = {
   color: '#a1a1aa',
   textDecoration: 'underline',
 };

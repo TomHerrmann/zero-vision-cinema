@@ -4,6 +4,7 @@ export const mainMenu = {
   events: '/events',
   substack: 'https://zerovisioncinema.substack.com/',
   'Astoria Horror Club': '/astoriahorrorclub',
+  Halloweek: '/halloweek',
 };
 
 export type SeasonalMenuItem = {

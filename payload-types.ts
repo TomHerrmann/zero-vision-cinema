@@ -75,6 +75,7 @@ export interface Config {
     orders: Order;
     authors: Author;
     articles: Article;
+    'custom-broadcasts': CustomBroadcast;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +91,7 @@ export interface Config {
     orders: OrdersSelect<false> | OrdersSelect<true>;
     authors: AuthorsSelect<false> | AuthorsSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
+    'custom-broadcasts': CustomBroadcastsSelect<false> | CustomBroadcastsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -359,6 +361,64 @@ export interface Article {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * One-off emails to the whole mailing list. Nothing is sent while an entry is a Draft.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "custom-broadcasts".
+ */
+export interface CustomBroadcast {
+  id: number;
+  subject: string;
+  /**
+   * Headline at the top of the email. Leave blank to use the subject.
+   */
+  heading?: string | null;
+  /**
+   * Shown stacked, in this order, between the headline and the body. Any size or shape works — each is scaled to fit and never cropped. JPG, PNG or GIF only.
+   */
+  images?: (number | Media)[] | null;
+  body: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  cta?: {
+    enabled?: boolean | null;
+    label?: string | null;
+    url?: string | null;
+  };
+  /**
+   * Who receives it. The Test segment can be sent to from any environment, and its subject is prefixed [TEST].
+   */
+  segment: 'main' | 'test';
+  /**
+   * Saving as Send emails the segment — immediately, or at the send time below if "Schedule for later" is on. Switch a scheduled entry back to Draft to cancel it.
+   */
+  status: 'draft' | 'send';
+  scheduled?: boolean | null;
+  /**
+   * In your browser's timezone. Must be at least 10 minutes out. The entry locks 5 minutes before it sends.
+   */
+  sendAt?: string | null;
+  /**
+   * Optional. On save, emails this entry to just this address (works on drafts). Not stored. The unsubscribe link only works in the real send.
+   */
+  sendTestTo?: string | null;
+  resendBroadcastId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -413,6 +473,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'articles';
         value: number | Article;
+      } | null)
+    | ({
+        relationTo: 'custom-broadcasts';
+        value: number | CustomBroadcast;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -599,6 +663,31 @@ export interface ArticlesSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "custom-broadcasts_select".
+ */
+export interface CustomBroadcastsSelect<T extends boolean = true> {
+  subject?: T;
+  heading?: T;
+  images?: T;
+  body?: T;
+  cta?:
+    | T
+    | {
+        enabled?: T;
+        label?: T;
+        url?: T;
+      };
+  segment?: T;
+  status?: T;
+  scheduled?: T;
+  sendAt?: T;
+  sendTestTo?: T;
+  resendBroadcastId?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
