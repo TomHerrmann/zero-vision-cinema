@@ -398,13 +398,14 @@ export interface CustomBroadcast {
     url?: string | null;
   };
   /**
-   * Who receives it. The Test segment can be scheduled from any environment, and its subject is prefixed [TEST].
+   * Who receives it. The Test segment can be sent to from any environment, and its subject is prefixed [TEST].
    */
   segment: 'main' | 'test';
   /**
-   * Saving as Scheduled queues the email in Resend for the send time below. Switch back to Draft to cancel.
+   * Saving as Send emails the segment — immediately, or at the send time below if "Schedule for later" is on. Switch a scheduled entry back to Draft to cancel it.
    */
-  status: 'draft' | 'scheduled';
+  status: 'draft' | 'send';
+  scheduled?: boolean | null;
   /**
    * In your browser's timezone. Must be at least 10 minutes out. The entry locks 5 minutes before it sends.
    */
@@ -681,6 +682,7 @@ export interface CustomBroadcastsSelect<T extends boolean = true> {
       };
   segment?: T;
   status?: T;
+  scheduled?: T;
   sendAt?: T;
   sendTestTo?: T;
   resendBroadcastId?: T;

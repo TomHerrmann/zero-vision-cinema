@@ -78,7 +78,7 @@ export const enum_custom_broadcasts_segment = pgEnum(
 );
 export const enum_custom_broadcasts_status = pgEnum(
   "enum_custom_broadcasts_status",
-  ["draft", "scheduled"],
+  ["draft", "send"],
 );
 
 export const users_sessions = pgTable(
@@ -665,6 +665,7 @@ export const custom_broadcasts = pgTable(
     cta_url: varchar("cta_url"),
     segment: enum_custom_broadcasts_segment("segment").notNull(),
     status: enum_custom_broadcasts_status("status").notNull().default("draft"),
+    scheduled: boolean("scheduled").default(false),
     sendAt: timestamp("send_at", {
       mode: "string",
       withTimezone: true,
