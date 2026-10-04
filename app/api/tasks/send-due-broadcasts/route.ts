@@ -10,6 +10,7 @@ import {
 } from '@/lib/qstash';
 import type { BroadcastKind } from '@/lib/broadcasts';
 import { etDayRangeUtc, ANNOUNCE_DAYS_BEFORE } from '@/utils/broadcastSchedule';
+import { retirePastPaymentLinks } from '@/lib/retirePaymentLinks';
 
 const TASK_URL = `${QSTASH_TARGET_BASE_URL}/api/tasks/send-broadcast`;
 const FAILURE_URL = `${QSTASH_TARGET_BASE_URL}/api/tasks/send-broadcast/failure`;
@@ -109,8 +110,26 @@ export async function POST(req: Request) {
       }
     }
 
+    // Riding the same morning run: switch off Stripe payment links for events
+    // that are over. Best-effort — a Stripe hiccup must not make QStash retry
+    // (and so re-dispatch) the broadcasts above; tomorrow's run catches up.
+    let retiredPaymentLinks = 0;
+    try {
+      retiredPaymentLinks = (await retirePastPaymentLinks(payload, now)).length;
+    } catch (err) {
+      await logtail.error(
+        `API /tasks/send-due-broadcasts: retiring past payment links failed: ${err}`
+      );
+    }
+
     return NextResponse.json(
-      { received: true, dispatched: dispatched.length, skipped, events: dispatched },
+      {
+        received: true,
+        dispatched: dispatched.length,
+        skipped,
+        events: dispatched,
+        retiredPaymentLinks,
+      },
       { status: 200 }
     );
   } catch (err) {
