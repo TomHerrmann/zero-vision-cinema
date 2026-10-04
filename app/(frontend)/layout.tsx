@@ -57,6 +57,15 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+  // Preview image comes from opengraph-image.png in this folder. Title and
+  // description are left out so child pages' own <title> still shows in shares.
+  openGraph: {
+    type: 'website',
+    siteName: 'Zero Vision Cinema',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
 };
 
 /**
