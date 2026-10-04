@@ -34,6 +34,19 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        // Short link for the QR code shown before and after screenings. Points
+        // at the newsletter signup; the utm tags let Vercel Analytics count
+        // visits that came from a QR scan. Not permanent, so the target can
+        // change later without reprinting the QR.
+        source: '/join',
+        destination: '/?utm_source=qr&utm_medium=event#newsletter',
+        permanent: false,
+      },
+    ];
+  },
   async rewrites() {
     const seerrHost = process.env.SEERR_HOME_HOST;
     if (!seerrHost) return { beforeFiles: [] };
