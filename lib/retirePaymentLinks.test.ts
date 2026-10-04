@@ -10,10 +10,10 @@ vi.mock('@/lib/stripe', () => ({
   stripe: { paymentLinks: { list: h.list, update: h.update } },
 }));
 
-import { retirePastPaymentLinks } from './retirePaymentLinks';
+import { retireClosedPaymentLinks } from './retirePaymentLinks';
 
-// 2026-10-04 09:00 ET.
-const NOW = new Date('2026-10-04T13:00:00.000Z');
+// 2026-10-04 9:00pm ET.
+const NOW = new Date('2026-10-05T01:00:00.000Z');
 const payload = { find: h.find } as never;
 
 /** Stripe's auto-paginating list is async-iterable. */
@@ -29,15 +29,15 @@ beforeEach(() => {
   h.update.mockReset().mockResolvedValue({});
 });
 
-describe('retirePastPaymentLinks', () => {
-  it('only looks at events dated before today in ET', async () => {
-    await retirePastPaymentLinks(payload, NOW);
+describe('retireClosedPaymentLinks', () => {
+  it('only looks at events that started at least an hour ago', async () => {
+    await retireClosedPaymentLinks(payload, NOW);
     expect(h.find.mock.calls[0][0].where.datetime).toEqual({
-      less_than: '2026-10-04T04:00:00.000Z',
+      less_than_equal: '2026-10-05T00:00:00.000Z',
     });
   });
 
-  it('deactivates active links of past events, by id or by URL', async () => {
+  it('deactivates active links of closed events, by id or by URL', async () => {
     h.find.mockResolvedValue({
       docs: [
         { paymentLinkId: 'plink_old', paymentLink: 'https://buy.stripe.com/a' },
@@ -53,7 +53,7 @@ describe('retirePastPaymentLinks', () => {
       ])
     );
 
-    const retired = await retirePastPaymentLinks(payload, NOW);
+    const retired = await retireClosedPaymentLinks(payload, NOW);
 
     expect(retired).toEqual(['plink_old', 'plink_legacy']);
     expect(h.list).toHaveBeenCalledWith({ active: true, limit: 100 });
@@ -62,8 +62,8 @@ describe('retirePastPaymentLinks', () => {
     expect(h.update).toHaveBeenCalledWith('plink_legacy', { active: false });
   });
 
-  it('skips Stripe entirely when no past event has a link', async () => {
-    expect(await retirePastPaymentLinks(payload, NOW)).toEqual([]);
+  it('skips Stripe entirely when no event has closed', async () => {
+    expect(await retireClosedPaymentLinks(payload, NOW)).toEqual([]);
     expect(h.list).not.toHaveBeenCalled();
   });
 });

@@ -5,7 +5,7 @@ import { stripeCheckout } from '@/lib/stripe';
 import { logtail } from '@/lib/logtail';
 import { formatAmountForStripe } from '@/utils/stripeUtils';
 import type { Location } from '@/payload-types';
-import { hasEventEnded } from '@/utils/eventEnded';
+import { isEventClosed } from '@/utils/eventEnded';
 
 /**
  * Creates (or updates) a PaymentIntent for an event ticket purchase and returns
@@ -38,10 +38,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // The event page redirects once the event is over, but a page loaded
+    // The event page redirects an hour after the start, but a page loaded
     // before then (or a direct call) could still ask for a PaymentIntent.
-    if (hasEventEnded(event)) {
-      return NextResponse.json({ error: 'Event has ended' }, { status: 410 });
+    if (isEventClosed(event)) {
+      return NextResponse.json({ error: 'Ticket sales have closed' }, { status: 410 });
     }
 
     const remaining =

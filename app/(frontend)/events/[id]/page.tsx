@@ -11,7 +11,7 @@ import CheckoutClient from '@/components/checkout/checkout';
 import { cn } from '@/utils/utils';
 import SoldOutStamp from '@/components/sold-out/sold-out-stamp';
 import { isSoldOut } from '@/utils/isSoldOut';
-import { hasEventEnded } from '@/utils/eventEnded';
+import { isEventClosed } from '@/utils/eventEnded';
 
 export const revalidate = 300;
 
@@ -50,8 +50,8 @@ export default async function EventTicketPage({ params }: Props) {
   if (!event) notFound();
 
   // Old links (announcement emails, socials) keep pointing here after the
-  // screening; send them to what's coming up instead of a dead checkout.
-  if (hasEventEnded(event)) redirect('/events');
+  // screening; an hour after the start, send them to what's coming up instead.
+  if (isEventClosed(event)) redirect('/events');
 
   // Fetch OMDB (cached 30 days) only when an IMDb id is present.
   const movie = event.imdbId
