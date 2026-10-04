@@ -143,7 +143,7 @@ export default async function EventTicketPage({ params }: Props) {
             <AddToCalendar
               eventId={event.id}
               buttonClassName="w-full sm:w-auto sm:min-w-[200px]"
-              className="sm:items-start mb-10"
+              className="mb-10"
             />
 
             {/* Description — event's own, or the OMDB summary as a fallback */}
