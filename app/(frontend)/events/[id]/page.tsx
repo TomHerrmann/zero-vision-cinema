@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Image from 'next/image';
 import { RichText } from '@payloadcms/richtext-lexical/react';
 import { Calendar, MapPin, DollarSign, Star } from 'lucide-react';
@@ -11,6 +11,7 @@ import CheckoutClient from '@/components/checkout/checkout';
 import { cn } from '@/utils/utils';
 import SoldOutStamp from '@/components/sold-out/sold-out-stamp';
 import { isSoldOut } from '@/utils/isSoldOut';
+import { isEventClosed } from '@/utils/eventEnded';
 
 export const revalidate = 300;
 
@@ -47,6 +48,10 @@ export default async function EventTicketPage({ params }: Props) {
     : await getZvcEventById(Number(id));
 
   if (!event) notFound();
+
+  // Old links (announcement emails, socials) keep pointing here after the
+  // screening; an hour after the start, send them to what's coming up instead.
+  if (isEventClosed(event)) redirect('/events');
 
   // Fetch OMDB (cached 30 days) only when an IMDb id is present.
   const movie = event.imdbId

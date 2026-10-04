@@ -9,10 +9,14 @@ import {
   QSTASH_DELIVERY_ENABLED,
 } from '@/lib/qstash';
 import type { BroadcastKind } from '@/lib/broadcasts';
+import type { Event } from '@/payload-types';
 import { etDayRangeUtc, ANNOUNCE_DAYS_BEFORE } from '@/utils/broadcastSchedule';
+import { retireClosedPaymentLinks } from '@/lib/retirePaymentLinks';
+import { eventClosesAt } from '@/utils/eventEnded';
 
 const TASK_URL = `${QSTASH_TARGET_BASE_URL}/api/tasks/send-broadcast`;
 const FAILURE_URL = `${QSTASH_TARGET_BASE_URL}/api/tasks/send-broadcast/failure`;
+const RETIRE_URL = `${QSTASH_TARGET_BASE_URL}/api/tasks/retire-payment-links`;
 
 /** Which ET day each broadcast kind looks at, relative to this morning's run. */
 const DUE: { kind: BroadcastKind; daysFromNow: number; sentField: string }[] = [
@@ -65,6 +69,7 @@ export async function POST(req: Request) {
     const now = new Date();
     const dispatched: { eventId: number; kind: BroadcastKind }[] = [];
     let skipped = 0;
+    let todaysEvents: Event[] = [];
 
     for (const { kind, daysFromNow, sentField } of DUE) {
       const { start, end } = etDayRangeUtc(now, daysFromNow);
@@ -82,6 +87,8 @@ export async function POST(req: Request) {
         pagination: false,
         depth: 0,
       });
+
+      if (kind === 'reminder') todaysEvents = events;
 
       for (const event of events) {
         // send-broadcast re-checks this itself; skipping here just avoids the
@@ -109,8 +116,43 @@ export async function POST(req: Request) {
       }
     }
 
+    // Riding the same morning run: switch off Stripe payment links for events
+    // whose sales have closed, and schedule the same sweep for when each of
+    // today's events closes. Best-effort — a Stripe or QStash hiccup must not make QStash
+    // retry (and so re-dispatch) the broadcasts above; tomorrow's run catches
+    // up on anything missed.
+    let retiredPaymentLinks = 0;
+    let scheduledRetirements = 0;
+    try {
+      retiredPaymentLinks = (await retireClosedPaymentLinks(payload, now)).length;
+      for (const event of todaysEvents) {
+        if (!event.paymentLink) continue;
+        const closesAt = eventClosesAt(event.datetime);
+        if (closesAt <= now) continue;
+        await qstash.publishJSON({
+          url: RETIRE_URL,
+          body: {},
+          notBefore: Math.ceil(closesAt.getTime() / 1000),
+          retries: 3,
+          deduplicationId: `retire-links-${event.id}-${closesAt.getTime()}`,
+        });
+        scheduledRetirements++;
+      }
+    } catch (err) {
+      await logtail.error(
+        `API /tasks/send-due-broadcasts: payment link retirement failed: ${err}`
+      );
+    }
+
     return NextResponse.json(
-      { received: true, dispatched: dispatched.length, skipped, events: dispatched },
+      {
+        received: true,
+        dispatched: dispatched.length,
+        skipped,
+        events: dispatched,
+        retiredPaymentLinks,
+        scheduledRetirements,
+      },
       { status: 200 }
     );
   } catch (err) {

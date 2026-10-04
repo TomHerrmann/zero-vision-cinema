@@ -4,6 +4,7 @@ const h = vi.hoisted(() => ({
   verify: vi.fn(),
   find: vi.fn(),
   publishJSON: vi.fn(),
+  retire: vi.fn(),
 }));
 
 vi.mock('@/lib/qstash', () => ({
@@ -16,6 +17,10 @@ vi.mock('payload', () => ({
   getPayload: vi.fn().mockResolvedValue({ find: h.find }),
 }));
 vi.mock('@payload-config', () => ({ default: {} }));
+vi.mock('@/lib/retirePaymentLinks', () => ({
+  retireClosedPaymentLinks: h.retire,
+}));
+vi.mock('@/lib/logtail', () => ({ logtail: { error: vi.fn() } }));
 
 import { POST } from './route';
 
@@ -36,6 +41,7 @@ beforeEach(() => {
   h.verify.mockReset().mockResolvedValue({});
   h.find.mockReset().mockResolvedValue({ docs: [] });
   h.publishJSON.mockReset().mockResolvedValue({ messageId: 'msg_1' });
+  h.retire.mockReset().mockResolvedValue([]);
 });
 
 afterEach(() => {
@@ -127,5 +133,47 @@ describe('POST /api/tasks/send-due-broadcasts', () => {
     h.find.mockReset().mockRejectedValue(new Error('db down'));
     const res = await POST(req());
     expect(res.status).toBe(500);
+  });
+
+  it('retires past payment links on the same run', async () => {
+    h.retire.mockResolvedValue(['plink_1', 'plink_2']);
+    const body = await (await POST(req())).json();
+    expect(h.retire).toHaveBeenCalledWith(expect.anything(), RUN_AT);
+    expect(body.retiredPaymentLinks).toBe(2);
+  });
+
+  it('still 200s when retiring links fails, so broadcasts are not re-sent', async () => {
+    findReturns([{ id: 7, reminderSentAt: null }], []);
+    h.retire.mockRejectedValue(new Error('stripe down'));
+    const res = await POST(req());
+    expect(res.status).toBe(200);
+    expect((await res.json()).dispatched).toBe(1);
+  });
+
+  it('schedules a link retirement for when each of today\'s events closes', async () => {
+    // 7:30pm ET tonight → sales close 8:30pm ET (00:30Z).
+    findReturns(
+      [
+        {
+          id: 7,
+          datetime: '2026-08-19T23:30:00.000Z',
+          paymentLink: 'https://buy.stripe.com/a',
+          reminderSentAt: '2026-08-19T13:00:00.000Z',
+        },
+        // Free events have no link to retire.
+        { id: 8, datetime: '2026-08-19T23:00:00.000Z', reminderSentAt: 'x' },
+      ],
+      []
+    );
+    const body = await (await POST(req())).json();
+
+    expect(body.scheduledRetirements).toBe(1);
+    expect(h.publishJSON).toHaveBeenCalledTimes(1);
+    const closesAt = Date.parse('2026-08-20T00:30:00.000Z');
+    expect(h.publishJSON.mock.calls[0][0]).toMatchObject({
+      url: 'https://zerovisioncinema.com/api/tasks/retire-payment-links',
+      notBefore: closesAt / 1000,
+      deduplicationId: `retire-links-7-${closesAt}`,
+    });
   });
 });
