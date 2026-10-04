@@ -50,3 +50,27 @@ export async function addResendContact({
 
   return data;
 }
+
+/** Contact property recording where a newsletter signup came from (e.g. "qr"). */
+export const SIGNUP_SOURCE_PROPERTY = 'signup_source';
+
+/**
+ * Tag an existing contact with where they signed up. Best effort: the property
+ * has to exist in Resend (Audience → Properties) first, and a missing property
+ * must never fail the signup itself, so errors are logged, not thrown.
+ */
+export async function setResendContactSource(email: string, source: string) {
+  try {
+    const { error } = await resend.contacts.update({
+      email,
+      properties: { [SIGNUP_SOURCE_PROPERTY]: source },
+    });
+    if (error) throw new Error(error.message ?? JSON.stringify(error));
+  } catch (err) {
+    await logtail.warn(`Resend signup source tag failed: ${err}`, {
+      email,
+      source,
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
