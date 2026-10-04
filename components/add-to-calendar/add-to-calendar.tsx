@@ -50,15 +50,10 @@ export default function AddToCalendar({
 
   const ics = `/api/events/${eventId}/calendar`;
   const options = [
-    { label: 'Apple Calendar', hint: 'iPhone, Mac', href: ics },
-    {
-      label: 'Google Calendar',
-      hint: 'Opens Google',
-      href: `${ics}?format=google`,
-      newTab: true,
-    },
-    { label: 'Outlook', hint: 'Windows, Office', href: ics },
-    { label: 'Other', hint: '.ics file', href: ics },
+    { label: 'Apple Calendar', href: ics },
+    { label: 'Google Calendar', href: `${ics}?format=google`, newTab: true },
+    { label: 'Outlook', href: ics },
+    { label: 'Other', href: ics },
   ];
 
   return (
@@ -86,7 +81,7 @@ export default function AddToCalendar({
           id={menuId}
           role="menu"
           aria-label="Choose a calendar"
-          className="mt-3 md:mt-0 md:absolute md:bottom-[68px] md:left-0 md:w-[280px] z-30 flex flex-col p-1.5 bg-blackout md:bg-card border-2 border-glow/15 md:shadow-[6px_6px_0_0_rgba(0,0,0,0.55)]"
+          className="mt-3 md:mt-0 md:absolute md:bottom-[68px] md:left-0 md:min-w-[240px] md:w-max z-30 flex flex-col p-1.5 bg-blackout md:bg-card border-2 border-glow/15 md:shadow-[6px_6px_0_0_rgba(0,0,0,0.55)]"
         >
           {options.map((opt) => (
             <a
@@ -97,14 +92,9 @@ export default function AddToCalendar({
                 ? { target: '_blank', rel: 'noopener noreferrer' }
                 : {})}
               onClick={() => setOpen(false)}
-              className="h-[52px] md:h-12 px-3.5 flex items-center justify-between gap-4 text-glow hover:bg-blue-light/15 focus-visible:bg-blue-light/15 outline-none"
+              className="h-[52px] md:h-12 px-3.5 flex items-center whitespace-nowrap font-utility uppercase tracking-wider text-base text-glow hover:bg-blue-light/15 focus-visible:bg-blue-light/15 outline-none"
             >
-              <span className="font-utility uppercase tracking-wider text-base">
-                {opt.label}
-              </span>
-              <span className="zvc-body text-[15px] text-glow/50">
-                {opt.hint}
-              </span>
+              {opt.label}
             </a>
           ))}
         </div>

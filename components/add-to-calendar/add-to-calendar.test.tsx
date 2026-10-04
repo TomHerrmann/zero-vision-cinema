@@ -18,10 +18,10 @@ describe('AddToCalendar', () => {
     expect(trigger()).toHaveAttribute('aria-expanded', 'true');
     const items = screen.getAllByRole('menuitem');
     expect(items.map((a) => a.textContent)).toEqual([
-      'Apple CalendariPhone, Mac',
-      'Google CalendarOpens Google',
-      'OutlookWindows, Office',
-      'Other.ics file',
+      'Apple Calendar',
+      'Google Calendar',
+      'Outlook',
+      'Other',
     ]);
     expect(items[0]).toHaveAttribute('href', '/api/events/10/calendar');
     expect(items[1]).toHaveAttribute(
