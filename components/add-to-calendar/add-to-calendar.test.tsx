@@ -6,13 +6,13 @@ const trigger = () => screen.getByRole('button', { name: /add to calendar/i });
 
 describe('AddToCalendar', () => {
   it('is one button with the menu closed', () => {
-    render(<AddToCalendar eventId={10} />);
+    render(<AddToCalendar calendarUrl="/api/events/10/calendar" />);
     expect(trigger()).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('menu')).toBeNull();
   });
 
   it('opens a menu of calendars pointing at the event', () => {
-    render(<AddToCalendar eventId={10} />);
+    render(<AddToCalendar calendarUrl="/api/events/10/calendar" />);
     fireEvent.click(trigger());
 
     expect(trigger()).toHaveAttribute('aria-expanded', 'true');
@@ -33,7 +33,7 @@ describe('AddToCalendar', () => {
   });
 
   it('closes on Escape, an outside click, or a pick', () => {
-    render(<AddToCalendar eventId={10} />);
+    render(<AddToCalendar calendarUrl="/api/events/10/calendar" />);
 
     fireEvent.click(trigger());
     fireEvent.keyDown(document, { key: 'Escape' });

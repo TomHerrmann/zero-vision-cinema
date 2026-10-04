@@ -11,6 +11,8 @@ const MINUTE = 60 * 1000;
 
 export const PRE_SHOW_MINUTES = 15;
 export const DEFAULT_RUNTIME_MINUTES = 75;
+/** Every Halloweek event goes on the calendar as two hours long. */
+export const HALLOWEEK_DURATION_MINUTES = 120;
 
 /** OMDB runtimes look like "118 min"; anything else counts as unknown. */
 export function parseRuntimeMinutes(runtime?: string | null): number | null {
@@ -30,7 +32,8 @@ export function eventCalendarEnd(
 }
 
 export type CalendarEvent = {
-  id: number;
+  /** Stable per event; becomes the calendar UID, so re-adding updates it. */
+  id: number | string;
   title: string;
   start: Date;
   end: Date;

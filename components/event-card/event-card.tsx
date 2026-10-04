@@ -184,7 +184,7 @@ const EventCard = async ({
               </Button>
             ) : null}
             <AddToCalendar
-              eventId={id}
+              calendarUrl={`/api/events/${id}/calendar`}
               buttonClassName="w-full md:w-auto md:min-w-[200px]"
               className="w-full md:w-auto"
             />
@@ -267,7 +267,7 @@ const EventCard = async ({
               </Link>
             </Button>
           ) : null}
-          <AddToCalendar eventId={id} />
+          <AddToCalendar calendarUrl={`/api/events/${id}/calendar`} />
         </div>
       </div>
 
