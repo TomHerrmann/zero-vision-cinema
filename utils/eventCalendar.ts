@@ -30,7 +30,8 @@ export function eventCalendarEnd(
 }
 
 export type CalendarEvent = {
-  id: number;
+  /** Stable per event; becomes the calendar UID, so re-adding updates it. */
+  id: number | string;
   title: string;
   start: Date;
   end: Date;

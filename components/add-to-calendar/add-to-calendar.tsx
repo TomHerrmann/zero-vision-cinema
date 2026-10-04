@@ -8,18 +8,20 @@ import { cn } from '@/utils/utils';
 /**
  * One "Add to Calendar" button that opens a menu of calendars. Apple
  * Calendar, Outlook and Other download the event's .ics file (which those
- * apps open directly); Google opens a prefilled Google Calendar event. All go
- * through /api/events/[id]/calendar.
+ * apps open directly); Google opens a prefilled Google Calendar event.
+ * `calendarUrl` is the route serving the .ics, which must also redirect to
+ * Google with `?format=google` — /api/events/[id]/calendar for Payload
+ * events, /api/halloweek/[slotId]/calendar for the Halloweek lineup.
  *
  * From md up the menu opens above the button (it sits at the bottom of a
  * card); on phones it expands in place below it, full width.
  */
 export default function AddToCalendar({
-  eventId,
+  calendarUrl,
   className,
   buttonClassName = 'w-full',
 }: {
-  eventId: number;
+  calendarUrl: string;
   className?: string;
   buttonClassName?: string;
 }) {
@@ -48,7 +50,7 @@ export default function AddToCalendar({
     };
   }, [open]);
 
-  const ics = `/api/events/${eventId}/calendar`;
+  const ics = calendarUrl;
   const options = [
     { label: 'Apple Calendar', href: ics },
     { label: 'Google Calendar', href: `${ics}?format=google`, newTab: true },

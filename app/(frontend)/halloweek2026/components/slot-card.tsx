@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { Clock, Film, MapPin } from 'lucide-react';
+import AddToCalendar from '@/components/add-to-calendar/add-to-calendar';
 import {
   formatDayLong,
   formatTime,
@@ -76,7 +77,7 @@ function InfoRow({
  * the mobile stack each card takes its natural height instead.
  *
  * There is no ticketing here by design: no checkout link, no price, no
- * sold-out state. The card carries its own date, since the carousel replaced
+ * sold-out state. The one action is Add to Calendar (two hours per event). The card carries its own date, since the carousel replaced
  * the per-day headings that used to group these.
  */
 export default function SlotCard({ slot }: Props) {
@@ -152,6 +153,12 @@ export default function SlotCard({ slot }: Props) {
             ))}
           </ul>
         )}
+
+        <AddToCalendar
+          calendarUrl={`/api/halloweek/${slot.id}/calendar`}
+          className="mt-5"
+          buttonClassName="w-full md:w-auto"
+        />
       </div>
     </Card>
   );

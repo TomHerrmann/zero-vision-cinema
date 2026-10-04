@@ -146,7 +146,7 @@ export default async function EventTicketPage({ params }: Props) {
             </div>
 
             <AddToCalendar
-              eventId={event.id}
+              calendarUrl={`/api/events/${event.id}/calendar`}
               buttonClassName="w-full sm:w-auto sm:min-w-[200px]"
               className="mb-10"
             />
