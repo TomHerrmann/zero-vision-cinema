@@ -9,6 +9,7 @@ import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import { richTextIsEmpty } from '@/utils/richText';
 import CheckoutClient from '@/components/checkout/checkout';
 import { cn } from '@/utils/utils';
+import AddToCalendar from '@/components/add-to-calendar/add-to-calendar';
 import SoldOutStamp from '@/components/sold-out/sold-out-stamp';
 import { isSoldOut } from '@/utils/isSoldOut';
 import { isEventClosed } from '@/utils/eventEnded';
@@ -143,6 +144,12 @@ export default async function EventTicketPage({ params }: Props) {
                 </span>
               </div>
             </div>
+
+            <AddToCalendar
+              eventId={event.id}
+              buttonClassName="w-full sm:w-auto sm:min-w-[200px]"
+              className="mb-10"
+            />
 
             {/* Description — event's own, or the OMDB summary as a fallback */}
             {!descriptionIsEmpty ? (
