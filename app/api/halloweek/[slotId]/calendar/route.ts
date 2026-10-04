@@ -7,13 +7,11 @@ import {
 import {
   buildIcs,
   googleCalendarUrl,
+  HALLOWEEK_DURATION_MINUTES,
   type CalendarEvent,
 } from '@/utils/eventCalendar';
 
 type Params = { params: Promise<{ slotId: string }> };
-
-/** Every Halloweek event goes on the calendar as two hours long. */
-export const HALLOWEEK_DURATION_MINUTES = 120;
 
 const PAGE_URL = `${ZVC_SITE_URL}/halloweek2026`;
 
