@@ -5,6 +5,7 @@ import {
   ZVC_SITE_URL,
   EMAIL_EYEBALL_SLASHED_PNG_URL,
 } from '@/app/contsants/constants';
+import { REWARD_PURCHASES, WINDOW_DAYS } from '@/lib/loyalty';
 import {
   BODY_FONT,
   BrandFooter,
@@ -40,7 +41,7 @@ function fmtDate(iso: string): string {
   });
 }
 
-/** Sent when 3 purchases in 30 days earn a free-ticket code (lib/loyalty). */
+/** Sent when 3 purchases in 60 days earn a free-ticket code (lib/loyalty). */
 export default function RewardEmail({ code, expiresAt }: Props) {
   return (
     <EmailShell preview={`Your free ticket code: ${code}`}>
@@ -53,7 +54,7 @@ export default function RewardEmail({ code, expiresAt }: Props) {
           alt="Zero Vision Cinema"
           style={mark}
         />
-        <Kicker align="center">3 screenings in 30 days</Kicker>
+        <Kicker align="center">{`${REWARD_PURCHASES} screenings in ${WINDOW_DAYS} days`}</Kicker>
         <Title align="center">Your next ticket is on us</Title>
         <Text style={bodyTextStyle}>
           Thanks for coming out to Zero Vision Cinema. Here&apos;s a code for

@@ -4,7 +4,7 @@ import {
   EMAIL_EYEBALL_SLASHED_PNG_URL,
   ZVC_SITE_URL,
 } from '@/app/contsants/constants';
-import { REWARD_PURCHASES, type LoyaltyNotice } from '@/lib/loyalty';
+import { REWARD_PURCHASES, WINDOW_DAYS, type LoyaltyNotice } from '@/lib/loyalty';
 import {
   BLACKOUT,
   BODY_FONT,
@@ -42,7 +42,7 @@ function purchases(n: number): string {
 function progressLine(remaining: number, deadline: string | null): string {
   if (remaining <= 0) return 'Your next free ticket is on its way.';
   if (!deadline) {
-    return `Make ${remaining} ticket purchases within 30 days and your next ticket is on us.`;
+    return `Make ${remaining} ticket purchases within ${WINDOW_DAYS} days and your next ticket is on us.`;
   }
   return `Make ${purchases(remaining)} by ${fmtDay(deadline)} and your next ticket is on us.`;
 }
@@ -57,8 +57,8 @@ export function loyaltyCopy(notice: LoyaltyNotice): {
       return {
         kicker: 'You earned a free ticket',
         body: notice.code
-          ? "That's 3 purchases in 30 days. Here's a code for one free ticket to any upcoming screening."
-          : "That's 3 purchases in 30 days. Your free-ticket code is on its way in a separate email.",
+          ? `That's ${REWARD_PURCHASES} purchases in ${WINDOW_DAYS} days. Here's a code for one free ticket to any upcoming screening.`
+          : `That's ${REWARD_PURCHASES} purchases in ${WINDOW_DAYS} days. Your free-ticket code is on its way in a separate email.`,
       };
     case 'redeemed':
       return {

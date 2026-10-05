@@ -17,7 +17,7 @@ import type { Order, Reward } from '@/payload-types';
  * the database decides the winner.
  */
 export const REWARD_PURCHASES = 3;
-export const WINDOW_DAYS = 30;
+export const WINDOW_DAYS = 60;
 export const REWARD_VALID_DAYS = 30;
 
 const DAY_MS = 24 * 60 * 60 * 1000;

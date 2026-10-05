@@ -82,13 +82,13 @@ describe('isQualifyingOrder', () => {
     ['free (reward) order', { amountPaid: 0, redeemedReward: 5 }],
     ['already counted toward a reward', { earnedReward: 5 }],
     ['merch', { item: { relationTo: 'merch', value: 1 } }],
-    ['older than 30 days', { transactionDate: daysAgo(30.01) }],
+    ['older than 60 days', { transactionDate: daysAgo(60.01) }],
   ])('excludes %s', (_label, over) => {
     expect(isQualifyingOrder(order(1, over as Partial<O>), NOW)).toBe(false);
   });
 
   it('includes an order just inside the window', () => {
-    expect(isQualifyingOrder(order(1, { transactionDate: daysAgo(29.99) }), NOW)).toBe(true);
+    expect(isQualifyingOrder(order(1, { transactionDate: daysAgo(59.99) }), NOW)).toBe(true);
   });
 });
 
@@ -97,13 +97,13 @@ describe('computeLoyaltyStatus', () => {
     expect(computeLoyaltyStatus([], NOW)).toEqual({ count: 0, remaining: 3, deadline: null });
   });
 
-  it('counts down with a deadline 30 days after the oldest purchase', () => {
+  it('counts down with a deadline 60 days after the oldest purchase', () => {
     const status = computeLoyaltyStatus(
       [{ transactionDate: '2026-09-01T00:00:00.000Z' }, { transactionDate: daysAgo(1) }],
       NOW
     );
     expect(status.remaining).toBe(1);
-    expect(status.deadline).toBe('2026-10-01T00:00:00.000Z');
+    expect(status.deadline).toBe('2026-10-31T00:00:00.000Z');
   });
 });
 
@@ -235,7 +235,7 @@ describe('email notices', () => {
       kind: 'progress',
       count: 2,
       remaining: 1,
-      deadline: '2026-10-10T00:00:00.000Z',
+      deadline: '2026-11-09T00:00:00.000Z',
     });
   });
 
@@ -299,7 +299,7 @@ describe('email notices', () => {
     const f = fakePayload();
     const notice = await getRefundEmailNotice(
       f.payload,
-      order(2, { refundedAt: daysAgo(0), transactionDate: daysAgo(40) }) as never,
+      order(2, { refundedAt: daysAgo(0), transactionDate: daysAgo(70) }) as never,
       NOW
     );
     expect(notice).toBeNull();
