@@ -15,6 +15,7 @@ import TicketEmail from '../emails/TicketEmail';
 import RefundEmail from '../emails/RefundEmail';
 import BroadcastEmail from '../emails/BroadcastEmail';
 import RewardEmail from '../emails/RewardEmail';
+import CustomBroadcastEmail from '../emails/CustomBroadcastEmail';
 import {
   ticketSample,
   ticketFreeSample,
@@ -24,8 +25,12 @@ import {
   broadcastZvcFreeSample,
   broadcastAhcSample,
   broadcastBookClubSample,
+  customBroadcastSample,
 } from '../emails/previews/sample-data';
-import { ZVC_EMAIL_ADDRESS } from '../app/contsants/constants';
+import {
+  ZVC_DISPLAY_NAME_EMAIL,
+  ZVC_EMAIL_ADDRESS,
+} from '../app/contsants/constants';
 
 async function main() {
   const to = process.argv[2] ?? process.env.EMAIL_QA_TO;
@@ -76,18 +81,24 @@ async function main() {
       subject: `[QA] Book Club: ${broadcastBookClubSample.eventName} — Zero Vision Cinema`,
       react: <BroadcastEmail {...broadcastBookClubSample} />,
     },
+    {
+      subject: `[QA] Custom broadcast: ${customBroadcastSample.subject}`,
+      react: <CustomBroadcastEmail {...customBroadcastSample} />,
+    },
   ];
 
   console.log(`Sending ${emails.length} sample emails to ${to} …`);
   for (const { subject, react } of emails) {
     const { data, error } = await resend.emails.send({
-      from: ZVC_EMAIL_ADDRESS,
+      from: ZVC_DISPLAY_NAME_EMAIL,
       to,
       subject,
       react,
     });
     if (error) {
-      console.error(`  ✗ ${subject}\n    ${error.message ?? JSON.stringify(error)}`);
+      console.error(
+        `  ✗ ${subject}\n    ${error.message ?? JSON.stringify(error)}`
+      );
     } else {
       console.log(`  ✓ ${subject}  (${data?.id})`);
     }

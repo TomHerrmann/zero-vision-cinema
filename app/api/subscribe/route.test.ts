@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const h = vi.hoisted(() => ({ add: vi.fn() }));
+const h = vi.hoisted(() => ({ add: vi.fn(), setSource: vi.fn() }));
 
-vi.mock('@/lib/resend', () => ({ addResendContact: h.add }));
+vi.mock('@/lib/resend', () => ({
+  addResendContact: h.add,
+  setResendContactSource: h.setSource,
+}));
 vi.mock('@/lib/logtail', () => ({
   logtail: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
 }));
@@ -17,6 +20,7 @@ const req = (body: unknown) =>
 
 beforeEach(() => {
   h.add.mockReset().mockResolvedValue({ id: 'contact_1' });
+  h.setSource.mockReset().mockResolvedValue(undefined);
 });
 
 describe('POST /api/subscribe', () => {
@@ -35,6 +39,25 @@ describe('POST /api/subscribe', () => {
 
   it('rejects an invalid email without calling Resend', async () => {
     const res = await POST(req({ email: 'not-an-email' }));
+    expect(res.status).toBe(500);
+    expect(h.add).not.toHaveBeenCalled();
+  });
+
+  it('tags the contact with the utm source when one is sent', async () => {
+    const res = await POST(req({ email: 'fan@example.com', source: 'QR' }));
+    expect(res.status).toBe(200);
+    expect(h.setSource).toHaveBeenCalledWith('fan@example.com', 'qr');
+  });
+
+  it('tags signups with no source as coming from the website', async () => {
+    await POST(req({ email: 'fan@example.com' }));
+    expect(h.setSource).toHaveBeenCalledWith('fan@example.com', 'website');
+  });
+
+  it('rejects a source that is not a short slug', async () => {
+    const res = await POST(
+      req({ email: 'fan@example.com', source: '<script>' })
+    );
     expect(res.status).toBe(500);
     expect(h.add).not.toHaveBeenCalled();
   });

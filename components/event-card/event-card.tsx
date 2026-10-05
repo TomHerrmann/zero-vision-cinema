@@ -19,6 +19,7 @@ import {
 } from '@/lib/openlibrary';
 import { richTextIsEmpty } from '@/utils/richText';
 import SoldOutStamp from '@/components/sold-out/sold-out-stamp';
+import AddToCalendar from '@/components/add-to-calendar/add-to-calendar';
 
 type Orientation = 'vert' | 'horz';
 
@@ -157,7 +158,7 @@ const EventCard = async ({
             </div>
           </CardContent>
 
-          <CardFooter className="p-0 pt-6">
+          <CardFooter className="p-0 pt-6 flex flex-col md:flex-row md:items-start gap-4">
             {isSoldOut ? (
               <Button
                 className="w-full md:w-auto md:min-w-[200px]"
@@ -182,6 +183,11 @@ const EventCard = async ({
                 </Link>
               </Button>
             ) : null}
+            <AddToCalendar
+              calendarUrl={`/api/events/${id}/calendar`}
+              buttonClassName="w-full md:w-auto md:min-w-[200px]"
+              className="w-full md:w-auto"
+            />
           </CardFooter>
         </div>
       </Card>
@@ -245,7 +251,7 @@ const EventCard = async ({
         </div>
 
         {/* CTA Button */}
-        <div className="mt-auto pt-2">
+        <div className="mt-auto pt-2 flex flex-col gap-4">
           {isSoldOut ? (
             <Button className="w-full" disabled variant="secondary" size="lg">
               Sold Out
@@ -261,6 +267,7 @@ const EventCard = async ({
               </Link>
             </Button>
           ) : null}
+          <AddToCalendar calendarUrl={`/api/events/${id}/calendar`} />
         </div>
       </div>
 

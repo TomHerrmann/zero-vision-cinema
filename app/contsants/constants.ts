@@ -3,6 +3,8 @@ export const LLC_NAME = 'Zero Vision Cinema LLC';
 export const ZVC_SITE_URL = 'https://zerovisioncinema.com';
 export const ZVC_NEWSLETTER_URL = `${ZVC_SITE_URL}#newsletter`;
 export const ZVC_EMAIL_ADDRESS = 'info@zerovisioncinema.com';
+export const ZVC_DISPLAY_NAME_EMAIL = `Zero Vision Cinema <${ZVC_EMAIL_ADDRESS}>`;
+
 export const ADDRESS_LINE_1 = '418 Broadway Ste N';
 export const ADDRESS_LINE_2 = 'Albany, Albany County, NY 12207 US';
 
@@ -114,6 +116,7 @@ export const EMAIL_EYEBALL_SLASHED_PNG_URL = `${ZVC_SITE_URL}/logos/zvc_eyeball_
 export const WEB_PAGE_HEADER_IMAGE_ZVC_URL = `${ZERO_VISION_BLOB_URL}/zvc_blank_header.png`;
 
 export const RESEND_BROADCASTS_API_URL = 'https://api.resend.com/broadcasts';
+export const RESEND_EMAILS_API_URL = 'https://api.resend.com/emails';
 export const OMDB_API_URL = 'https://www.omdbapi.com';
 export const OPEN_LIBRARY_BASE_URL = 'https://openlibrary.org';
 export const OPEN_LIBRARY_COVER_BASE_URL = 'https://covers.openlibrary.org';

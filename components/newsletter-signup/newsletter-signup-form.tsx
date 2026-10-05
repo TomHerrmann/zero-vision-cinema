@@ -25,6 +25,16 @@ type Props = {
 };
 
 /**
+ * Where this visitor came from, from the landing URL's utm_source (the /join
+ * QR short link sets utm_source=qr). Undefined when there isn't one; the API
+ * then records the signup as coming from the website.
+ */
+function signupSource(): string | undefined {
+  const source = new URLSearchParams(window.location.search).get('utm_source');
+  return source && /^[a-z0-9_-]{1,50}$/i.test(source) ? source : undefined;
+}
+
+/**
  * Email signup form + privacy note, posting to /api/subscribe. Shared by the
  * homepage newsletter section and the Astoria Horror Club page, which wrap it
  * in their own section styling.
@@ -48,7 +58,7 @@ export function NewsletterSignupForm({ inputClassName, buttonClassName }: Props)
           'Content-Type': 'application/json',
           credentials: 'include',
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify({ ...values, source: signupSource() }),
       });
 
       if (!response.ok) {

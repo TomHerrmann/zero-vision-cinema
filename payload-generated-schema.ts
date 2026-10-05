@@ -22,10 +22,19 @@ import {
   pgEnum,
 } from "@payloadcms/db-vercel-postgres/drizzle/pg-core";
 import { sql, relations } from "@payloadcms/db-vercel-postgres/drizzle";
+export const enum_events_event_type = pgEnum("enum_events_event_type", [
+  "zvc",
+  "ahc",
+  "bookclub",
+]);
 export const enum_events_status = pgEnum("enum_events_status", [
   "draft",
   "published",
 ]);
+export const enum__events_v_version_event_type = pgEnum(
+  "enum__events_v_version_event_type",
+  ["zvc", "ahc", "bookclub"],
+);
 export const enum__events_v_version_status = pgEnum(
   "enum__events_v_version_status",
   ["draft", "published"],
@@ -62,6 +71,14 @@ export const enum__articles_v_version_rating = pgEnum(
 export const enum__articles_v_version_status = pgEnum(
   "enum__articles_v_version_status",
   ["draft", "published"],
+);
+export const enum_custom_broadcasts_segment = pgEnum(
+  "enum_custom_broadcasts_segment",
+  ["main", "test"],
+);
+export const enum_custom_broadcasts_status = pgEnum(
+  "enum_custom_broadcasts_status",
+  ["draft", "send"],
 );
 
 export const users_sessions = pgTable(
@@ -174,6 +191,7 @@ export const locations = pgTable(
   {
     id: serial("id").primaryKey(),
     name: varchar("name").notNull(),
+    capacity: numeric("capacity", { mode: "number" }).notNull().default(0),
     address: varchar("address").notNull(),
     city: varchar("city").notNull(),
     state: varchar("state").notNull(),
@@ -208,12 +226,17 @@ export const events = pgTable(
   "events",
   {
     id: serial("id").primaryKey(),
+    eventType: enum_events_event_type("event_type").default("zvc"),
     name: varchar("name"),
+    imdbId: varchar("imdb_id"),
+    bookTitle: varchar("book_title"),
+    bookAuthor: varchar("book_author"),
+    openLibraryId: varchar("open_library_id"),
     description: jsonb("description"),
     image: integer("image_id").references(() => media.id, {
       onDelete: "set null",
     }),
-    price: numeric("price", { mode: "number" }),
+    price: numeric("price", { mode: "number" }).default(13),
     location: integer("location_id").references(() => locations.id, {
       onDelete: "set null",
     }),
@@ -223,10 +246,20 @@ export const events = pgTable(
       precision: 3,
     }),
     paymentLink: varchar("payment_link"),
+    paymentLinkId: varchar("payment_link_id"),
     productId: varchar("product_id"),
     priceId: varchar("price_id"),
-    ticketLimit: numeric("ticket_limit", { mode: "number" }),
     ticketsSold: numeric("tickets_sold", { mode: "number" }).default(0),
+    announcementSentAt: timestamp("announcement_sent_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
+    reminderSentAt: timestamp("reminder_sent_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -247,6 +280,7 @@ export const events = pgTable(
     index("events_image_idx").on(columns.image),
     index("events_location_idx").on(columns.location),
     uniqueIndex("events_payment_link_idx").on(columns.paymentLink),
+    uniqueIndex("events_payment_link_id_idx").on(columns.paymentLinkId),
     uniqueIndex("events_product_id_idx").on(columns.productId),
     uniqueIndex("events_price_id_idx").on(columns.priceId),
     index("events_updated_at_idx").on(columns.updatedAt),
@@ -262,12 +296,18 @@ export const _events_v = pgTable(
     parent: integer("parent_id").references(() => events.id, {
       onDelete: "set null",
     }),
+    version_eventType:
+      enum__events_v_version_event_type("version_event_type").default("zvc"),
     version_name: varchar("version_name"),
+    version_imdbId: varchar("version_imdb_id"),
+    version_bookTitle: varchar("version_book_title"),
+    version_bookAuthor: varchar("version_book_author"),
+    version_openLibraryId: varchar("version_open_library_id"),
     version_description: jsonb("version_description"),
     version_image: integer("version_image_id").references(() => media.id, {
       onDelete: "set null",
     }),
-    version_price: numeric("version_price", { mode: "number" }),
+    version_price: numeric("version_price", { mode: "number" }).default(13),
     version_location: integer("version_location_id").references(
       () => locations.id,
       {
@@ -280,12 +320,22 @@ export const _events_v = pgTable(
       precision: 3,
     }),
     version_paymentLink: varchar("version_payment_link"),
+    version_paymentLinkId: varchar("version_payment_link_id"),
     version_productId: varchar("version_product_id"),
     version_priceId: varchar("version_price_id"),
-    version_ticketLimit: numeric("version_ticket_limit", { mode: "number" }),
     version_ticketsSold: numeric("version_tickets_sold", {
       mode: "number",
     }).default(0),
+    version_announcementSentAt: timestamp("version_announcement_sent_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
+    version_reminderSentAt: timestamp("version_reminder_sent_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
     version_updatedAt: timestamp("version_updated_at", {
       mode: "string",
       withTimezone: true,
@@ -322,6 +372,9 @@ export const _events_v = pgTable(
     ),
     index("_events_v_version_version_payment_link_idx").on(
       columns.version_paymentLink,
+    ),
+    index("_events_v_version_version_payment_link_id_idx").on(
+      columns.version_paymentLinkId,
     ),
     index("_events_v_version_version_product_id_idx").on(
       columns.version_productId,
@@ -374,7 +427,23 @@ export const orders = pgTable(
   "orders",
   {
     id: serial("id").primaryKey(),
-    checkoutSessionId: varchar("checkout_session_id").notNull(),
+    checkoutSessionId: varchar("checkout_session_id"),
+    paymentIntentId: varchar("payment_intent_id"),
+    ticketEmailSentAt: timestamp("ticket_email_sent_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
+    refundedAt: timestamp("refunded_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
+    refundEmailSentAt: timestamp("refund_email_sent_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
     productId: varchar("product_id").notNull(),
     customerId: varchar("customer_id").notNull(),
     price: numeric("price", { mode: "number" }).notNull(),
@@ -403,6 +472,7 @@ export const orders = pgTable(
   },
   (columns) => [
     uniqueIndex("orders_checkout_session_id_idx").on(columns.checkoutSessionId),
+    uniqueIndex("orders_payment_intent_id_idx").on(columns.paymentIntentId),
     uniqueIndex("orders_receipt_url_idx").on(columns.receiptUrl),
     index("orders_updated_at_idx").on(columns.updatedAt),
     index("orders_created_at_idx").on(columns.createdAt),
@@ -583,6 +653,73 @@ export const _articles_v = pgTable(
   ],
 );
 
+export const custom_broadcasts = pgTable(
+  "custom_broadcasts",
+  {
+    id: serial("id").primaryKey(),
+    subject: varchar("subject").notNull(),
+    heading: varchar("heading"),
+    body: jsonb("body").notNull(),
+    cta_enabled: boolean("cta_enabled").default(false),
+    cta_label: varchar("cta_label"),
+    cta_url: varchar("cta_url"),
+    segment: enum_custom_broadcasts_segment("segment").notNull(),
+    status: enum_custom_broadcasts_status("status").notNull().default("draft"),
+    scheduled: boolean("scheduled").default(false),
+    sendAt: timestamp("send_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
+    resendBroadcastId: varchar("resend_broadcast_id"),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    index("custom_broadcasts_updated_at_idx").on(columns.updatedAt),
+    index("custom_broadcasts_created_at_idx").on(columns.createdAt),
+  ],
+);
+
+export const custom_broadcasts_rels = pgTable(
+  "custom_broadcasts_rels",
+  {
+    id: serial("id").primaryKey(),
+    order: integer("order"),
+    parent: integer("parent_id").notNull(),
+    path: varchar("path").notNull(),
+    mediaID: integer("media_id"),
+  },
+  (columns) => [
+    index("custom_broadcasts_rels_order_idx").on(columns.order),
+    index("custom_broadcasts_rels_parent_idx").on(columns.parent),
+    index("custom_broadcasts_rels_path_idx").on(columns.path),
+    index("custom_broadcasts_rels_media_id_idx").on(columns.mediaID),
+    foreignKey({
+      columns: [columns["parent"]],
+      foreignColumns: [custom_broadcasts.id],
+      name: "custom_broadcasts_rels_parent_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["mediaID"]],
+      foreignColumns: [media.id],
+      name: "custom_broadcasts_rels_media_fk",
+    }).onDelete("cascade"),
+  ],
+);
+
 export const payload_kv = pgTable(
   "payload_kv",
   {
@@ -635,6 +772,7 @@ export const payload_locked_documents_rels = pgTable(
     ordersID: integer("orders_id"),
     authorsID: integer("authors_id"),
     articlesID: integer("articles_id"),
+    "custom-broadcastsID": integer("custom_broadcasts_id"),
   },
   (columns) => [
     index("payload_locked_documents_rels_order_idx").on(columns.order),
@@ -651,6 +789,9 @@ export const payload_locked_documents_rels = pgTable(
     index("payload_locked_documents_rels_authors_id_idx").on(columns.authorsID),
     index("payload_locked_documents_rels_articles_id_idx").on(
       columns.articlesID,
+    ),
+    index("payload_locked_documents_rels_custom_broadcasts_id_idx").on(
+      columns["custom-broadcastsID"],
     ),
     foreignKey({
       columns: [columns["parent"]],
@@ -696,6 +837,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns["articlesID"]],
       foreignColumns: [articles.id],
       name: "payload_locked_documents_rels_articles_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["custom-broadcastsID"]],
+      foreignColumns: [custom_broadcasts.id],
+      name: "payload_locked_documents_rels_custom_broadcasts_fk",
     }).onDelete("cascade"),
   ],
 );
@@ -893,6 +1039,29 @@ export const relations__articles_v = relations(_articles_v, ({ one }) => ({
     relationName: "version_author",
   }),
 }));
+export const relations_custom_broadcasts_rels = relations(
+  custom_broadcasts_rels,
+  ({ one }) => ({
+    parent: one(custom_broadcasts, {
+      fields: [custom_broadcasts_rels.parent],
+      references: [custom_broadcasts.id],
+      relationName: "_rels",
+    }),
+    mediaID: one(media, {
+      fields: [custom_broadcasts_rels.mediaID],
+      references: [media.id],
+      relationName: "media",
+    }),
+  }),
+);
+export const relations_custom_broadcasts = relations(
+  custom_broadcasts,
+  ({ many }) => ({
+    _rels: many(custom_broadcasts_rels, {
+      relationName: "_rels",
+    }),
+  }),
+);
 export const relations_payload_kv = relations(payload_kv, () => ({}));
 export const relations_payload_locked_documents_rels = relations(
   payload_locked_documents_rels,
@@ -942,6 +1111,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [articles.id],
       relationName: "articles",
     }),
+    "custom-broadcastsID": one(custom_broadcasts, {
+      fields: [payload_locked_documents_rels["custom-broadcastsID"]],
+      references: [custom_broadcasts.id],
+      relationName: "custom-broadcasts",
+    }),
   }),
 );
 export const relations_payload_locked_documents = relations(
@@ -981,7 +1155,9 @@ export const relations_payload_migrations = relations(
 );
 
 type DatabaseSchema = {
+  enum_events_event_type: typeof enum_events_event_type;
   enum_events_status: typeof enum_events_status;
+  enum__events_v_version_event_type: typeof enum__events_v_version_event_type;
   enum__events_v_version_status: typeof enum__events_v_version_status;
   enum_articles_category: typeof enum_articles_category;
   enum_articles_rating: typeof enum_articles_rating;
@@ -989,6 +1165,8 @@ type DatabaseSchema = {
   enum__articles_v_version_category: typeof enum__articles_v_version_category;
   enum__articles_v_version_rating: typeof enum__articles_v_version_rating;
   enum__articles_v_version_status: typeof enum__articles_v_version_status;
+  enum_custom_broadcasts_segment: typeof enum_custom_broadcasts_segment;
+  enum_custom_broadcasts_status: typeof enum_custom_broadcasts_status;
   users_sessions: typeof users_sessions;
   users: typeof users;
   media: typeof media;
@@ -1001,6 +1179,8 @@ type DatabaseSchema = {
   authors: typeof authors;
   articles: typeof articles;
   _articles_v: typeof _articles_v;
+  custom_broadcasts: typeof custom_broadcasts;
+  custom_broadcasts_rels: typeof custom_broadcasts_rels;
   payload_kv: typeof payload_kv;
   payload_locked_documents: typeof payload_locked_documents;
   payload_locked_documents_rels: typeof payload_locked_documents_rels;
@@ -1019,6 +1199,8 @@ type DatabaseSchema = {
   relations_authors: typeof relations_authors;
   relations_articles: typeof relations_articles;
   relations__articles_v: typeof relations__articles_v;
+  relations_custom_broadcasts_rels: typeof relations_custom_broadcasts_rels;
+  relations_custom_broadcasts: typeof relations_custom_broadcasts;
   relations_payload_kv: typeof relations_payload_kv;
   relations_payload_locked_documents_rels: typeof relations_payload_locked_documents_rels;
   relations_payload_locked_documents: typeof relations_payload_locked_documents;

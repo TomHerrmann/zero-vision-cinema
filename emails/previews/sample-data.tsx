@@ -200,3 +200,77 @@ export const broadcastBookClubSample = {
   book: bookInfo,
   eventUrl: AHC_SITE_URL,
 };
+
+/**
+ * CustomBroadcastEmail — hand-written broadcast. The three images are
+ * deliberately mismatched (wide banner, portrait poster, small square) to show
+ * how each is sized; the body exercises headings, links and lists.
+ */
+export const customBroadcastSample = {
+  subject: 'Halloweek at Zero Vision Cinema',
+  heading: 'Seven nights. Seven screenings.',
+  images: [
+    {
+      url: EMAIL_HEADER_IMAGE_ZVC_URL,
+      alt: 'Wide banner',
+      width: 1200,
+      height: 400,
+    },
+    { url: zvcMovie.poster, alt: 'Portrait poster', width: 300, height: 444 },
+    {
+      url: 'https://fzuxxxhgqwm9izz9.public.blob.vercel-storage.com/Instagram_Glyph_Gradient-f1H8nHmWH5InPn0jgDAxscCxtVphBD.png',
+      alt: 'Small square image',
+      width: 120,
+      height: 120,
+    },
+  ],
+  body: {
+    root: {
+      type: 'root',
+      format: '',
+      indent: 0,
+      version: 1,
+      direction: 'ltr',
+      children: [
+        {
+          type: 'paragraph',
+          version: 1,
+          children: [
+            { type: 'text', text: 'We’re running a full week of horror. ', format: 0, version: 1 },
+            {
+              type: 'link',
+              version: 1,
+              fields: { linkType: 'custom', url: `${ZVC_SITE_URL}/events`, newTab: true },
+              children: [{ type: 'text', text: 'See the whole lineup', format: 0, version: 1 }],
+            },
+            { type: 'text', text: ' or read on for the highlights.', format: 0, version: 1 },
+          ],
+        },
+        {
+          type: 'heading',
+          tag: 'h2',
+          version: 1,
+          children: [{ type: 'text', text: 'What’s on', format: 0, version: 1 }],
+        },
+        {
+          type: 'list',
+          tag: 'ul',
+          listType: 'bullet',
+          version: 1,
+          children: [
+            { type: 'listitem', version: 1, value: 1, children: [{ type: 'text', text: 'Monday — a 35mm creature feature', format: 0, version: 1 }] },
+            { type: 'listitem', version: 1, value: 2, children: [{ type: 'text', text: 'Friday — the midnight double bill', format: 1, version: 1 }] },
+          ],
+        },
+        {
+          type: 'paragraph',
+          version: 1,
+          children: [
+            { type: 'text', text: `A very long link that must wrap on a phone: ${ZVC_SITE_URL}/events/a-really-long-slug-that-keeps-going-and-going-and-going-without-a-break`, format: 0, version: 1 },
+          ],
+        },
+      ],
+    },
+  } as unknown as SerializedEditorState,
+  cta: { label: 'See the lineup', url: `${ZVC_SITE_URL}/events` },
+};

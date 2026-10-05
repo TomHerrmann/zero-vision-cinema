@@ -382,6 +382,56 @@ Requires the project to be linked — `vercel link` if the pull fails.
 > upstream account — a blanket fallback would happily run production work against a
 > Stripe test key.
 
+### Custom broadcasts (hand-written emails)
+
+The **Email Broadcasts** collection (`collections/CustomBroadcasts.ts`) is for
+one-off emails to the whole list: subject, optional headline, stacked images, a
+rich-text body (links, headings, lists) and an optional button. It renders
+`emails/CustomBroadcastEmail.tsx` with the ZVC header.
+
+These do **not** use QStash. Resend holds the schedule:
+
+```
+Save as "Scheduled"  ──►  POST api.resend.com/broadcasts  { send: true, scheduled_at }
+                           └─► Resend sends to the whole segment at that time
+```
+
+- **Audience** is chosen per entry with the **Segment** field, and has no
+  default so it is always a deliberate choice:
+  - *Everyone (main list)* → `RESEND_SEGMENT_ID`
+  - *Test segment (development)* → `RESEND_TEST_SEGMENT_ID`, a Resend segment
+    holding only our own addresses. It can be scheduled from **any** environment
+    and its subject is prefixed `[TEST]`, so it exercises the real flow —
+    scheduling, rescheduling, cancelling, a working unsubscribe link — without
+    mailing anyone.
+
+  No topic is set, so per-topic unsubscribes don't apply — only a full
+  unsubscribe opts out. To add a segment, add it to `BROADCAST_SEGMENTS` in
+  `lib/customBroadcasts.ts` and to the `enum_custom_broadcasts_segment` enum in
+  a new migration.
+- **The HTML is rendered when you save**, not when it sends. Editing a scheduled
+  entry schedules a fresh Resend broadcast and cancels the old one; switching
+  back to Draft, or deleting the entry, cancels it.
+- **Send time** must be at least 10 minutes out. The entry **locks 5 minutes
+  before it sends** and stays locked afterwards — make a new entry to send again.
+  Payload never hears back from Resend, so a sent entry still reads "Scheduled";
+  the Resend dashboard is the record of delivery (these are named `[custom] …`).
+- **"Send test to"** emails the entry to one address on save. It works on drafts
+  and in every environment, and is not stored. The unsubscribe link is only
+  filled in by a real broadcast.
+- **Images** can be any size or shape. Each gets a width from its own
+  dimensions (full column for wide/square, narrower for portrait, never scaled
+  up) and no fixed height, so nothing is cropped. JPG/PNG/GIF only — WebP and
+  SVG don't render in Outlook.
+
+**`BROADCAST_SENDING_ENABLED=true` is what allows scheduling to the main list**,
+and it should be set in Vercel **Production only**. Local dev and preview
+deployments share the Resend account, so without the gate a test entry would
+mail the real list; with it unset, saving a main-list entry as Scheduled is
+refused with a clear message, while the Test segment still works. Unsetting it is
+also the kill switch (then cancel anything already queued in the Resend
+dashboard).
+
 ### QA-ing emails without payments
 
 To check the **look, content, and deliverability** of the email templates you
@@ -394,8 +444,9 @@ full Stripe test-mode run above for validating the webhook/refund _wiring_.)
 npm run dev:email    # http://localhost:3000
 ```
 
-Renders the real templates with realistic sample data at six routes:
-`TicketPreview`, `RefundPreview`, and one per broadcast copy variant —
+Renders the real templates with realistic sample data at seven routes:
+`TicketPreview`, `RefundPreview`, `CustomBroadcastPreview` (hand-written
+broadcast with mismatched image sizes), and one per event broadcast copy variant —
 `BroadcastPaidPreview` (paid ZVC → "Get Tickets"), `BroadcastZvcFreePreview`
 (free ZVC $0), `BroadcastAhcPreview` (free Astoria Horror Club movie), and
 `BroadcastBookClubPreview` (free book club). Broadcast copy is keyed by event
@@ -424,7 +475,7 @@ npm run email:send -- you@example.com
 # or set EMAIL_QA_TO and omit the argument
 ```
 
-This renders all four templates and sends them `From:` the verified ZVC address
+This renders every template and sends them `From:` the verified ZVC address
 with sample content — so send it **to yourself, not a customer list**. Requires
 `RESEND_API_KEY` in `.env.local` (it's loaded via `--env-file`).
 
@@ -442,7 +493,7 @@ app/
   api/                   Route handlers (stripe, tasks, subscribe, contact, lookups)
 collections/             Payload collections (Events, Orders, Locations, Merch, …)
 components/              React UI (checkout, hero, event cards, nav, footer, ui/…)
-emails/                  React Email templates (TicketEmail, RefundEmail, BroadcastEmail)
+emails/                  React Email templates (TicketEmail, RefundEmail, BroadcastEmail, CustomBroadcastEmail)
   previews/              Sample-data wrappers for `npm run dev:email` (dev-only)
 lib/                     Integrations (stripe, qstash, resend, omdb, openlibrary, logtail)
 utils/                   Helpers (getEvents, isSoldOut, formatDate, richText, …)
@@ -492,6 +543,11 @@ Key production notes:
   must default to the QStash cloud).
 - Use production Stripe keys and the **dashboard** webhook signing secret (not a
   `stripe listen` secret).
+- Set `RESEND_TEST_SEGMENT_ID` (all environments, and `.env.local`) to a Resend
+  segment containing only your own addresses — the custom-broadcast Test segment.
+- Set `BROADCAST_SENDING_ENABLED=true` in **Production only** to allow custom
+  broadcasts to be scheduled (see "Custom broadcasts"). Leave it unset for the
+  first deploy of that feature and turn it on after a test send looks right.
 
 **Post-deploy smoke test:** make one real purchase and confirm the ticket email
 arrives and the QStash console shows delivery with an empty dead-letter queue.

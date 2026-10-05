@@ -2,8 +2,10 @@ import type { CollectionConfig } from 'payload';
 
 export const Merch: CollectionConfig = {
   slug: 'merch',
+  labels: { singular: 'Merch item', plural: 'Merch' },
   admin: {
     useAsTitle: 'name',
+    group: 'Shop & library',
   },
   fields: [
     { name: 'name', type: 'text' },

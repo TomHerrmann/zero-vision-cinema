@@ -2,8 +2,11 @@ import type { CollectionConfig } from 'payload';
 
 export const Orders: CollectionConfig = {
   slug: 'orders',
+  labels: { singular: 'Ticket order', plural: 'Ticket orders' },
   admin: {
     useAsTitle: 'id',
+    group: 'Events',
+    defaultColumns: ['id', 'item', 'quantity', 'amountPaid', 'transactionDate'],
   },
   access: {
     create: () => false,
