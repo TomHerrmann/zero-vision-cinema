@@ -1,24 +1,28 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Img,
-  Link,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components';
+import { Img, Section, Text } from '@react-email/components';
 import {
   LLC_NAME,
   ZVC_EMAIL_ADDRESS,
   ZVC_SITE_URL,
-  ADDRESS_LINE_1,
-  ADDRESS_LINE_2,
-  EMAIL_HEADER_IMAGE_ZVC_URL,
   EMAIL_EYEBALL_SLASHED_PNG_URL,
 } from '@/app/contsants/constants';
+import {
+  BODY_FONT,
+  BrandFooter,
+  BrandHeader,
+  EmailShell,
+  FooterLine,
+  FooterLink,
+  GLOW,
+  Kicker,
+  LABEL_FONT,
+  PANEL,
+  PrimaryButton,
+  RETRO_BLUE,
+  STATIC,
+  Title,
+  bodyTextStyle,
+  contentStyle,
+} from './components/brand';
 
 const EVENTS_URL = `${ZVC_SITE_URL}/events`;
 
@@ -39,130 +43,81 @@ function fmtDate(iso: string): string {
 /** Sent when 3 purchases in 30 days earn a free-ticket code (lib/loyalty). */
 export default function RewardEmail({ code, expiresAt }: Props) {
   return (
-    <Html>
-      <Head />
-      <Preview>Your free ticket code: {code}</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Img
-            src={EMAIL_HEADER_IMAGE_ZVC_URL}
-            width="100%"
-            alt="Zero Vision Cinema"
-            style={header}
-          />
-          <Section style={content}>
-            <Img
-              src={EMAIL_EYEBALL_SLASHED_PNG_URL}
-              width="96"
-              height="96"
-              alt="Zero Vision Cinema"
-              style={mark}
-            />
-            <Text style={kicker}>3 screenings in 30 days</Text>
-            <Heading style={heading}>Your next ticket is on us</Heading>
-            <Text style={blurb}>
-              Thanks for coming out to Zero Vision Cinema. Here&apos;s a code
-              for one free ticket to any upcoming screening.
-            </Text>
+    <EmailShell preview={`Your free ticket code: ${code}`}>
+      <BrandHeader />
+      <Section style={{ ...contentStyle, textAlign: 'center' }} className="zvc-pad">
+        <Img
+          src={EMAIL_EYEBALL_SLASHED_PNG_URL}
+          width="96"
+          height="96"
+          alt="Zero Vision Cinema"
+          style={mark}
+        />
+        <Kicker align="center">3 screenings in 30 days</Kicker>
+        <Title align="center">Your next ticket is on us</Title>
+        <Text style={bodyTextStyle}>
+          Thanks for coming out to Zero Vision Cinema. Here&apos;s a code for
+          one free ticket to any upcoming screening.
+        </Text>
 
-            <Section style={codeBox}>
-              <Text style={codeLabel}>Your code</Text>
-              <Text style={codeText}>{code}</Text>
-              <Text style={codeExpiry}>Valid through {fmtDate(expiresAt)}</Text>
-            </Section>
+        <Section style={codeBox}>
+          <Text style={codeLabel}>Your code</Text>
+          <Text style={codeText}>{code}</Text>
+          <Text style={codeExpiry}>Valid through {fmtDate(expiresAt)}</Text>
+        </Section>
 
-            <Text style={blurb}>
-              <strong>How to use it:</strong> pick a screening, tap{' '}
-              <em>Have a free-ticket code?</em> at checkout, and enter this code
-              with the email address this message was sent to.
-            </Text>
+        <Text style={bodyTextStyle}>
+          <strong>How to use it:</strong> pick a screening, tap{' '}
+          <em>Have a free-ticket code?</em> at checkout, and enter this code with
+          the email address this message was sent to.
+        </Text>
 
-            <Section style={ctaWrap}>
-              <Link href={EVENTS_URL} style={cta}>
-                Pick a screening
-              </Link>
-            </Section>
+        <Section style={{ margin: '0 0 28px' }}>
+          <PrimaryButton href={EVENTS_URL}>Pick a screening</PrimaryButton>
+        </Section>
 
-            <Text style={policy}>
-              One free ticket, single use. The code only works with this email
-              address. If a purchase that earned it is refunded, the code is
-              cancelled.
-            </Text>
-          </Section>
+        <Text style={policy}>
+          One free ticket, single use. The code only works with this email
+          address. If a purchase that earned it is refunded, the code is
+          cancelled.
+        </Text>
+      </Section>
 
-          <Section style={footer}>
-            <Text style={footerName}>{LLC_NAME}</Text>
-            <Text style={footerText}>
-              {ADDRESS_LINE_1}, {ADDRESS_LINE_2}
-            </Text>
-            <Text style={footerText}>
-              Support:{' '}
-              <Link href={`mailto:${ZVC_EMAIL_ADDRESS}`} style={footerLink}>
-                {ZVC_EMAIL_ADDRESS}
-              </Link>
-            </Text>
-            <Text style={footerText}>
-              © {new Date().getFullYear()} {LLC_NAME}
-            </Text>
-          </Section>
-        </Container>
-      </Body>
-    </Html>
+      <BrandFooter>
+        <FooterLine>
+          Support:{' '}
+          <FooterLink href={`mailto:${ZVC_EMAIL_ADDRESS}`}>
+            {ZVC_EMAIL_ADDRESS}
+          </FooterLink>
+        </FooterLine>
+        <FooterLine>
+          © {new Date().getFullYear()} {LLC_NAME}
+        </FooterLine>
+      </BrandFooter>
+    </EmailShell>
   );
 }
 
-const main: React.CSSProperties = {
-  backgroundColor: '#141414',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-  margin: 0,
-  padding: '24px 0',
-};
-const container: React.CSSProperties = {
-  maxWidth: '600px',
-  margin: '0 auto',
-  backgroundColor: '#1F1F1F',
-  border: '1px solid rgba(255,253,246,0.12)',
-};
-const header: React.CSSProperties = { display: 'block' };
-const content: React.CSSProperties = {
-  padding: '32px 28px',
-  textAlign: 'center',
-};
-const mark: React.CSSProperties = { display: 'block', margin: '0 auto 16px' };
-const kicker: React.CSSProperties = {
-  color: '#4A8CC6',
-  textTransform: 'uppercase',
-  letterSpacing: '2px',
-  fontSize: '12px',
-  margin: '0 0 8px',
-};
-const heading: React.CSSProperties = {
-  color: '#FFFDF6',
-  fontSize: '28px',
-  lineHeight: '1.2',
-  margin: '0 0 12px',
-};
-const blurb: React.CSSProperties = {
-  color: 'rgba(255,253,246,0.8)',
-  fontSize: '15px',
-  lineHeight: '1.6',
-  margin: '0 0 20px',
-};
+const mark: React.CSSProperties = { display: 'block', margin: '0 auto 18px' };
 const codeBox: React.CSSProperties = {
-  border: '2px dashed #4A8CC6',
-  backgroundColor: 'rgba(74,140,198,0.08)',
+  backgroundColor: PANEL,
+  border: `2px dashed ${RETRO_BLUE}`,
+  borderRadius: '6px',
   padding: '20px',
   margin: '0 0 24px',
 };
 const codeLabel: React.CSSProperties = {
-  color: '#4A8CC6',
-  textTransform: 'uppercase',
+  fontFamily: LABEL_FONT,
+  fontWeight: 700,
+  fontSize: '12px',
   letterSpacing: '2px',
-  fontSize: '11px',
+  textTransform: 'uppercase',
+  color: RETRO_BLUE,
   margin: '0 0 6px',
 };
+// Monospace on purpose: a code has to read unambiguously (0 vs O, 1 vs I).
 const codeText: React.CSSProperties = {
-  color: '#FFFDF6',
+  color: GLOW,
   fontFamily: "'Courier New', Courier, monospace",
   fontSize: '28px',
   fontWeight: 'bold',
@@ -170,45 +125,15 @@ const codeText: React.CSSProperties = {
   margin: '0 0 6px',
 };
 const codeExpiry: React.CSSProperties = {
-  color: 'rgba(255,253,246,0.65)',
-  fontSize: '13px',
+  fontFamily: BODY_FONT,
+  color: STATIC,
+  fontSize: '15px',
   margin: 0,
-};
-const ctaWrap: React.CSSProperties = { margin: '0 0 24px' };
-const cta: React.CSSProperties = {
-  display: 'inline-block',
-  backgroundColor: '#4A8CC6',
-  color: '#FFFDF6',
-  fontWeight: 'bold',
-  textTransform: 'uppercase',
-  letterSpacing: '1px',
-  fontSize: '14px',
-  padding: '12px 24px',
-  textDecoration: 'none',
 };
 const policy: React.CSSProperties = {
-  color: 'rgba(255,253,246,0.55)',
-  fontSize: '12px',
-  lineHeight: '1.6',
+  fontFamily: BODY_FONT,
+  color: STATIC,
+  fontSize: '14px',
+  lineHeight: '1.55',
   margin: 0,
-};
-const footer: React.CSSProperties = {
-  backgroundColor: '#09090b',
-  padding: '24px 28px',
-  textAlign: 'center',
-};
-const footerName: React.CSSProperties = {
-  color: '#e4e4e7',
-  fontSize: '13px',
-  fontWeight: 'bold',
-  margin: '0 0 4px',
-};
-const footerText: React.CSSProperties = {
-  color: '#a1a1aa',
-  fontSize: '12px',
-  margin: '0 0 4px',
-};
-const footerLink: React.CSSProperties = {
-  color: '#a1a1aa',
-  textDecoration: 'underline',
 };

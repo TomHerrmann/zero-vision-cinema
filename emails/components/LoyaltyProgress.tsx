@@ -4,6 +4,14 @@ import {
   ZVC_SITE_URL,
 } from '@/app/contsants/constants';
 import type { LoyaltyNotice } from '@/lib/loyalty';
+import {
+  BODY_FONT,
+  GLOW,
+  PANEL,
+  RETRO_BLUE,
+  labelStyle,
+  linkStyle,
+} from './brand';
 
 const EVENTS_URL = `${ZVC_SITE_URL}/events`;
 
@@ -61,7 +69,7 @@ export function loyaltyCopy(notice: LoyaltyNotice): {
 
 /**
  * Loyalty status block for transactional emails, marked with the slashed ZVC
- * eyeball. Styled inline to match the dark receipt emails.
+ * eyeball. Sits directly under the ticket (or the refund totals).
  */
 export default function LoyaltyProgress({ notice }: { notice: LoyaltyNotice }) {
   const { kicker, body } = loyaltyCopy(notice);
@@ -83,7 +91,7 @@ export default function LoyaltyProgress({ notice }: { notice: LoyaltyNotice }) {
             <Text style={bodyStyle}>{body}</Text>
             {notice.kind !== 'redeemed' && (
               <Text style={linkLine}>
-                <Link href={EVENTS_URL} style={link}>
+                <Link href={EVENTS_URL} style={linkStyle}>
                   See upcoming screenings
                 </Link>
               </Text>
@@ -96,34 +104,29 @@ export default function LoyaltyProgress({ notice }: { notice: LoyaltyNotice }) {
 }
 
 const box: React.CSSProperties = {
-  border: '1px solid rgba(74,140,198,0.5)',
-  backgroundColor: 'rgba(74,140,198,0.08)',
-  padding: '16px',
-  margin: '0 0 20px',
+  backgroundColor: PANEL,
+  border: `1px solid ${RETRO_BLUE}`,
+  borderRadius: '6px',
+  padding: '18px',
+  margin: '0 0 24px',
 };
 const markCell: React.CSSProperties = {
   width: '72px',
   verticalAlign: 'top',
-  paddingRight: '12px',
+  paddingRight: '14px',
 };
 const mark: React.CSSProperties = { display: 'block' };
 const textCell: React.CSSProperties = { verticalAlign: 'top' };
-const kickerStyle: React.CSSProperties = {
-  color: '#4A8CC6',
-  textTransform: 'uppercase',
-  letterSpacing: '2px',
-  fontSize: '12px',
-  fontWeight: 'bold',
-  margin: '0 0 6px',
-};
+const kickerStyle: React.CSSProperties = { ...labelStyle, margin: '0 0 6px' };
 const bodyStyle: React.CSSProperties = {
-  color: 'rgba(255,253,246,0.9)',
-  fontSize: '14px',
+  fontFamily: BODY_FONT,
+  color: GLOW,
+  fontSize: '17px',
   lineHeight: '1.5',
   margin: '0 0 6px',
 };
-const linkLine: React.CSSProperties = { fontSize: '13px', margin: 0 };
-const link: React.CSSProperties = {
-  color: '#4A8CC6',
-  textDecoration: 'underline',
+const linkLine: React.CSSProperties = {
+  fontFamily: BODY_FONT,
+  fontSize: '16px',
+  margin: 0,
 };
