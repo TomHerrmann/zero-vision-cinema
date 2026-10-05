@@ -85,6 +85,7 @@ export const ticketSample = {
   movie: zvcMovie,
   loyalty: {
     kind: 'progress',
+    count: 1,
     remaining: 2,
     deadline: '2026-08-29T14:12:00-04:00',
   } as LoyaltyNotice,
@@ -99,7 +100,29 @@ export const ticketFreeSample = {
   cardLast4: undefined,
   receiptUrl: undefined,
   refundUrl: undefined,
-  loyalty: { kind: 'redeemed', code: 'ZVC-7K3Q-M9XA' } as LoyaltyNotice,
+  loyalty: { kind: 'redeemed', count: 0, code: 'ZVC-7K3Q-M9XA' } as LoyaltyNotice,
+};
+
+/** TicketEmail — the second purchase in the window (two eyes crossed out). */
+export const ticketSecondSample = {
+  ...ticketSample,
+  loyalty: {
+    kind: 'progress',
+    count: 2,
+    remaining: 1,
+    deadline: '2026-08-29T14:12:00-04:00',
+  } as LoyaltyNotice,
+};
+
+/** TicketEmail — the third purchase, which earns a free ticket and shows its code. */
+export const ticketEarnedSample = {
+  ...ticketSample,
+  loyalty: {
+    kind: 'earned',
+    count: 3,
+    code: 'ZVC-7K3Q-M9XA',
+    expiresAt: '2026-10-18T14:12:00-04:00',
+  } as LoyaltyNotice,
 };
 
 /** RewardEmail — free-ticket code earned. */
@@ -121,6 +144,7 @@ export const refundSample = {
   receiptUrl: 'https://pay.stripe.com/receipts/sample',
   loyalty: {
     kind: 'voided',
+    count: 2,
     code: 'ZVC-7K3Q-M9XA',
     remaining: 1,
     deadline: '2026-08-22T19:00:00-04:00',

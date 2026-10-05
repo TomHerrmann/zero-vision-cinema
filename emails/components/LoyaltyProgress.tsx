@@ -1,14 +1,18 @@
 import { Img, Link, Section, Text } from '@react-email/components';
 import {
+  EMAIL_EYEBALL_PNG_URL,
   EMAIL_EYEBALL_SLASHED_PNG_URL,
   ZVC_SITE_URL,
 } from '@/app/contsants/constants';
-import type { LoyaltyNotice } from '@/lib/loyalty';
+import { REWARD_PURCHASES, type LoyaltyNotice } from '@/lib/loyalty';
 import {
+  BLACKOUT,
   BODY_FONT,
   GLOW,
+  LABEL_FONT,
   PANEL,
   RETRO_BLUE,
+  STATIC,
   labelStyle,
   linkStyle,
 } from './brand';
@@ -20,6 +24,13 @@ function fmtDay(iso: string): string {
     timeZone: 'America/New_York',
     month: 'long',
     day: 'numeric',
+  });
+}
+
+function fmtLongDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    timeZone: 'America/New_York',
+    dateStyle: 'long',
   });
 }
 
@@ -45,7 +56,9 @@ export function loyaltyCopy(notice: LoyaltyNotice): {
     case 'earned':
       return {
         kicker: 'You earned a free ticket',
-        body: "That's 3 purchases in 30 days. Your free-ticket code is on its way in a separate email.",
+        body: notice.code
+          ? "That's 3 purchases in 30 days. Here's a code for one free ticket to any upcoming screening."
+          : "That's 3 purchases in 30 days. Your free-ticket code is on its way in a separate email.",
       };
     case 'redeemed':
       return {
@@ -68,37 +81,57 @@ export function loyaltyCopy(notice: LoyaltyNotice): {
 }
 
 /**
- * Loyalty status block for transactional emails, marked with the slashed ZVC
- * eyeball. Sits directly under the ticket (or the refund totals).
+ * Three eyeballs, one crossed out per qualifying purchase in the window, so
+ * the third purchase crosses out all three.
+ */
+function Eyes({ count }: { count: number }) {
+  const crossed = Math.min(Math.max(count, 0), REWARD_PURCHASES);
+  return (
+    <table cellPadding="0" cellSpacing="0" role="presentation" style={eyesTable}>
+      <tr>
+        {Array.from({ length: REWARD_PURCHASES }, (_, i) => (
+          <td key={i} style={eyeCell}>
+            <Img
+              src={i < crossed ? EMAIL_EYEBALL_SLASHED_PNG_URL : EMAIL_EYEBALL_PNG_URL}
+              width="52"
+              alt={i < crossed ? 'Purchase counted' : 'Purchase to go'}
+              style={eye}
+            />
+          </td>
+        ))}
+      </tr>
+    </table>
+  );
+}
+
+/**
+ * Loyalty status block for transactional emails: the eyeball tally, then the
+ * copy, and on the purchase that earns a reward, the code itself. Sits
+ * directly under the ticket (or the refund totals).
  */
 export default function LoyaltyProgress({ notice }: { notice: LoyaltyNotice }) {
   const { kicker, body } = loyaltyCopy(notice);
   return (
     <Section style={box}>
-      <table width="100%" cellPadding="0" cellSpacing="0" role="presentation">
-        <tr>
-          <td style={markCell}>
-            <Img
-              src={EMAIL_EYEBALL_SLASHED_PNG_URL}
-              width="60"
-              height="60"
-              alt="Zero Vision Cinema"
-              style={mark}
-            />
-          </td>
-          <td style={textCell}>
-            <Text style={kickerStyle}>{kicker}</Text>
-            <Text style={bodyStyle}>{body}</Text>
-            {notice.kind !== 'redeemed' && (
-              <Text style={linkLine}>
-                <Link href={EVENTS_URL} style={linkStyle}>
-                  See upcoming screenings
-                </Link>
-              </Text>
-            )}
-          </td>
-        </tr>
-      </table>
+      <Eyes count={notice.count} />
+      <Text style={kickerStyle}>{kicker}</Text>
+      <Text style={bodyStyle}>{body}</Text>
+      {notice.kind === 'earned' && notice.code && (
+        <Section style={codeBox}>
+          <Text style={codeLabel}>Your code</Text>
+          <Text style={codeText}>{notice.code}</Text>
+          {notice.expiresAt && (
+            <Text style={codeExpiry}>{`Valid through ${fmtLongDate(notice.expiresAt)}`}</Text>
+          )}
+        </Section>
+      )}
+      {notice.kind !== 'redeemed' && (
+        <Text style={linkLine}>
+          <Link href={EVENTS_URL} style={linkStyle}>
+            See upcoming screenings
+          </Link>
+        </Text>
+      )}
     </Section>
   );
 }
@@ -110,20 +143,51 @@ const box: React.CSSProperties = {
   padding: '18px',
   margin: '0 0 24px',
 };
-const markCell: React.CSSProperties = {
-  width: '72px',
-  verticalAlign: 'top',
-  paddingRight: '14px',
-};
-const mark: React.CSSProperties = { display: 'block' };
-const textCell: React.CSSProperties = { verticalAlign: 'top' };
+const eyesTable: React.CSSProperties = { margin: '0 0 12px' };
+const eyeCell: React.CSSProperties = { paddingRight: '10px' };
+const eye: React.CSSProperties = { display: 'block' };
 const kickerStyle: React.CSSProperties = { ...labelStyle, margin: '0 0 6px' };
 const bodyStyle: React.CSSProperties = {
   fontFamily: BODY_FONT,
   color: GLOW,
   fontSize: '17px',
   lineHeight: '1.5',
+  margin: '0 0 10px',
+};
+const codeBox: React.CSSProperties = {
+  backgroundColor: BLACKOUT,
+  border: `2px dashed ${RETRO_BLUE}`,
+  borderRadius: '6px',
+  padding: '16px',
+  margin: '0 0 12px',
+  textAlign: 'center',
+};
+const codeLabel: React.CSSProperties = {
+  fontFamily: LABEL_FONT,
+  fontWeight: 700,
+  fontSize: '12px',
+  letterSpacing: '2px',
+  textTransform: 'uppercase',
+  color: RETRO_BLUE,
   margin: '0 0 6px',
+};
+// Monospace so the code reads unambiguously; user-select: all makes one tap
+// or click select the whole code for copying (email can't run a copy button).
+const codeText: React.CSSProperties = {
+  color: GLOW,
+  fontFamily: "'Courier New', Courier, monospace",
+  fontSize: '26px',
+  fontWeight: 'bold',
+  letterSpacing: '3px',
+  margin: '0 0 6px',
+  userSelect: 'all',
+  WebkitUserSelect: 'all',
+};
+const codeExpiry: React.CSSProperties = {
+  fontFamily: BODY_FONT,
+  color: STATIC,
+  fontSize: '15px',
+  margin: 0,
 };
 const linkLine: React.CSSProperties = {
   fontFamily: BODY_FONT,

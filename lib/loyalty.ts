@@ -281,17 +281,25 @@ export async function voidRewardForRefund(
 }
 
 /**
- * What the ticket / refund email says about the buyer's loyalty status.
+ * What the ticket / refund email says about the buyer's loyalty status. Every
+ * kind carries `count`, the qualifying purchases in the current window, which
+ * the email shows as crossed-out eyes out of `REWARD_PURCHASES`.
  * - `progress`: N more purchases by `deadline` for a free ticket.
- * - `earned`: this purchase completed a reward (the code comes separately).
+ * - `earned`: this purchase completed a reward; carries its code to show.
  * - `redeemed`: this order is the free ticket itself.
  * - `voided`: a refund cancelled an unused reward (plus the new progress).
  */
 export type LoyaltyNotice =
-  | { kind: 'progress'; remaining: number; deadline: string | null; afterRefund?: boolean }
-  | { kind: 'earned' }
-  | { kind: 'redeemed'; code: string }
-  | { kind: 'voided'; code: string; remaining: number; deadline: string | null };
+  | {
+      kind: 'progress';
+      count: number;
+      remaining: number;
+      deadline: string | null;
+      afterRefund?: boolean;
+    }
+  | { kind: 'earned'; count: number; code: string | null; expiresAt: string | null }
+  | { kind: 'redeemed'; count: number; code: string }
+  | { kind: 'voided'; count: number; code: string; remaining: number; deadline: string | null };
 
 function relId(rel: number | { id: number } | null | undefined): number | null {
   if (!rel) return null;
@@ -314,13 +322,33 @@ export async function getTicketEmailNotice(
       depth: 0,
       disableErrors: true,
     });
-    return { kind: 'redeemed', code: reward?.code ?? '' };
+    const status = await getLoyaltyStatus(payload, order.customerId, now);
+    return { kind: 'redeemed', count: status.count, code: reward?.code ?? '' };
   }
 
-  if (relId(order.earnedReward)) return { kind: 'earned' };
+  const earnedId = relId(order.earnedReward);
+  if (earnedId) {
+    const reward = await payload.findByID({
+      collection: 'rewards',
+      id: earnedId,
+      depth: 0,
+      disableErrors: true,
+    });
+    return {
+      kind: 'earned',
+      count: REWARD_PURCHASES,
+      code: reward?.code ?? null,
+      expiresAt: reward?.expiresAt ?? null,
+    };
+  }
 
   const status = await getLoyaltyStatus(payload, order.customerId, now);
-  return { kind: 'progress', remaining: status.remaining, deadline: status.deadline };
+  return {
+    kind: 'progress',
+    count: status.count,
+    remaining: status.remaining,
+    deadline: status.deadline,
+  };
 }
 
 /**
@@ -346,6 +374,7 @@ export async function getRefundEmailNotice(
     const status = await getLoyaltyStatus(payload, order.customerId, now);
     return {
       kind: 'voided',
+      count: status.count,
       code: reward.code,
       remaining: status.remaining,
       deadline: status.deadline,
@@ -359,6 +388,7 @@ export async function getRefundEmailNotice(
   const status = await getLoyaltyStatus(payload, order.customerId, now);
   return {
     kind: 'progress',
+    count: status.count,
     remaining: status.remaining,
     deadline: status.deadline,
     afterRefund: true,

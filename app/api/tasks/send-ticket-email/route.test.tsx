@@ -146,7 +146,7 @@ describe('send-ticket-email task', () => {
   });
 
   it('passes the loyalty status to the email', async () => {
-    const notice = { kind: 'progress', remaining: 2, deadline: '2026-08-28T00:00:00.000Z' };
+    const notice = { kind: 'progress', count: 1, remaining: 2, deadline: '2026-08-28T00:00:00.000Z' };
     h.getTicketEmailNotice.mockResolvedValue(notice);
 
     await POST(req());

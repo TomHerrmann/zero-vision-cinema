@@ -105,7 +105,7 @@ describe('send-refund-email task', () => {
   });
 
   it('passes a voided-reward notice to the email', async () => {
-    const notice = { kind: 'voided', code: 'ZVC-7K3Q-M9XA', remaining: 1, deadline: null };
+    const notice = { kind: 'voided', count: 2, code: 'ZVC-7K3Q-M9XA', remaining: 1, deadline: null };
     h.getRefundEmailNotice.mockResolvedValue(notice);
 
     await POST(req());

@@ -231,13 +231,22 @@ describe('email notices', () => {
     const f = fakePayload();
     f.h.orders = [order(1, { transactionDate: '2026-09-10T00:00:00.000Z' }), order(2)];
     const notice = await getTicketEmailNotice(f.payload, order(2) as never, NOW);
-    expect(notice).toEqual({ kind: 'progress', remaining: 1, deadline: '2026-10-10T00:00:00.000Z' });
+    expect(notice).toEqual({
+      kind: 'progress',
+      count: 2,
+      remaining: 1,
+      deadline: '2026-10-10T00:00:00.000Z',
+    });
   });
 
   it('ticket: earned when this purchase completed a reward', async () => {
     const f = fakePayload();
+    f.h.findByID.mockResolvedValue({ id: 9, code: 'ZVC-7K3Q-M9XA', expiresAt: daysAgo(-30) });
     expect(await getTicketEmailNotice(f.payload, order(3, { earnedReward: 9 }) as never, NOW)).toEqual({
       kind: 'earned',
+      count: 3,
+      code: 'ZVC-7K3Q-M9XA',
+      expiresAt: daysAgo(-30),
     });
   });
 
@@ -249,7 +258,7 @@ describe('email notices', () => {
       order(3, { amountPaid: 0, redeemedReward: 9 }) as never,
       NOW
     );
-    expect(notice).toEqual({ kind: 'redeemed', code: 'ZVC-7K3Q-M9XA' });
+    expect(notice).toEqual({ kind: 'redeemed', count: 0, code: 'ZVC-7K3Q-M9XA' });
   });
 
   it('refund: voided reward with new progress', async () => {
@@ -261,7 +270,7 @@ describe('email notices', () => {
       order(3, { earnedReward: 9, refundedAt: daysAgo(0) }) as never,
       NOW
     );
-    expect(notice).toMatchObject({ kind: 'voided', code: 'ZVC-7K3Q-M9XA', remaining: 1 });
+    expect(notice).toMatchObject({ kind: 'voided', count: 2, code: 'ZVC-7K3Q-M9XA', remaining: 1 });
   });
 
   it('refund: nothing when the reward was already redeemed', async () => {
@@ -283,7 +292,7 @@ describe('email notices', () => {
       order(2, { refundedAt: daysAgo(0) }) as never,
       NOW
     );
-    expect(notice).toMatchObject({ kind: 'progress', remaining: 2, afterRefund: true });
+    expect(notice).toMatchObject({ kind: 'progress', count: 1, remaining: 2, afterRefund: true });
   });
 
   it('refund: nothing for an order outside the window', async () => {

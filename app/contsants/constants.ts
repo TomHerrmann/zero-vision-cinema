@@ -110,9 +110,11 @@ export const STATUS_CODES = {
 export const EMAIL_HEADER_IMAGE_ZVC_URL = `${ZERO_VISION_BLOB_URL}/emailheader_zvc.png`;
 export const EMAIL_HEADER_IMAGE_AHC_URL = `${ZERO_VISION_BLOB_URL}/emailheader_ahc.png`;
 export const EMAIL_HEADER_IMAGE_BOOKCLUB_URL = `${ZERO_VISION_BLOB_URL}/emailheader_bookclub.png`;
-// Slashed eyeball ("zero vision") shown beside loyalty progress in emails.
-// PNG (not SVG) because Gmail/Outlook block SVG; source: public/logos/zvc_logo_logomark_slashed.svg
+// Loyalty progress in emails is a row of eyeballs, one slashed ("zero vision")
+// per counted purchase. PNG (not SVG) because Gmail/Outlook block SVG; source:
+// public/logos/zvc_logo_logomark_slashed.svg (the plain one drops its slash).
 export const EMAIL_EYEBALL_SLASHED_PNG_URL = `${ZVC_SITE_URL}/logos/zvc_eyeball_slashed.png`;
+export const EMAIL_EYEBALL_PNG_URL = `${ZVC_SITE_URL}/logos/zvc_eyeball.png`;
 // Plain white primary logo (eyeball + wordmark) for email headers. PNG, not SVG:
 // Gmail and Outlook don't render SVG.
 export const EMAIL_LOGO_PRIMARY_WHITE_URL = `${ZVC_SITE_URL}/logos/zvc_logo_primary_white_email.png`;

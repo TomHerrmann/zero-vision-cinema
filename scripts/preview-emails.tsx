@@ -19,6 +19,8 @@ import CustomBroadcastEmail from '../emails/CustomBroadcastEmail';
 import {
   ticketSample,
   ticketFreeSample,
+  ticketSecondSample,
+  ticketEarnedSample,
   rewardSample,
   refundSample,
   broadcastPaidSample,
@@ -52,6 +54,14 @@ async function main() {
     {
       subject: `[QA] Your tickets for ${ticketSample.eventName} — Zero Vision Cinema`,
       react: <TicketEmail {...ticketSample} />,
+    },
+    {
+      subject: `[QA] Second purchase: ${ticketSecondSample.eventName} — Zero Vision Cinema`,
+      react: <TicketEmail {...ticketSecondSample} />,
+    },
+    {
+      subject: `[QA] Third purchase (earned): ${ticketEarnedSample.eventName} — Zero Vision Cinema`,
+      react: <TicketEmail {...ticketEarnedSample} />,
     },
     {
       subject: `[QA] Your free ticket for ${ticketFreeSample.eventName} — Zero Vision Cinema`,

@@ -272,17 +272,54 @@ describe('Loyalty blocks', () => {
     movie: null,
   };
 
-  it('ticket: shows progress with the slashed eyeball', async () => {
+  // Count <img> sources only; React also emits deduped preload <link>s.
+  const eyes = (html: string) => ({
+    crossed: html.split('src="https://zerovisioncinema.com/logos/zvc_eyeball_slashed.png"').length - 1,
+    open: html.split('src="https://zerovisioncinema.com/logos/zvc_eyeball.png"').length - 1,
+  });
+
+  it('ticket: one purchase crosses out one of three eyes', async () => {
     const html = await render(
       <TicketEmail
         {...ticketBase}
         totalAmount={13}
         currency="USD"
-        loyalty={{ kind: 'progress', remaining: 2, deadline: '2026-08-31T16:00:00.000Z' }}
+        loyalty={{ kind: 'progress', count: 1, remaining: 2, deadline: '2026-08-31T16:00:00.000Z' }}
       />
     );
-    expect(html).toContain('zvc_eyeball_slashed.png');
+    expect(eyes(html)).toEqual({ crossed: 1, open: 2 });
     expect(html).toContain('Make 2 more ticket purchases by August 31');
+  });
+
+  it('ticket: two purchases cross out two eyes', async () => {
+    const html = await render(
+      <TicketEmail
+        {...ticketBase}
+        totalAmount={13}
+        loyalty={{ kind: 'progress', count: 2, remaining: 1, deadline: '2026-08-31T16:00:00.000Z' }}
+      />
+    );
+    expect(eyes(html)).toEqual({ crossed: 2, open: 1 });
+  });
+
+  it('ticket: the third purchase crosses out all three and shows the code', async () => {
+    const html = await render(
+      <TicketEmail
+        {...ticketBase}
+        totalAmount={13}
+        loyalty={{
+          kind: 'earned',
+          count: 3,
+          code: 'ZVC-7K3Q-M9XA',
+          expiresAt: '2026-08-31T16:00:00.000Z',
+        }}
+      />
+    );
+    expect(eyes(html)).toEqual({ crossed: 3, open: 0 });
+    expect(html).toContain('You earned a free ticket');
+    expect(html).toContain('ZVC-7K3Q-M9XA');
+    expect(html).toContain('Valid through August 31, 2026');
+    expect(html).toContain('user-select:all');
   });
 
   it('ticket: a free ticket reads "Free", not "$0.00" or a stray 0', async () => {
@@ -290,7 +327,7 @@ describe('Loyalty blocks', () => {
       <TicketEmail
         {...ticketBase}
         totalAmount={0}
-        loyalty={{ kind: 'redeemed', code: 'ZVC-7K3Q-M9XA' }}
+        loyalty={{ kind: 'redeemed', count: 0, code: 'ZVC-7K3Q-M9XA' }}
       />
     );
     expect(html).toContain('Free');
@@ -302,6 +339,7 @@ describe('Loyalty blocks', () => {
   it('ticket: no loyalty block when none is passed', async () => {
     const html = await render(<TicketEmail {...ticketBase} totalAmount={13} />);
     expect(html).not.toContain('zvc_eyeball_slashed.png');
+    expect(html).not.toContain('zvc_eyeball.png');
   });
 
   it('refund: explains a voided code and the new progress', async () => {
@@ -315,13 +353,14 @@ describe('Loyalty blocks', () => {
         refundDate="2026-08-02T12:00:00.000Z"
         loyalty={{
           kind: 'voided',
+          count: 2,
           code: 'ZVC-7K3Q-M9XA',
           remaining: 1,
           deadline: '2026-08-31T16:00:00.000Z',
         }}
       />
     );
-    expect(html).toContain('zvc_eyeball_slashed.png');
+    expect(eyes(html)).toEqual({ crossed: 2, open: 1 });
     expect(html).toContain('ZVC-7K3Q-M9XA is no longer valid');
     expect(html).toContain('Make 1 more ticket purchase by August 31');
   });
