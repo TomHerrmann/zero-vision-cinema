@@ -4,6 +4,7 @@ export const Authors: CollectionConfig = {
   slug: 'authors',
   admin: {
     useAsTitle: 'name',
+    group: 'Writing',
   },
   fields: [
     { name: 'name', type: 'text', required: true },

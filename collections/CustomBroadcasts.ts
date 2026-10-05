@@ -30,6 +30,7 @@ export const CustomBroadcasts: CollectionConfig = {
   labels: { singular: "Email Broadcast", plural: "Email Broadcasts" },
   admin: {
     useAsTitle: "subject",
+    group: "Newsletter",
     defaultColumns: ["subject", "status", "sendAt", "updatedAt"],
     description:
       "One-off emails to the whole mailing list. Nothing is sent while an entry is a Draft.",

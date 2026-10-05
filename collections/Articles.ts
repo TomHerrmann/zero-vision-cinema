@@ -9,8 +9,11 @@ const slugify = (text: string) => {
 
 export const Articles: CollectionConfig = {
   slug: 'articles',
+  labels: { singular: 'Review or editorial', plural: 'Reviews & editorials' },
   admin: {
     useAsTitle: 'title',
+    group: 'Writing',
+    defaultColumns: ['title', 'category', 'author', '_status', 'updatedAt'],
   },
   versions: {
     drafts: true,

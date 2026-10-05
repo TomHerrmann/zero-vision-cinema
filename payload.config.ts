@@ -29,17 +29,43 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    // The ZVC theme in app/(payload)/custom.scss is built for dark only.
+    theme: 'dark',
+    meta: {
+      titleSuffix: ' · ZVC Admin',
+      icons: [
+        {
+          rel: 'icon',
+          type: 'image/svg+xml',
+          url: '/logos/zvc_logo_logomark_rgb_color.svg',
+        },
+      ],
+    },
+    components: {
+      graphics: {
+        Logo: '/components/admin/AdminLogo#AdminLogo',
+        Icon: '/components/admin/AdminIcon#AdminIcon',
+      },
+      beforeNavLinks: ['/components/admin/AdminNavBrand#AdminNavBrand'],
+      views: {
+        dashboard: {
+          Component: '/components/admin/AdminDashboard#AdminDashboard',
+        },
+      },
+    },
   },
+  // Order sets the admin sidebar: groups appear in the order their first
+  // collection does here.
   collections: [
-    Users,
-    Media,
-    Locations,
     Events,
-    Merch,
+    Locations,
     Orders,
-    Authors,
     Articles,
+    Authors,
     CustomBroadcasts,
+    Merch,
+    Media,
+    Users,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
