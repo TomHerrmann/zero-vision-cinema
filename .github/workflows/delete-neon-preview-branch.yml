@@ -1,0 +1,44 @@
+name: Delete Neon preview branch
+
+# When a PR is merged, delete the Neon database branch the Vercel integration
+# made for its previews ("preview/<PR branch>"). It never deletes anything
+# else: see the guards in .github/scripts/delete-neon-preview-branch.sh.
+#
+# Setup (repo Settings > Secrets and variables > Actions):
+#   secret   NEON_API_KEY     Neon Console > Account settings > API keys
+#   variable NEON_PROJECT_ID  Neon Console > Project settings
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions: {}
+
+concurrency:
+  group: neon-preview-cleanup-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  delete-branch:
+    # Merged PRs only, from branches in this repo (never forks).
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # The guard script comes from the default branch, so a PR can't loosen
+      # the rules it is judged by.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+
+      - name: Delete this PR's Neon preview branch
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+          # Passed through env, never interpolated into the script.
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: bash .github/scripts/delete-neon-preview-branch.sh
