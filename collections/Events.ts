@@ -76,6 +76,9 @@ export const Events: CollectionConfig = {
   slug: 'events',
   admin: {
     useAsTitle: 'name',
+    group: 'Events',
+    defaultColumns: ['name', 'eventType', 'datetime', 'location', 'ticketsSold', '_status'],
+    listSearchableFields: ['name', 'bookTitle', 'bookAuthor'],
   },
   versions: {
     drafts: true,
@@ -332,9 +335,13 @@ export const Events: CollectionConfig = {
         { label: 'Astoria Horror Club', value: 'ahc' },
         { label: 'Astoria Horror Book Club', value: 'bookclub' },
       ],
+      label: 'Event type',
       admin: {
         description:
           'ZVC = paid screening (full fields). AHC = free movie event. Book Club = free event driven by a book title + author.',
+        components: {
+          Field: '/components/admin/EventTypeField#EventTypeField',
+        },
       },
     },
     {
@@ -408,45 +415,73 @@ export const Events: CollectionConfig = {
       name: 'image',
       type: 'upload',
       relationTo: 'media',
+      label: 'Poster image',
       admin: {
+        position: 'sidebar',
         condition: (data) => data.eventType === 'zvc',
         description:
           'Optional. If left blank and an IMDb ID is set, the OMDB poster is used.',
       },
     },
     {
-      name: 'price',
-      type: 'number',
-      required: true,
-      defaultValue: 13,
-      admin: {
-        // Only ZVC events are paid — AHC / Book Club are forced to 0 on save.
-        condition: (data) => data.eventType === 'zvc',
-      },
-    },
-    {
-      name: 'location',
-      type: 'relationship',
-      relationTo: 'locations' as CollectionSlug,
-      required: true,
-    },
-    {
-      name: 'datetime',
-      type: 'date',
-      required: true,
-      admin: {
-        date: {
-          pickerAppearance: 'dayAndTime',
+      type: 'row',
+      fields: [
+        {
+          name: 'datetime',
+          type: 'date',
+          label: 'Date and time',
+          required: true,
+          admin: {
+            width: '50%',
+            date: {
+              pickerAppearance: 'dayAndTime',
+            },
+          },
         },
-      },
+        {
+          name: 'location',
+          type: 'relationship',
+          label: 'Venue',
+          relationTo: 'locations' as CollectionSlug,
+          required: true,
+          admin: { width: '50%' },
+        },
+      ],
+    },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'price',
+          type: 'number',
+          required: true,
+          defaultValue: 13,
+          admin: {
+            width: '50%',
+            // Only ZVC events are paid — AHC / Book Club are forced to 0 on save.
+            condition: (data) => data.eventType === 'zvc',
+          },
+        },
+        {
+          name: 'ticketsSold',
+          type: 'number',
+          label: 'Tickets sold',
+          defaultValue: 0,
+          admin: {
+            width: '50%',
+            readOnly: true,
+          },
+        },
+      ],
     },
     {
       name: 'paymentLink',
       type: 'text',
-      label: 'Stripe Payment Link',
+      label: 'Ticket link',
       required: false,
       unique: true,
       admin: {
+        position: 'sidebar',
         readOnly: true,
         condition: (data) => Boolean(data.paymentLink),
         description:
@@ -454,49 +489,55 @@ export const Events: CollectionConfig = {
       },
     },
     {
-      name: 'paymentLinkId',
-      type: 'text',
-      label: 'Stripe Payment Link ID',
-      required: false,
-      unique: true,
+      // Presentational only: the ids stay top-level fields in the data.
+      type: 'collapsible',
+      label: 'Stripe details',
       admin: {
-        readOnly: true,
-        condition: (data) => Boolean(data.paymentLinkId),
-        description:
-          'The `plink_…` id behind the link above — the URL alone cannot be used with the Stripe API',
+        position: 'sidebar',
+        initCollapsed: true,
+        condition: (data) => Boolean(data.paymentLink || data.paymentLinkId),
       },
-    },
-    {
-      name: 'productId',
-      type: 'text',
-      label: 'Stripe Product ID',
-      required: false,
-      unique: true,
-      admin: {
-        readOnly: true,
-        condition: (data) => Boolean(data.paymentLink),
-        description:
-          'This id is automatically generated when the event is published',
-      },
-    },
-    {
-      name: 'priceId',
-      type: 'text',
-      label: 'Stripe Price ID',
-      required: false,
-      unique: true,
-      admin: {
-        readOnly: true,
-        condition: (data) => Boolean(data.paymentLink),
-        description:
-          'This id is automatically generated when the event is published',
-      },
-    },
-    {
-      name: 'ticketsSold',
-      type: 'number',
-      defaultValue: 0,
-      admin: { readOnly: true },
+      fields: [
+        {
+          name: 'paymentLinkId',
+          type: 'text',
+          label: 'Stripe Payment Link ID',
+          required: false,
+          unique: true,
+          admin: {
+            readOnly: true,
+            condition: (data) => Boolean(data.paymentLinkId),
+            description:
+              'The `plink_…` id behind the link above — the URL alone cannot be used with the Stripe API',
+          },
+        },
+        {
+          name: 'productId',
+          type: 'text',
+          label: 'Stripe Product ID',
+          required: false,
+          unique: true,
+          admin: {
+            readOnly: true,
+            condition: (data) => Boolean(data.paymentLink),
+            description:
+              'This id is automatically generated when the event is published',
+          },
+        },
+        {
+          name: 'priceId',
+          type: 'text',
+          label: 'Stripe Price ID',
+          required: false,
+          unique: true,
+          admin: {
+            readOnly: true,
+            condition: (data) => Boolean(data.paymentLink),
+            description:
+              'This id is automatically generated when the event is published',
+          },
+        },
+      ],
     },
     // Announcement (−6d) + reminder (day-of) broadcast state. The daily
     // send-due-broadcasts task decides what's due by date each morning, so these
@@ -505,12 +546,14 @@ export const Events: CollectionConfig = {
     {
       name: 'announcementSentAt',
       type: 'date',
+      label: 'Announcement email sent',
       required: false,
       admin: { readOnly: true, position: 'sidebar' },
     },
     {
       name: 'reminderSentAt',
       type: 'date',
+      label: 'Reminder email sent',
       required: false,
       admin: { readOnly: true, position: 'sidebar' },
     },

@@ -1,0 +1,739 @@
+/*
+ * Zero Vision Cinema admin theme.
+ *
+ * The admin is locked to Payload's dark theme (`admin.theme` in
+ * payload.config.ts), so recolouring it is mostly a matter of swapping
+ * Payload's neutral ramp for one running from Glow down to Blackout. Rules sit
+ * in the `payload` layer so they win over Payload's own `payload-default`
+ * layer without needing `!important`.
+ *
+ * Palette: ZVC-Visual Identity-Final.pdf (same values as the site's
+ * app/(frontend)/globals.css).
+ */
+
+// Repeat Payload's layer order: whichever stylesheet names a layer first fixes
+// its rank, and this file can load before Payload's own CSS.
+@layer payload-default, payload;
+
+@font-face {
+  font-family: 'Bootzy Condensed';
+  src: url('../fonts/bootzy_condensed_tm-webfont.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Crimson Text';
+  src: url('/fonts/Crimson_Text/CrimsonText-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Crimson Text';
+  src: url('/fonts/Crimson_Text/CrimsonText-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Crimson Text';
+  src: url('/fonts/Crimson_Text/CrimsonText-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Crimson Text';
+  src: url('/fonts/Crimson_Text/CrimsonText-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer payload {
+  :root {
+    --zvc-blackout: #1f1f1f;
+    --zvc-glow: #fffdf6;
+    --zvc-retro-blue: #9eb7cc;
+    --zvc-blue-light: #4a8cc6;
+    --zvc-cult-classic: #7f0028;
+    --zvc-static: #d9dde0;
+    --zvc-card: #262626;
+    --zvc-display: 'Bootzy Condensed', Impact, 'Arial Narrow', sans-serif;
+
+    /* Glow (0) → Blackout (900). Dark mode reads this ramp backwards. */
+    --color-base-0: #fffdf6;
+    --color-base-50: #f4f2eb;
+    --color-base-100: #eae8e1;
+    --color-base-150: #dcdad4;
+    --color-base-200: #cecdc7;
+    --color-base-250: #c0bfba;
+    --color-base-300: #b3b1ac;
+    --color-base-350: #a5a49f;
+    --color-base-400: #979692;
+    --color-base-450: #898885;
+    --color-base-500: #7b7a78;
+    --color-base-550: #6d6d6b;
+    --color-base-600: #605f5d;
+    --color-base-650: #525150;
+    --color-base-700: #444443;
+    --color-base-750: #363636;
+    --color-base-800: #2c2c2c;
+    --color-base-850: #262626;
+    --color-base-900: #1f1f1f;
+    --color-base-950: #191919;
+    --color-base-1000: #121212;
+
+    --font-body: 'Crimson Text', Georgia, serif;
+    --style-radius-s: 4px;
+    --style-radius-m: 6px;
+    --style-radius-l: 10px;
+    --accessibility-outline: 2px solid var(--zvc-blue-light);
+    --accessibility-outline-offset: 2px;
+  }
+
+  html[data-theme='dark'] {
+    --theme-bg: var(--zvc-blackout);
+    --theme-input-bg: #191919;
+    --theme-text: var(--zvc-glow);
+  }
+
+  body {
+    font-size: 17px;
+  }
+
+  ::selection {
+    background: var(--zvc-blue-light);
+    color: var(--zvc-glow);
+  }
+
+  a {
+    color: var(--zvc-retro-blue);
+  }
+
+  /* Headlines in Bootzy, like the site. */
+  h1,
+  h2,
+  h3,
+  .doc-header__title,
+  .list-header__title,
+  .render-title {
+    font-family: var(--zvc-display);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  /* Buttons */
+  .btn {
+    font-family: var(--zvc-display);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* Bootzy runs small, so it needs a few px more than the system font did. */
+  .btn--size-small {
+    font-size: 15px;
+  }
+
+  .btn--size-medium {
+    font-size: 17px;
+  }
+
+  .btn--size-large {
+    font-size: 19px;
+  }
+
+  .btn--style-primary {
+    background-color: var(--zvc-glow);
+    color: var(--zvc-blackout);
+
+    &:hover,
+    &:focus-visible {
+      background-color: var(--zvc-static);
+      color: var(--zvc-blackout);
+    }
+  }
+
+  .btn--style-secondary:hover,
+  .btn--style-secondary:focus-visible {
+    box-shadow: inset 0 0 0 1px var(--zvc-blue-light);
+  }
+
+  /* Form fields */
+  .field-label {
+    font-family: var(--zvc-display);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 17px;
+    color: var(--zvc-glow);
+  }
+
+  .table th {
+    font-family: var(--zvc-display);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 15px;
+    color: var(--zvc-retro-blue);
+  }
+
+  /* Custom field components (e.g. the IMDb lookup) render without Payload's
+     field wrapper, so give them the same gap as every other field. */
+  .render-fields > div:not(.field-type):not(:last-child) {
+    margin-bottom: var(--spacing-field);
+  }
+
+  .field-description {
+    color: var(--zvc-retro-blue);
+    font-size: 15px;
+  }
+
+  input:focus,
+  textarea:focus,
+  .rs__control--is-focused,
+  .react-select .rs__control--is-focused {
+    border-color: var(--zvc-blue-light) !important;
+    box-shadow: 0 0 0 3px rgba(74, 140, 198, 0.35);
+  }
+
+  /* Sidebar */
+  .nav {
+    background: #171717;
+    border-right-color: rgba(255, 253, 246, 0.08);
+  }
+
+  .nav-group__toggle {
+    font-family: var(--zvc-display);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 16px;
+    color: var(--zvc-retro-blue);
+  }
+
+  .nav__link {
+    color: var(--zvc-static);
+    font-size: 17px;
+  }
+
+  .nav a.nav__link:hover,
+  .nav a.nav__link:focus-visible {
+    color: var(--zvc-glow);
+    text-decoration: none;
+  }
+
+  .nav__link:has(.nav__link-indicator) {
+    color: var(--zvc-glow);
+  }
+
+  .nav__link-indicator {
+    background: var(--zvc-blue-light);
+    width: 3px;
+  }
+
+  /* Status pills and the publish dot */
+  .pill--style-success,
+  .status-pill--published {
+    background: rgba(74, 140, 198, 0.2);
+    color: var(--zvc-glow);
+  }
+
+  /* Login */
+  .template-minimal {
+    background: var(--zvc-blackout);
+  }
+
+  /* Sidebar brand block (components/admin/AdminNavBrand.tsx) */
+  .zvc-nav-brand {
+    width: 100%;
+    margin-bottom: 18px;
+  }
+
+  .zvc-nav-brand__mark {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    color: var(--zvc-glow);
+    text-decoration: none;
+    font-family: var(--zvc-display);
+    text-transform: uppercase;
+    font-size: 22px;
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+
+    &:hover {
+      color: var(--zvc-glow);
+      opacity: 0.85;
+    }
+  }
+
+  .dashboard .zvc-nav-brand__home {
+    color: var(--zvc-glow);
+    font-weight: 600;
+  }
+
+  /* Event type cards (components/admin/EventTypeField.tsx) */
+  .zvc-type-field__options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin: 6px 0;
+  }
+
+  .zvc-type-field__option {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 44px;
+    padding: 16px 18px;
+    text-align: left;
+    border-radius: var(--style-radius-l);
+    border: 1px solid rgba(255, 253, 246, 0.18);
+    background: var(--theme-input-bg);
+    color: var(--zvc-glow);
+    font: inherit;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      border-color: var(--zvc-retro-blue);
+    }
+
+    &:focus-visible {
+      outline: var(--accessibility-outline);
+      outline-offset: 2px;
+    }
+
+    &.is-selected {
+      border-color: var(--zvc-blue-light);
+      box-shadow: inset 0 0 0 1px var(--zvc-blue-light);
+      background: #22262b;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+  }
+
+  .zvc-type-field__label {
+    font-family: var(--zvc-display);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-size: 20px;
+    line-height: 1.05;
+  }
+
+  .zvc-type-field__sub {
+    color: var(--zvc-retro-blue);
+    font-size: 15px;
+  }
+
+  /* Dashboard (components/admin/AdminDashboard.tsx) */
+  .zvc-dash {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    padding-top: 12px;
+    padding-bottom: 64px;
+    font-size: 17px;
+    line-height: 1.45;
+    color: var(--zvc-glow);
+
+    h2 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.05;
+    }
+
+    a {
+      color: var(--zvc-retro-blue);
+    }
+  }
+
+  .zvc-ic {
+    width: 20px;
+    height: 20px;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .zvc-accent {
+    color: var(--zvc-blue-light);
+  }
+
+  .zvc-muted {
+    color: var(--zvc-retro-blue);
+    font-size: 15px;
+  }
+
+  .zvc-pad {
+    padding: 0 20px 18px;
+    margin: 0;
+  }
+
+  .zvc-btn {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+
+  .zvc-dash a.btn--style-primary {
+    color: var(--zvc-blackout);
+  }
+
+  .zvc-card {
+    background: var(--zvc-card);
+    border: 1px solid rgba(255, 253, 246, 0.08);
+    border-radius: var(--style-radius-l);
+  }
+
+  .zvc-dash__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .zvc-dash__eyebrow {
+    color: var(--zvc-retro-blue);
+    font-size: 18px;
+  }
+
+  .zvc-dash__title {
+    margin: 0;
+    font-size: clamp(44px, 6vw, 64px);
+    line-height: 0.95;
+  }
+
+  .zvc-kicker {
+    font-family: var(--zvc-display);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 18px;
+    color: var(--zvc-blue-light);
+  }
+
+  .zvc-tag {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-family: var(--zvc-display);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 14px;
+    white-space: nowrap;
+    flex: none;
+  }
+
+  .zvc-tag--zvc {
+    background: var(--zvc-blue-light);
+    color: var(--zvc-blackout);
+  }
+
+  .zvc-tag--ahc {
+    background: var(--zvc-cult-classic);
+    color: var(--zvc-glow);
+  }
+
+  .zvc-tag--bookclub {
+    background: var(--zvc-retro-blue);
+    color: var(--zvc-blackout);
+  }
+
+  .zvc-tag--draft {
+    border: 1px dashed var(--zvc-static);
+    color: var(--zvc-static);
+  }
+
+  .zvc-next {
+    display: flex;
+    flex-wrap: wrap;
+    overflow: hidden;
+  }
+
+  .zvc-next__poster {
+    flex: 0 0 200px;
+    min-height: 280px;
+    background: repeating-linear-gradient(135deg, #2e2e2e 0 10px, #292929 10px 20px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--zvc-retro-blue);
+    font-size: 15px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  .zvc-next__body {
+    flex: 1 1 360px;
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .zvc-next__meta,
+  .zvc-next__facts,
+  .zvc-next__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 20px;
+  }
+
+  .zvc-next__meta {
+    gap: 10px;
+  }
+
+  .zvc-next__actions {
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .zvc-next__facts {
+    color: var(--zvc-static);
+  }
+
+  .zvc-dash .zvc-next__name {
+    font-size: clamp(36px, 4vw, 48px);
+    line-height: 1;
+  }
+
+  .zvc-meter {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 520px;
+  }
+
+  .zvc-meter__label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+  }
+
+  .zvc-meter__track {
+    height: 10px;
+    border-radius: 999px;
+    background: var(--zvc-blackout);
+    overflow: hidden;
+  }
+
+  .zvc-meter__fill {
+    height: 100%;
+    background: var(--zvc-blue-light);
+  }
+
+  .zvc-empty {
+    padding: 28px 32px;
+
+    p {
+      margin: 8px 0 0;
+      color: var(--zvc-retro-blue);
+    }
+  }
+
+  .zvc-quick {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .zvc-dash a.zvc-quick__item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px;
+    color: var(--zvc-glow);
+    text-decoration: none;
+
+    .zvc-ic {
+      width: 24px;
+      height: 24px;
+      color: var(--zvc-blue-light);
+    }
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--zvc-blue-light);
+    }
+  }
+
+  .zvc-quick__title {
+    font-family: var(--zvc-display);
+    text-transform: uppercase;
+    font-size: 22px;
+    letter-spacing: 0.02em;
+  }
+
+  .zvc-quick__sub {
+    color: var(--zvc-retro-blue);
+    font-size: 15px;
+  }
+
+  .zvc-cols {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .zvc-list {
+    flex: 2 1 480px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .zvc-list__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+  }
+
+  .zvc-dash a.zvc-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 20px;
+    color: var(--zvc-glow);
+    text-decoration: none;
+    border-top: 1px solid rgba(255, 253, 246, 0.08);
+
+    &:hover,
+    &:focus-visible {
+      background: #2c2c2c;
+    }
+  }
+
+  .zvc-date {
+    width: 52px;
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: var(--zvc-display);
+    text-transform: uppercase;
+  }
+
+  .zvc-date__m {
+    font-size: 15px;
+    letter-spacing: 0.1em;
+    color: var(--zvc-retro-blue);
+  }
+
+  .zvc-date__d {
+    font-size: 32px;
+    line-height: 1;
+  }
+
+  .zvc-row__main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .zvc-row__name {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .zvc-row__end {
+    width: 84px;
+    flex: none;
+    text-align: right;
+    font-size: 15px;
+  }
+
+  .zvc-side {
+    flex: 1 1 300px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .zvc-panel {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  .zvc-dash a.zvc-item {
+    display: flex;
+    gap: 12px;
+    color: var(--zvc-glow);
+    text-decoration: none;
+
+    > span {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .zvc-ic {
+      margin-top: 3px;
+    }
+
+    &:hover .zvc-item__title,
+    &:hover > span:first-child {
+      color: var(--zvc-blue-light);
+    }
+  }
+
+  .zvc-dash a.zvc-item--split {
+    justify-content: space-between;
+    align-items: center;
+
+    > span {
+      display: block;
+    }
+  }
+
+  .zvc-item__title {
+    font-weight: 600;
+  }
+
+  @media (max-width: 600px) {
+    .zvc-row__end {
+      display: none;
+    }
+
+    .zvc-next__poster {
+      flex-basis: 100%;
+      min-height: 200px;
+    }
+
+    .zvc-next__body {
+      padding: 20px;
+    }
+  }
+}
