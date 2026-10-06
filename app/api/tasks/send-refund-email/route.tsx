@@ -7,6 +7,7 @@ import { verifyQstashRequest } from '@/lib/qstash';
 import { getCustomerEmail, getReceiptDetails } from '@/lib/stripe';
 import { ZVC_DISPLAY_NAME_EMAIL } from '@/app/contsants/constants';
 import RefundEmail from '@/emails/RefundEmail';
+import { getRefundEmailNotice, type LoyaltyNotice } from '@/lib/loyalty';
 import type { Event } from '@/payload-types';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -81,6 +82,17 @@ export async function POST(req: Request) {
       ? await getReceiptDetails(order.paymentIntentId)
       : {};
 
+    // Did this refund change the buyer's free-ticket status? Best-effort — the
+    // refund confirmation goes out either way.
+    let loyalty: LoyaltyNotice | null = null;
+    try {
+      loyalty = await getRefundEmailNotice(payload, order);
+    } catch (loyaltyErr) {
+      await logtail.error(
+        `API /tasks/send-refund-email: loyalty status failed for order ${orderId}: ${loyaltyErr}`
+      );
+    }
+
     const { error: sendError } = await resend.emails.send({
       from: ZVC_DISPLAY_NAME_EMAIL,
       subject: `Your refund for ${event_.name} — Zero Vision Cinema`,
@@ -95,7 +107,8 @@ export async function POST(req: Request) {
           cardBrand={receipt.cardBrand}
           cardLast4={receipt.cardLast4}
           refundDate={order.refundedAt ?? new Date().toISOString()}
-          receiptUrl={receipt.receiptUrl ?? order.receiptUrl}
+          receiptUrl={receipt.receiptUrl ?? order.receiptUrl ?? undefined}
+          loyalty={loyalty}
         />
       ),
     });

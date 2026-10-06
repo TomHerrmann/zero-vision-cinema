@@ -455,7 +455,11 @@ export const Events: CollectionConfig = {
           name: 'price',
           type: 'number',
           required: true,
-          defaultValue: 13,
+          // Pre-filled from the admin-editable Settings global — never hardcoded.
+          defaultValue: async ({ req }) => {
+            const settings = await req.payload.findGlobal({ slug: 'settings' });
+            return settings?.defaultTicketPrice ?? 0;
+          },
           admin: {
             width: '50%',
             // Only ZVC events are paid — AHC / Book Club are forced to 0 on save.
@@ -463,6 +467,8 @@ export const Events: CollectionConfig = {
           },
         },
         {
+          // ZVC events only: AHC and Book Club are free, so there are no tickets to
+          // count. Hidden on those in the editor, and shown as N/A in the list.
           name: 'ticketsSold',
           type: 'number',
           label: 'Tickets sold',
@@ -470,6 +476,10 @@ export const Events: CollectionConfig = {
           admin: {
             width: '50%',
             readOnly: true,
+            condition: (data) => data.eventType === 'zvc',
+            components: {
+              Cell: '/collections/components/TicketsSoldCell#TicketsSoldCell',
+            },
           },
         },
       ],

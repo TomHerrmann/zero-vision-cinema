@@ -1,14 +1,4 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Img,
-  Link,
-  Preview,
-  Text,
-} from '@react-email/components';
+import { Img, Link, Section, Text } from '@react-email/components';
 import { RichText } from '@payloadcms/richtext-lexical/react';
 import { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical';
 import {
@@ -18,12 +8,39 @@ import {
   LLC_NAME,
   ZVC_EMAIL_ADDRESS,
   ZVC_SITE_URL,
-  ADDRESS_LINE_1,
-  ADDRESS_LINE_2,
-  EMAIL_HEADER_IMAGE_ZVC_URL,
 } from '@/app/contsants/constants';
 import { richTextIsEmpty } from '@/utils/richText';
 import type { MovieData } from '@/lib/omdb';
+import type { LoyaltyNotice } from '@/lib/loyalty';
+import LoyaltyProgress from './components/LoyaltyProgress';
+import {
+  BLACKOUT,
+  BODY_FONT,
+  BrandFooter,
+  BrandHeader,
+  CULT_CLASSIC,
+  EmailShell,
+  FooterLine,
+  FooterLink,
+  GLOW,
+  HAIRLINE,
+  HEADLINE_FONT,
+  INK_SOFT,
+  Kicker,
+  LABEL_FONT,
+  Label,
+  OutlineButton,
+  RETRO_BLUE,
+  Row,
+  STATIC,
+  SectionTitle,
+  Title,
+  bodyTextStyle,
+  contentStyle,
+  linkStyle,
+  mutedTextStyle,
+  panelStyle,
+} from './components/brand';
 
 const TERMS_URL = `${ZVC_SITE_URL}/terms`;
 
@@ -52,8 +69,14 @@ interface Props {
    * render no film details — undefined lets the preview default apply.
    */
   movie?: MovieData | null;
+  /** Free-ticket reward status (progress, earned, or this is the free ticket). */
+  loyalty?: LoyaltyNotice | null;
 }
 
+/**
+ * Ticket + receipt. The Glow "paper ticket" up top is what's shown at the door;
+ * everything below it is the receipt.
+ */
 export default function TicketEmail({
   eventName,
   eventImage,
@@ -72,6 +95,7 @@ export default function TicketEmail({
   receiptUrl,
   refundUrl,
   movie,
+  loyalty,
 }: Props) {
   const date = new Date(eventDate);
   const plural = quantity > 1 ? 's' : '';
@@ -82,1326 +106,440 @@ export default function TicketEmail({
     cardBrand && cardLast4 ? `${cardBrand} ending in ${cardLast4}` : null;
   const descriptionIsEmpty = richTextIsEmpty(eventDescription);
   const hasFilmDetails = Boolean(movie && (movie.director || movie.plot));
+  const dayLabel = date
+    .toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      timeZone: 'America/New_York',
+    })
+    .toUpperCase();
+  const timeLabel = date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'America/New_York',
+  });
 
   return (
-    <Html>
-      <Head>
-        <style>
-          {`
-            /* Gmail-specific resets */
-            u + .body .gmail-fix { display: none; }
-            .gmail-fix { display: block !important; }
-            
-            /* Force Gmail to respect our styles */
-            .gmail-mobile-forced-width { 
-              min-width: 600px !important; 
-              width: 600px !important; 
-            }
-            
-            /* Gmail font fallbacks */
-            .gmail-font-fix {
-              font-family: Arial, Helvetica, sans-serif !important;
-            }
-            
-            /* Gmail background color fixes */
-            .gmail-bg-fix {
-              background-color: #1F1F1F !important;
-            }
-            
-            /* Mobile Gmail specific overrides */
-            @media screen and (max-width: 480px) {
-              .gmail-mobile-forced-width { 
-                min-width: 100% !important; 
-                width: 100% !important; 
-              }
-              
-              .gmail-mobile-padding {
-                padding: 16px !important;
-              }
-              
-              .gmail-mobile-font-size {
-                font-size: 16px !important;
-              }
-            }
-            
-            /* Gmail-safe font loading with fallback */
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-            
-            /* Reset and base styles for email clients */
-            body, table, td, p, a, li, blockquote {
-              -webkit-text-size-adjust: 100%;
-              -ms-text-size-adjust: 100%;
-              font-family: Arial, Helvetica, sans-serif; /* Gmail fallback */
-            }
-            table, td {
-              mso-table-lspace: 0pt;
-              mso-table-rspace: 0pt;
-            }
-            img {
-              -ms-interpolation-mode: bicubic;
-              border: 0;
-              height: auto;
-              line-height: 100%;
-              outline: none;
-              text-decoration: none;
-              display: block; /* Force block for Gmail */
-            }
-            table {
-              border-collapse: collapse !important;
-            }
-            
-            /* Dark mode support */
-            @media (prefers-color-scheme: dark) {
-              .light-only { display: none !important; }
-              .dark-bg { background-color: #0a0a0a !important; }
-              .dark-text { color: #fafafa !important; }
-              .dark-border { border-color: #27272a !important; }
-            }
-          `}
-        </style>
-      </Head>
-      <Body style={main}>
-        <Preview>
-          Your {eventName} Ticket{plural}
-        </Preview>
-        <Container style={outerContainer} className="gmail-mobile-forced-width">
-          <table
-            width="100%"
-            cellPadding="0"
-            cellSpacing="0"
-            style={container}
-            className="gmail-bg-fix"
-          >
+    <EmailShell preview={`Your ${eventName} Ticket${plural}`}>
+      <BrandHeader />
+
+      {/* Hero */}
+      <Section style={{ ...contentStyle, textAlign: 'center' }} className="zvc-pad">
+        <Kicker align="center">Your Ticket{plural}</Kicker>
+        <Title align="center">{eventName}</Title>
+        {customerName && (
+          <Text style={{ ...bodyTextStyle, fontSize: '20px', margin: '0 0 6px' }}>
+            Thank you for your purchase, {customerName}!
+          </Text>
+        )}
+        <Text style={{ ...mutedTextStyle, fontStyle: 'italic', margin: 0 }}>
+          Please present this ticket for event entry
+        </Text>
+      </Section>
+
+      {/* The ticket */}
+      <Section style={{ padding: '28px 28px 0' }} className="zvc-pad">
+        <table
+          width="100%"
+          cellPadding="0"
+          cellSpacing="0"
+          role="presentation"
+          className="zvc-ticket"
+          style={ticketCard}
+        >
+          <tr>
+            <td style={{ padding: '24px 24px 20px' }}>
+              <table width="100%" cellPadding="0" cellSpacing="0" role="presentation">
+                <tr>
+                  {eventImage && (
+                    <td
+                      width="150"
+                      className="zvc-stack zvc-stack-gap"
+                      style={{ width: '150px', verticalAlign: 'top', paddingRight: '22px' }}
+                    >
+                      <Img
+                        src={eventImage}
+                        width="150"
+                        alt="Event Poster"
+                        className="zvc-poster"
+                        style={posterStyle}
+                      />
+                    </td>
+                  )}
+                  <td className="zvc-stack" style={{ verticalAlign: 'top' }}>
+                    <table cellPadding="0" cellSpacing="0" role="presentation">
+                      <tr>
+                        <td className="zvc-admit" style={admitNumber}>
+                          {quantity}
+                        </td>
+                        <td className="zvc-admit" style={admitLabel}>
+                          ADMITS
+                        </td>
+                      </tr>
+                    </table>
+                    <div style={ticketRule} />
+                    <Text className="zvc-ticket-ink" style={ticketDay}>
+                      {dayLabel}
+                    </Text>
+                    <Text className="zvc-ticket-ink" style={ticketTime}>
+                      {timeLabel}
+                    </Text>
+                    <Text className="zvc-ticket-ink" style={ticketVenue}>
+                      {eventLocation}
+                    </Text>
+                    {eventAddress && (
+                      <Text className="zvc-ticket-ink" style={ticketAddress}>
+                        {eventAddress}
+                      </Text>
+                    )}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          {(orderNumber || customerName) && (
             <tr>
-              <td>
-                <div className="gmail-fix">
-                  {/* Header */}
-                  <table
-                    width="100%"
-                    cellPadding="0"
-                    cellSpacing="0"
-                    style={headerSection}
-                    className="gmail-bg-fix"
-                  >
-                    <tr>
-                      <td style={headerCell}>
-                        <Img
-                          src={EMAIL_HEADER_IMAGE_ZVC_URL}
-                          width="100%"
-                          alt="Zero Vision Cinema Logo"
-                          style={headerImage}
-                        />
-                      </td>
-                    </tr>
-                  </table>
-                </div>
-
-                {/* Main Content */}
-                <table
-                  width="100%"
-                  cellPadding="0"
-                  cellSpacing="0"
-                  style={mainContent}
-                  className="gmail-bg-fix"
-                >
+              <td style={stubCell}>
+                <table width="100%" cellPadding="0" cellSpacing="0" role="presentation">
                   <tr>
-                    <td style={contentPadding} className="gmail-mobile-padding">
-                      {/* Hero Section */}
-                      <table width="100%" cellPadding="0" cellSpacing="0">
-                        <tr>
-                          <td style={heroSection}>
-                            <Heading
-                              style={heroTitle}
-                              className="gmail-font-fix"
-                            >
-                              Your {eventName} Ticket{plural}
-                            </Heading>
-
-                            {customerName && (
-                              <Text
-                                style={thankYouText}
-                                className="gmail-font-fix"
-                              >
-                                Thank you for your purchase, {customerName}!
-                              </Text>
-                            )}
-
-                            <Text
-                              style={subtitleText}
-                              className="gmail-font-fix"
-                            >
-                              Please present this ticket for event entry
-                            </Text>
-                          </td>
-                        </tr>
-                      </table>
-
-                      {/* Gmail-Safe Ticket Card */}
-                      <table
-                        width="100%"
-                        cellPadding="0"
-                        cellSpacing="0"
-                        style={gmailMobileTable}
-                      >
-                        <tr>
-                          <td align="center" style={{ padding: '20px 0' }}>
-                            <table
-                              cellPadding="0"
-                              cellSpacing="0"
-                              style={gmailTicketCard}
-                            >
-                              <tr>
-                                <td
-                                  style={{
-                                    padding: '24px 20px',
-                                    textAlign: 'center',
-                                  }}
-                                >
-                                  {/* Admits Section - Simplified */}
-                                  <table
-                                    width="100%"
-                                    cellPadding="0"
-                                    cellSpacing="0"
-                                  >
-                                    <tr>
-                                      <td
-                                        style={{
-                                          textAlign: 'center',
-                                          borderTop:
-                                            '1px solid rgba(255,253,246,0.15)',
-                                          paddingTop: '16px',
-                                        }}
-                                      >
-                                        <div style={gmailAdmitLabel}>
-                                          ADMITS
-                                        </div>
-                                        <div style={gmailAdmitNumber}>
-                                          {quantity}
-                                        </div>
-                                      </td>
-                                    </tr>
-                                  </table>
-
-                                  {/* Event Image - Simplified */}
-                                  <table
-                                    width="100%"
-                                    cellPadding="0"
-                                    cellSpacing="0"
-                                  >
-                                    <tr>
-                                      <td
-                                        align="center"
-                                        style={{ padding: '20px 0' }}
-                                      >
-                                        {eventImage && (
-                                          <img
-                                            src={eventImage}
-                                            width="200"
-                                            height="300"
-                                            alt="Event Poster"
-                                            style={gmailEventImageStyle}
-                                          />
-                                        )}
-                                      </td>
-                                    </tr>
-                                  </table>
-
-                                  {/* Date - Simplified */}
-                                  <table
-                                    width="100%"
-                                    cellPadding="0"
-                                    cellSpacing="0"
-                                  >
-                                    <tr>
-                                      <td
-                                        style={{
-                                          textAlign: 'center',
-                                          paddingBottom: '20px',
-                                          borderBottom:
-                                            '1px solid rgba(255,253,246,0.15)',
-                                          marginBottom: '20px',
-                                        }}
-                                      >
-                                        <div style={gmailDateText}>
-                                          {date
-                                            .toLocaleDateString('en-US', {
-                                              weekday: 'short',
-                                              month: 'short',
-                                              day: 'numeric',
-                                              timeZone: 'America/New_York',
-                                            })
-                                            .toUpperCase()}
-                                        </div>
-                                        <div style={gmailTimeText}>
-                                          {date.toLocaleTimeString('en-US', {
-                                            hour: 'numeric',
-                                            minute: '2-digit',
-                                            hour12: true,
-                                            timeZone: 'America/New_York',
-                                          })}
-                                        </div>
-                                      </td>
-                                    </tr>
-                                  </table>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
-                        </tr>
-                      </table>
-
-                      {/* Quick Details */}
-                      <table
-                        width="100%"
-                        cellPadding="0"
-                        cellSpacing="0"
-                        style={quickDetails}
-                      >
-                        <tr>
-                          <td style={quickDetailsContent}>
-                            <Text
-                              style={quickDetailsText}
-                              className="gmail-font-fix"
-                            >
-                              <strong>{eventLocation}</strong> • Doors:{' '}
-                              {date.toLocaleTimeString('en-US', {
-                                timeStyle: 'short',
-                                timeZone: 'America/New_York',
-                              })}
-                            </Text>
-                          </td>
-                        </tr>
-                      </table>
+                    <td className="zvc-ticket-ink" style={stubText}>
+                      {orderNumber ? `Order # ${orderNumber}` : ''}
                     </td>
-                  </tr>
-                </table>
-
-                {/* Event Details Section */}
-                <table
-                  width="100%"
-                  cellPadding="0"
-                  cellSpacing="0"
-                  style={section}
-                >
-                  <tr>
-                    <td style={sectionContent} className="gmail-mobile-padding">
-                      <Heading style={sectionTitle} className="gmail-font-fix">
-                        Event Details
-                      </Heading>
-
-                      <table
-                        width="100%"
-                        cellPadding="0"
-                        cellSpacing="0"
-                        style={detailsGrid}
-                      >
-                        <tr>
-                          <td style={detailCard}>
-                            <Text
-                              style={detailLabel}
-                              className="gmail-font-fix"
-                            >
-                              DATE & TIME
-                            </Text>
-                            <Text
-                              style={detailValue}
-                              className="gmail-font-fix"
-                            >
-                              {date.toLocaleDateString('en-US', {
-                                weekday: 'long',
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                                timeZone: 'America/New_York',
-                              })}
-                            </Text>
-                            <Text
-                              style={detailValue}
-                              className="gmail-font-fix"
-                            >
-                              {date.toLocaleTimeString('en-US', {
-                                hour: 'numeric',
-                                minute: '2-digit',
-                                hour12: true,
-                                timeZone: 'America/New_York',
-                              })}
-                            </Text>
-                          </td>
-                        </tr>
-                      </table>
-
-                      <table
-                        width="100%"
-                        cellPadding="0"
-                        cellSpacing="0"
-                        style={detailsGrid}
-                      >
-                        <tr>
-                          <td style={detailCard}>
-                            <Text
-                              style={detailLabel}
-                              className="gmail-font-fix"
-                            >
-                              LOCATION
-                            </Text>
-                            <Text
-                              style={detailValue}
-                              className="gmail-font-fix"
-                            >
-                              {eventLocation}
-                            </Text>
-                            {eventAddress && (
-                              <Text
-                                style={detailSubtext}
-                                className="gmail-font-fix"
-                              >
-                                {eventAddress}
-                              </Text>
-                            )}
-                          </td>
-                        </tr>
-                      </table>
-
-                      {/* About — the event's own description (if any) */}
-                      {!descriptionIsEmpty && (
-                        <table
-                          width="100%"
-                          cellPadding="0"
-                          cellSpacing="0"
-                          style={detailsGrid}
-                        >
-                          <tr>
-                            <td style={detailCard}>
-                              <Text
-                                style={detailLabel}
-                                className="gmail-font-fix"
-                              >
-                                ABOUT
-                              </Text>
-                              <div
-                                style={detailValue}
-                                className="gmail-font-fix"
-                              >
-                                <RichText data={eventDescription!} />
-                              </div>
-                            </td>
-                          </tr>
-                        </table>
-                      )}
-
-                      {/* OMDB film details — mirrors the event page */}
-                      {hasFilmDetails && (
-                        <table
-                          width="100%"
-                          cellPadding="0"
-                          cellSpacing="0"
-                          style={detailsGrid}
-                        >
-                          <tr>
-                            <td style={detailCard}>
-                              <table
-                                width="100%"
-                                cellPadding="0"
-                                cellSpacing="0"
-                              >
-                                <tr>
-                                  <td
-                                    style={detailLabel}
-                                    className="gmail-font-fix"
-                                  >
-                                    ABOUT THE FILM
-                                  </td>
-                                  {movie?.imdbRating && (
-                                    <td
-                                      style={ratingCell}
-                                      className="gmail-font-fix"
-                                    >
-                                      ★ {movie.imdbRating}
-                                    </td>
-                                  )}
-                                </tr>
-                              </table>
-                              {movie?.plot && (
-                                <Text
-                                  style={filmPlot}
-                                  className="gmail-font-fix"
-                                >
-                                  {movie.plot}
-                                </Text>
-                              )}
-                              <SpecRow
-                                label="Director"
-                                value={movie?.director}
-                              />
-                              <SpecRow label="Year" value={movie?.year} />
-                              <SpecRow
-                                label="Rated · Runtime"
-                                value={[movie?.rated, movie?.runtime]
-                                  .filter(Boolean)
-                                  .join(' · ')}
-                              />
-                              <SpecRow label="Genre" value={movie?.genre} />
-                            </td>
-                          </tr>
-                        </table>
-                      )}
-                    </td>
-                  </tr>
-                </table>
-
-                {/* Important Information */}
-                <table
-                  width="100%"
-                  cellPadding="0"
-                  cellSpacing="0"
-                  style={section}
-                >
-                  <tr>
-                    <td style={sectionContent} className="gmail-mobile-padding">
-                      <Heading style={sectionTitle} className="gmail-font-fix">
-                        Important Information
-                      </Heading>
-                      <table
-                        width="100%"
-                        cellPadding="0"
-                        cellSpacing="0"
-                        style={alertBox}
-                      >
-                        <tr>
-                          <td style={alertContent}>
-                            <Text style={alertText} className="gmail-font-fix">
-                              • Present this email or screenshot for entry
-                            </Text>
-                            <Text style={alertText} className="gmail-font-fix">
-                              • Tickets are non-transferable unless specified
-                            </Text>
-                            <Text style={alertText} className="gmail-font-fix">
-                              • Contact us for accessibility accommodations
-                            </Text>
-                            <Text style={alertText} className="gmail-font-fix">
-                              • Outside food and beverages not permitted
-                            </Text>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                </table>
-
-                {/* Purchase Summary */}
-                {(totalAmount || purchaseDateFormatted) && (
-                  <table
-                    width="100%"
-                    cellPadding="0"
-                    cellSpacing="0"
-                    style={section}
-                  >
-                    <tr>
-                      <td
-                        style={sectionContent}
-                        className="gmail-mobile-padding"
-                      >
-                        <Heading
-                          style={sectionTitle}
-                          className="gmail-font-fix"
-                        >
-                          Purchase Summary
-                        </Heading>
-                        <table
-                          width="100%"
-                          cellPadding="0"
-                          cellSpacing="0"
-                          style={summaryCard}
-                        >
-                          <tr>
-                            <td style={summaryContent}>
-                              {orderNumber && (
-                                <table
-                                  width="100%"
-                                  cellPadding="0"
-                                  cellSpacing="0"
-                                  style={summaryRow}
-                                >
-                                  <tr>
-                                    <td
-                                      style={summaryLabel}
-                                      className="gmail-font-fix"
-                                    >
-                                      Order #
-                                    </td>
-                                    <td
-                                      style={summaryValue}
-                                      className="gmail-font-fix"
-                                    >
-                                      {orderNumber}
-                                    </td>
-                                  </tr>
-                                </table>
-                              )}
-                              {purchaseDateFormatted && (
-                                <table
-                                  width="100%"
-                                  cellPadding="0"
-                                  cellSpacing="0"
-                                  style={summaryRow}
-                                >
-                                  <tr>
-                                    <td
-                                      style={summaryLabel}
-                                      className="gmail-font-fix"
-                                    >
-                                      Purchase Date
-                                    </td>
-                                    <td
-                                      style={summaryValue}
-                                      className="gmail-font-fix"
-                                    >
-                                      {purchaseDateFormatted}
-                                    </td>
-                                  </tr>
-                                </table>
-                              )}
-                              <table
-                                width="100%"
-                                cellPadding="0"
-                                cellSpacing="0"
-                                style={summaryRow}
-                              >
-                                <tr>
-                                  <td
-                                    style={summaryLabel}
-                                    className="gmail-font-fix"
-                                  >
-                                    Event
-                                  </td>
-                                  <td
-                                    style={summaryValue}
-                                    className="gmail-font-fix"
-                                  >
-                                    {eventName}
-                                  </td>
-                                </tr>
-                              </table>
-                              <table
-                                width="100%"
-                                cellPadding="0"
-                                cellSpacing="0"
-                                style={summaryRow}
-                              >
-                                <tr>
-                                  <td
-                                    style={summaryLabel}
-                                    className="gmail-font-fix"
-                                  >
-                                    Quantity
-                                  </td>
-                                  <td
-                                    style={summaryValue}
-                                    className="gmail-font-fix"
-                                  >
-                                    {quantity} ticket{plural}
-                                  </td>
-                                </tr>
-                              </table>
-                              {paymentMethod && (
-                                <table
-                                  width="100%"
-                                  cellPadding="0"
-                                  cellSpacing="0"
-                                  style={summaryRow}
-                                >
-                                  <tr>
-                                    <td
-                                      style={summaryLabel}
-                                      className="gmail-font-fix"
-                                    >
-                                      Payment Method
-                                    </td>
-                                    <td
-                                      style={summaryValue}
-                                      className="gmail-font-fix"
-                                    >
-                                      {paymentMethod}
-                                    </td>
-                                  </tr>
-                                </table>
-                              )}
-                              {totalAmount && (
-                                <table
-                                  width="100%"
-                                  cellPadding="0"
-                                  cellSpacing="0"
-                                  style={summaryRowTotal}
-                                >
-                                  <tr>
-                                    <td
-                                      style={summaryLabelTotal}
-                                      className="gmail-font-fix"
-                                    >
-                                      Total Paid
-                                    </td>
-                                    <td
-                                      style={summaryValueTotal}
-                                      className="gmail-font-fix"
-                                    >
-                                      {`$${totalAmount.toFixed(2)} ${currency}`}
-                                    </td>
-                                  </tr>
-                                </table>
-                              )}
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                  </table>
-                )}
-
-                {/* Community Links Section */}
-                <table
-                  width="100%"
-                  cellPadding="0"
-                  cellSpacing="0"
-                  style={section}
-                >
-                  <tr>
-                    <td style={sectionContent} className="gmail-mobile-padding">
-                      <Heading style={sectionTitle} className="gmail-font-fix">
-                        Join the Community
-                      </Heading>
-                      <Text
-                        style={contactDescription}
-                        className="gmail-font-fix"
-                      >
-                        Stay connected and never miss an update!
-                      </Text>
-                      <table width="100%" cellPadding="0" cellSpacing="0">
-                        <tr>
-                          <td align="center">
-                            <Text
-                              style={contactItem}
-                              className="gmail-font-fix"
-                            >
-                              <Link
-                                href={ZVC_INSTAGRAM_URL}
-                                style={contactLink}
-                              >
-                                Follow us on Instagram
-                              </Link>
-                            </Text>
-                            <Text
-                              style={contactItem}
-                              className="gmail-font-fix"
-                            >
-                              <Link href={PARTIFUL_URL} style={contactLink}>
-                                Follow us on Partiful
-                              </Link>
-                            </Text>
-                            <Text
-                              style={contactItem}
-                              className="gmail-font-fix"
-                            >
-                              <Link
-                                href={`${ZVC_SITE_URL}#newsletter`}
-                                style={contactLink}
-                              >
-                                Join our Mailing List
-                              </Link>
-                            </Text>
-                            <Text
-                              style={contactItem}
-                              className="gmail-font-fix"
-                            >
-                              <Link href={AHC_DISCORD_URL} style={contactLink}>
-                                Join our Discord
-                              </Link>
-                            </Text>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                </table>
-
-                {/* Contact Section */}
-                <table
-                  width="100%"
-                  cellPadding="0"
-                  cellSpacing="0"
-                  style={section}
-                >
-                  <tr>
-                    <td style={sectionContent} className="gmail-mobile-padding">
-                      <Heading style={sectionTitle} className="gmail-font-fix">
-                        Need Help?
-                      </Heading>
-                      <Text
-                        style={contactDescription}
-                        className="gmail-font-fix"
-                      >
-                        Questions about your tickets or the event? We're here to
-                        help.
-                      </Text>
-                      <table width="100%" cellPadding="0" cellSpacing="0">
-                        <tr>
-                          <td align="center">
-                            <Text
-                              style={contactItem}
-                              className="gmail-font-fix"
-                            >
-                              <Link
-                                href="mailto:info@zerovisioncinema.com"
-                                style={contactLink}
-                              >
-                                info@zerovisioncinema.com
-                              </Link>
-                            </Text>
-                            <Text
-                              style={contactItem}
-                              className="gmail-font-fix"
-                            >
-                              <Link href={ZVC_SITE_URL} style={contactLink}>
-                                zerovisioncinema.com
-                              </Link>
-                            </Text>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                </table>
-
-                {/* Refund & Cancellation Policy */}
-                <table
-                  width="100%"
-                  cellPadding="0"
-                  cellSpacing="0"
-                  style={policySection}
-                >
-                  <tr>
-                    <td style={policyContent}>
-                      <Text style={policyText} className="gmail-font-fix">
-                        <strong>Refund &amp; Cancellation Policy:</strong>{' '}
-                        Refunds are automatic when requested at least 48 hours
-                        before the scheduled event start time. Within 48 hours
-                        of the event, email{' '}
-                        <Link
-                          href={`mailto:${ZVC_EMAIL_ADDRESS}`}
-                          style={policyLink}
-                        >
-                          {ZVC_EMAIL_ADDRESS}
-                        </Link>{' '}
-                        to request one. Full{' '}
-                        <Link href={TERMS_URL} style={policyLink}>
-                          Terms of Service
-                        </Link>
-                        .
-                      </Text>
-                      {refundUrl && (
-                        <table width="100%" cellPadding="0" cellSpacing="0">
-                          <tr>
-                            <td align="center" style={{ paddingTop: '14px' }}>
-                              <Link
-                                href={refundUrl}
-                                style={refundButton}
-                                className="gmail-font-fix"
-                              >
-                                Request a refund
-                              </Link>
-                            </td>
-                          </tr>
-                        </table>
-                      )}
-                    </td>
-                  </tr>
-                </table>
-
-                {/* Footer */}
-                <table
-                  width="100%"
-                  cellPadding="0"
-                  cellSpacing="0"
-                  style={footer}
-                >
-                  <tr>
-                    <td style={footerContent}>
-                      <Text style={footerText} className="gmail-font-fix">
-                        {LLC_NAME}
-                      </Text>
-                      <Text style={footerText} className="gmail-font-fix">
-                        {ADDRESS_LINE_1}, {ADDRESS_LINE_2}
-                      </Text>
-                      <Text style={footerText} className="gmail-font-fix">
-                        Support:{' '}
-                        <Link
-                          href={`mailto:${ZVC_EMAIL_ADDRESS}`}
-                          style={footerLink}
-                        >
-                          {ZVC_EMAIL_ADDRESS}
-                        </Link>
-                      </Text>
-                      <Text style={footerLinks} className="gmail-font-fix">
-                        {receiptUrl && (
-                          <>
-                            <Link href={receiptUrl} style={footerLink}>
-                              View official receipt
-                            </Link>
-                            {' • '}
-                          </>
-                        )}
-                        <Link href={TERMS_URL} style={footerLink}>
-                          Terms of Service
-                        </Link>
-                        {' • '}
-                        <Link href={ZVC_SITE_URL} style={footerLink}>
-                          Website
-                        </Link>
-                      </Text>
-                      <Text style={footerText} className="gmail-font-fix">
-                        © {new Date().getFullYear()} {LLC_NAME}
-                      </Text>
+                    <td
+                      className="zvc-ticket-ink"
+                      style={{ ...stubText, textAlign: 'right' }}
+                    >
+                      {customerName ?? ''}
                     </td>
                   </tr>
                 </table>
               </td>
             </tr>
-          </table>
-        </Container>
-      </Body>
-    </Html>
+          )}
+        </table>
+      </Section>
+
+      <Section style={contentStyle} className="zvc-pad">
+        {loyalty && <LoyaltyProgress notice={loyalty} />}
+
+        {/* About — the event's own description */}
+        {!descriptionIsEmpty && (
+          <>
+            <Label>ABOUT</Label>
+            <div style={richTextWrap}>
+              <RichText data={eventDescription!} />
+            </div>
+          </>
+        )}
+
+        {/* OMDB film details — mirrors the event page */}
+        {hasFilmDetails && (
+          <Section style={panelStyle}>
+            <table width="100%" cellPadding="0" cellSpacing="0" role="presentation">
+              <tr>
+                <td style={panelLabel}>ABOUT THE FILM</td>
+                {movie?.imdbRating && (
+                  <td style={ratingCell}>★ {movie.imdbRating}</td>
+                )}
+              </tr>
+            </table>
+            {movie?.plot && <Text style={filmPlot}>{movie.plot}</Text>}
+            <Row label="Director" value={movie?.director} />
+            <Row label="Year" value={movie?.year} />
+            <Row
+              label="Rated · Runtime"
+              value={[movie?.rated, movie?.runtime].filter(Boolean).join(' · ')}
+            />
+            <Row label="Genre" value={movie?.genre} last />
+          </Section>
+        )}
+
+        {/* Important Information */}
+        <Section style={{ margin: '16px 0 0' }}>
+          <SectionTitle>Important Information</SectionTitle>
+          <ul style={infoList}>
+            <li style={infoItem}>Present this email or screenshot for entry</li>
+            <li style={infoItem}>Tickets are non-transferable unless specified</li>
+            <li style={infoItem}>Contact us for accessibility accommodations</li>
+            <li style={infoItem}>Outside food and beverages not permitted</li>
+          </ul>
+        </Section>
+
+        {/* Purchase Summary */}
+        {(totalAmount || purchaseDateFormatted) && (
+          <Section style={{ margin: '20px 0 0' }}>
+            <SectionTitle>Purchase Summary</SectionTitle>
+            {orderNumber && <Row label="Order #" value={`${orderNumber}`} />}
+            <Row label="Purchase Date" value={purchaseDateFormatted} />
+            <Row label="Event" value={eventName} />
+            <Row label="Quantity" value={`${quantity} ticket${plural}`} />
+            <Row label="Payment Method" value={paymentMethod} />
+            {totalAmount != null && (
+              <Row
+                label="Total Paid"
+                value={
+                  totalAmount > 0
+                    ? `$${totalAmount.toFixed(2)} ${(currency ?? 'USD').toUpperCase()}`
+                    : 'Free'
+                }
+                emphasize
+              />
+            )}
+            {receiptUrl && (
+              <Text style={{ ...mutedTextStyle, margin: '8px 0 0' }}>
+                <Link href={receiptUrl} style={linkStyle}>
+                  View official receipt
+                </Link>
+              </Text>
+            )}
+          </Section>
+        )}
+
+        {/* Refund & Cancellation Policy */}
+        <Section style={{ ...panelStyle, margin: '28px 0 0' }}>
+          <Text style={policyText}>
+            <strong>Refund &amp; Cancellation Policy:</strong> Refunds are
+            automatic when requested at least 48 hours before the scheduled event
+            start time. Within 48 hours of the event, email{' '}
+            <Link href={`mailto:${ZVC_EMAIL_ADDRESS}`} style={linkStyle}>
+              {ZVC_EMAIL_ADDRESS}
+            </Link>{' '}
+            to request one. Full{' '}
+            <Link href={TERMS_URL} style={linkStyle}>
+              Terms of Service
+            </Link>
+            .
+          </Text>
+          {refundUrl && (
+            <div style={{ paddingTop: '16px' }}>
+              <OutlineButton href={refundUrl}>Request a refund</OutlineButton>
+            </div>
+          )}
+        </Section>
+
+        {/* Community + Help */}
+        <table
+          width="100%"
+          cellPadding="0"
+          cellSpacing="0"
+          role="presentation"
+          style={{ marginTop: '40px' }}
+        >
+          <tr>
+            <td
+              width="50%"
+              className="zvc-stack zvc-stack-gap"
+              style={{ width: '50%', verticalAlign: 'top', paddingRight: '16px' }}
+            >
+              <h2 style={smallHeading}>Join the Community</h2>
+              <Text style={mutedTextStyle}>Stay connected and never miss an update!</Text>
+              <Text style={linkList}>
+                <Link href={ZVC_INSTAGRAM_URL} style={linkStyle}>
+                  Follow us on Instagram
+                </Link>
+                <br />
+                <Link href={PARTIFUL_URL} style={linkStyle}>
+                  Follow us on Partiful
+                </Link>
+                <br />
+                <Link href={`${ZVC_SITE_URL}#newsletter`} style={linkStyle}>
+                  Join our Mailing List
+                </Link>
+                <br />
+                <Link href={AHC_DISCORD_URL} style={linkStyle}>
+                  Join our Discord
+                </Link>
+              </Text>
+            </td>
+            <td
+              width="50%"
+              className="zvc-stack"
+              style={{ width: '50%', verticalAlign: 'top', paddingLeft: '16px' }}
+            >
+              <h2 style={smallHeading}>Need Help?</h2>
+              <Text style={mutedTextStyle}>
+                Questions about your tickets or the event? We&apos;re here to help.
+              </Text>
+              <Text style={linkList}>
+                <Link href="mailto:info@zerovisioncinema.com" style={linkStyle}>
+                  info@zerovisioncinema.com
+                </Link>
+                <br />
+                <Link href={ZVC_SITE_URL} style={linkStyle}>
+                  zerovisioncinema.com
+                </Link>
+              </Text>
+            </td>
+          </tr>
+        </table>
+      </Section>
+
+      <BrandFooter>
+        <FooterLine>
+          Support:{' '}
+          <FooterLink href={`mailto:${ZVC_EMAIL_ADDRESS}`}>
+            {ZVC_EMAIL_ADDRESS}
+          </FooterLink>
+        </FooterLine>
+        <FooterLine>
+          {receiptUrl && (
+            <>
+              <FooterLink href={receiptUrl}>View official receipt</FooterLink>
+              {' • '}
+            </>
+          )}
+          <FooterLink href={TERMS_URL}>Terms of Service</FooterLink>
+          {' • '}
+          <FooterLink href={ZVC_SITE_URL}>Website</FooterLink>
+        </FooterLine>
+        <FooterLine>
+          © {new Date().getFullYear()} {LLC_NAME}
+        </FooterLine>
+      </BrandFooter>
+    </EmailShell>
   );
 }
 
-/** A label/value row for the film-details block (skipped when the value is empty). */
-function SpecRow({ label, value }: { label: string; value?: string | null }) {
-  if (!value) return null;
-  return (
-    <table width="100%" cellPadding="0" cellSpacing="0" style={summaryRow}>
-      <tr>
-        <td style={summaryLabel} className="gmail-font-fix">
-          {label}
-        </td>
-        <td style={summaryValue} className="gmail-font-fix">
-          {value}
-        </td>
-      </tr>
-    </table>
-  );
-}
-
-// Dark "grindhouse" theme to match the refund / broadcast emails. Table
-// structure kept for cross-client (Gmail/Outlook) rendering.
-const GLOW = '#FFFDF6';
-const BLUE = '#4A8CC6';
-
-const main = {
-  backgroundColor: '#141414',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-  margin: '0',
-  padding: '0',
-  lineHeight: '1.4',
+// The ticket is the one light surface: Glow card, Blackout ink, Cult Classic
+// admit count. Corners square off in Windows Outlook, which is fine.
+const ticketCard: React.CSSProperties = {
+  backgroundColor: GLOW,
+  borderRadius: '6px',
+  borderCollapse: 'separate',
 };
-
-const outerContainer = {
-  width: '100%',
-  maxWidth: '600px',
-  margin: '0 auto',
-  backgroundColor: '#141414',
-};
-
-const container = {
-  backgroundColor: '#1F1F1F',
-  width: '100%',
-  maxWidth: '600px',
-  margin: '0 auto',
-  borderRadius: '0',
-  overflow: 'hidden',
-  border: '1px solid rgba(255,253,246,0.12)',
-};
-
-const headerSection = {
-  backgroundColor: '#1F1F1F',
-  width: '100%',
-};
-
-const headerCell = {
-  padding: '0',
-};
-
-const headerImage = {
+const posterStyle: React.CSSProperties = {
   display: 'block',
-  width: '100%',
-  maxWidth: '100%',
+  width: '150px',
   height: 'auto',
+  borderRadius: '2px',
 };
-
-const mainContent = {
-  backgroundColor: '#1F1F1F',
-  width: '100%',
+const admitNumber: React.CSSProperties = {
+  fontFamily: HEADLINE_FONT,
+  fontWeight: 700,
+  letterSpacing: '0.05em',
+  fontSize: '72px',
+  lineHeight: '64px',
+  color: CULT_CLASSIC,
+  paddingRight: '10px',
+  verticalAlign: 'bottom',
 };
-
-const contentPadding = {
-  padding: '32px 24px',
+const admitLabel: React.CSSProperties = {
+  fontFamily: LABEL_FONT,
+  fontWeight: 700,
+  fontSize: '13px',
+  letterSpacing: '2px',
+  color: CULT_CLASSIC,
+  verticalAlign: 'bottom',
+  paddingBottom: '4px',
 };
-
-const heroSection = {
-  textAlign: 'center' as const,
-  marginBottom: '32px',
+const ticketRule: React.CSSProperties = {
+  borderTop: `1px solid ${STATIC}`,
+  margin: '14px 0',
+  fontSize: '1px',
+  lineHeight: '1px',
 };
-
-const heroTitle = {
+const ticketDay: React.CSSProperties = {
+  fontFamily: HEADLINE_FONT,
+  fontWeight: 700,
+  letterSpacing: '0.05em',
+  fontSize: '30px',
+  lineHeight: '1',
+  color: BLACKOUT,
+  margin: '0 0 4px',
+};
+const ticketTime: React.CSSProperties = {
+  fontFamily: BODY_FONT,
+  fontSize: '19px',
+  color: BLACKOUT,
+  margin: '0 0 14px',
+};
+const ticketVenue: React.CSSProperties = {
+  fontFamily: BODY_FONT,
+  fontSize: '19px',
+  fontWeight: 700,
+  color: BLACKOUT,
+  margin: 0,
+};
+const ticketAddress: React.CSSProperties = {
+  fontFamily: BODY_FONT,
+  fontSize: '16px',
+  color: INK_SOFT,
+  margin: '2px 0 0',
+};
+/** The perforation: a dashed rule between the ticket and its stub. */
+const stubCell: React.CSSProperties = {
+  borderTop: `2px dashed ${STATIC}`,
+  padding: '14px 24px 16px',
+};
+const stubText: React.CSSProperties = {
+  fontFamily: LABEL_FONT,
+  fontWeight: 700,
+  fontSize: '13px',
+  letterSpacing: '2px',
+  textTransform: 'uppercase',
+  color: BLACKOUT,
+};
+const richTextWrap: React.CSSProperties = {
+  fontFamily: BODY_FONT,
+  fontSize: '18px',
+  lineHeight: '1.55',
   color: GLOW,
+  margin: '0 0 24px',
+};
+const panelLabel: React.CSSProperties = {
+  fontFamily: LABEL_FONT,
+  fontWeight: 700,
+  fontSize: '12px',
+  letterSpacing: '2px',
+  color: RETRO_BLUE,
+  paddingBottom: '8px',
+};
+const ratingCell: React.CSSProperties = {
+  ...panelLabel,
+  textAlign: 'right',
+  whiteSpace: 'nowrap',
+};
+const filmPlot: React.CSSProperties = {
+  fontFamily: BODY_FONT,
+  fontStyle: 'italic',
+  fontSize: '17px',
+  lineHeight: '1.5',
+  color: GLOW,
+  margin: '0 0 8px',
+  paddingBottom: '8px',
+  borderBottom: `1px solid ${HAIRLINE}`,
+};
+const infoList: React.CSSProperties = {
+  margin: '0 0 8px',
+  paddingLeft: '22px',
+  fontFamily: BODY_FONT,
+  fontSize: '17px',
+  lineHeight: '1.6',
+  color: GLOW,
+};
+const infoItem: React.CSSProperties = { margin: '0 0 4px' };
+const policyText: React.CSSProperties = {
+  fontFamily: BODY_FONT,
+  fontSize: '15px',
+  lineHeight: '1.55',
+  color: STATIC,
+  margin: 0,
+};
+const smallHeading: React.CSSProperties = {
+  fontFamily: HEADLINE_FONT,
+  fontWeight: 700,
+  letterSpacing: '0.05em',
   fontSize: '24px',
-  fontWeight: 'bold',
-  lineHeight: '1.2',
-  margin: '0 0 16px 0',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-  textAlign: 'center' as const,
-  letterSpacing: '-0.025em',
-};
-
-const thankYouText = {
-  color: BLUE,
-  fontSize: '16px',
-  fontWeight: '500',
-  margin: '0 0 12px 0',
-  lineHeight: '24px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const subtitleText = {
-  color: 'rgba(255,253,246,0.6)',
-  fontSize: '16px',
-  fontWeight: '400',
-  lineHeight: '24px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-// Gmail-safe table styles
-const gmailMobileTable = {
-  width: '100%',
-  minWidth: '100%',
-  maxWidth: '600px',
-  tableLayout: 'fixed' as const,
-  marginBottom: '24px',
-};
-
-const gmailTicketCard = {
-  backgroundColor: '#262626',
-  border: '2px solid #4A8CC6',
-  borderRadius: '0',
-  width: '100%',
-  maxWidth: '320px',
-  margin: '0 auto',
-};
-
-const gmailDateText = {
+  lineHeight: '1.1',
+  textTransform: 'uppercase',
   color: GLOW,
-  fontSize: '14px',
-  fontWeight: 'bold',
-  marginBottom: '4px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
+  margin: '0 0 8px',
 };
-
-const gmailTimeText = {
-  color: 'rgba(255,253,246,0.6)',
-  fontSize: '13px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const gmailEventImageStyle = {
-  display: 'block',
-  maxWidth: '100%',
-  height: 'auto',
-  border: '1px solid rgba(255,253,246,0.2)',
-  margin: '0 auto',
-  width: '200px',
-};
-
-const gmailAdmitLabel = {
-  color: BLUE,
-  fontSize: '11px',
-  fontWeight: 'bold',
-  marginBottom: '4px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const gmailAdmitNumber = {
-  color: GLOW,
-  fontSize: '28px',
-  fontWeight: 'bold',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const quickDetails = {
-  backgroundColor: '#262626',
-  borderRadius: '0',
-  width: '100%',
-};
-
-const quickDetailsContent = {
-  padding: '16px',
-  textAlign: 'center' as const,
-};
-
-const quickDetailsText = {
-  color: 'rgba(255,253,246,0.85)',
-  fontSize: '14px',
-  fontWeight: '500',
-  margin: '0',
-  lineHeight: '20px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const section = {
-  backgroundColor: '#1F1F1F',
-  width: '100%',
-  marginTop: '2px',
-};
-
-const sectionContent = {
-  padding: '32px 24px',
-  backgroundColor: '#1F1F1F',
-};
-
-const sectionTitle = {
-  color: GLOW,
-  fontSize: '20px',
-  fontWeight: 'bold',
-  margin: '0 0 20px 0',
-  lineHeight: '24px',
-  letterSpacing: '-0.025em',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const detailsGrid = {
-  width: '100%',
-  marginBottom: '16px',
-};
-
-const detailCard = {
-  backgroundColor: '#262626',
-  border: '1px solid rgba(255,253,246,0.12)',
-  borderRadius: '0',
-  padding: '16px',
-  marginBottom: '8px',
-};
-
-const detailLabel = {
-  color: BLUE,
-  fontSize: '11px',
-  fontWeight: 'bold',
-  letterSpacing: '0.1em',
-  margin: '0',
-  lineHeight: '16px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const ratingCell = {
-  color: BLUE,
-  fontSize: '13px',
-  fontWeight: 'bold',
-  textAlign: 'right' as const,
-  whiteSpace: 'nowrap' as const,
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const filmPlot = {
-  color: 'rgba(255,253,246,0.8)',
-  fontSize: '13px',
-  fontWeight: '400',
-  lineHeight: '20px',
-  margin: '10px 0 14px 0',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const detailValue = {
-  color: 'rgba(255,253,246,0.9)',
-  fontSize: '14px',
-  fontWeight: '500',
-  margin: '0 0 4px 0',
-  lineHeight: '20px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const detailSubtext = {
-  color: 'rgba(255,253,246,0.6)',
-  fontSize: '13px',
-  fontWeight: '400',
-  margin: '0',
-  lineHeight: '18px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const alertBox = {
-  backgroundColor: '#22303a',
-  border: '1px solid #4A8CC6',
-  borderRadius: '0',
-  width: '100%',
-};
-
-const alertContent = {
-  padding: '16px',
-};
-
-const alertText = {
-  color: 'rgba(255,253,246,0.85)',
-  fontSize: '14px',
-  fontWeight: '400',
-  margin: '0 0 8px 0',
-  lineHeight: '20px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const summaryCard = {
-  backgroundColor: '#262626',
-  border: '1px solid rgba(255,253,246,0.12)',
-  borderRadius: '0',
-  width: '100%',
-};
-
-const summaryContent = {
-  padding: '16px',
-};
-
-const summaryRow = {
-  width: '100%',
-  marginBottom: '8px',
-};
-
-const summaryRowTotal = {
-  width: '100%',
-  marginTop: '8px',
-  paddingTop: '8px',
-  borderTop: '1px solid rgba(255,253,246,0.15)',
-};
-
-const summaryLabel = {
-  color: 'rgba(255,253,246,0.6)',
-  fontSize: '14px',
-  fontWeight: '400',
-  padding: '0 8px 0 0',
-  width: '40%',
-  verticalAlign: 'top' as const,
-  lineHeight: '20px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const summaryValue = {
-  color: GLOW,
-  fontSize: '14px',
-  fontWeight: '500',
-  textAlign: 'right' as const,
-  verticalAlign: 'top' as const,
-  lineHeight: '20px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const summaryLabelTotal = {
-  ...summaryLabel,
-  color: 'rgba(255,253,246,0.85)',
-  fontWeight: 'bold',
-};
-
-const summaryValueTotal = {
-  ...summaryValue,
-  fontWeight: 'bold',
-  color: BLUE,
-};
-
-const contactDescription = {
-  color: 'rgba(255,253,246,0.6)',
-  fontSize: '14px',
-  fontWeight: '400',
-  textAlign: 'center' as const,
-  margin: '0 0 16px 0',
-  lineHeight: '20px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const contactItem = {
-  color: 'rgba(255,253,246,0.75)',
-  fontSize: '14px',
-  fontWeight: '400',
-  margin: '0 0 8px 0',
-  lineHeight: '20px',
-  textAlign: 'center' as const,
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const contactLink = {
-  color: BLUE,
-  textDecoration: 'none',
-  fontWeight: '500',
-};
-
-const policySection = {
-  backgroundColor: '#1F1F1F',
-  width: '100%',
-  marginTop: '2px',
-};
-
-const policyContent = {
-  padding: '24px',
-  backgroundColor: '#141414',
-};
-
-const policyText = {
-  color: 'rgba(255,253,246,0.55)',
-  fontSize: '12px',
-  fontWeight: '400',
-  margin: '0',
-  lineHeight: '18px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const policyLink = {
-  color: BLUE,
-  textDecoration: 'underline',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const refundButton = {
-  display: 'inline-block',
-  border: '1px solid rgba(255,253,246,0.3)',
-  color: 'rgba(255,253,246,0.75)',
-  fontSize: '12px',
-  fontWeight: '600',
-  textDecoration: 'none',
-  padding: '8px 16px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const footer = {
-  backgroundColor: '#09090b',
-  width: '100%',
-};
-
-const footerContent = {
-  padding: '24px',
-  textAlign: 'center' as const,
-};
-
-const footerText = {
-  color: '#a1a1aa',
-  fontSize: '12px',
-  fontWeight: '400',
-  margin: '0 0 4px 0',
-  lineHeight: '16px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const footerLinks = {
-  color: '#a1a1aa',
-  fontSize: '12px',
-  fontWeight: '400',
-  margin: '8px 0 0 0',
-  lineHeight: '16px',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-};
-
-const footerLink = {
-  color: '#d4d4d8',
-  textDecoration: 'none',
-  fontWeight: '400',
+const linkList: React.CSSProperties = {
+  fontFamily: BODY_FONT,
+  fontSize: '17px',
+  lineHeight: '1.7',
+  margin: 0,
 };

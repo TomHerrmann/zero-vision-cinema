@@ -73,6 +73,7 @@ export interface Config {
     events: Event;
     merch: Merch;
     orders: Order;
+    rewards: Reward;
     authors: Author;
     articles: Article;
     'custom-broadcasts': CustomBroadcast;
@@ -89,6 +90,7 @@ export interface Config {
     events: EventsSelect<false> | EventsSelect<true>;
     merch: MerchSelect<false> | MerchSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
+    rewards: RewardsSelect<false> | RewardsSelect<true>;
     authors: AuthorsSelect<false> | AuthorsSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     'custom-broadcasts': CustomBroadcastsSelect<false> | CustomBroadcastsSelect<true>;
@@ -101,8 +103,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    settings: Setting;
+  };
+  globalsSelect: {
+    settings: SettingsSelect<false> | SettingsSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -303,7 +309,7 @@ export interface Order {
   amountPaid: number;
   quantity: number;
   transactionDate: string;
-  receiptUrl: string;
+  receiptUrl?: string | null;
   item:
     | {
         relationTo: 'events';
@@ -313,6 +319,26 @@ export interface Order {
         relationTo: 'merch';
         value: number | Merch;
       };
+  earnedReward?: (number | null) | Reward;
+  redeemedReward?: (number | null) | Reward;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rewards".
+ */
+export interface Reward {
+  id: number;
+  code: string;
+  customerId: string;
+  issuedAt: string;
+  expiresAt: string;
+  redeemedAt?: string | null;
+  redeemedOrder?: (number | null) | Order;
+  voidedAt?: string | null;
+  voidReason?: string | null;
+  rewardEmailSentAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -465,6 +491,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'orders';
         value: number | Order;
+      } | null)
+    | ({
+        relationTo: 'rewards';
+        value: number | Reward;
       } | null)
     | ({
         relationTo: 'authors';
@@ -633,6 +663,25 @@ export interface OrdersSelect<T extends boolean = true> {
   transactionDate?: T;
   receiptUrl?: T;
   item?: T;
+  earnedReward?: T;
+  redeemedReward?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rewards_select".
+ */
+export interface RewardsSelect<T extends boolean = true> {
+  code?: T;
+  customerId?: T;
+  issuedAt?: T;
+  expiresAt?: T;
+  redeemedAt?: T;
+  redeemedOrder?: T;
+  voidedAt?: T;
+  voidReason?: T;
+  rewardEmailSentAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -728,6 +777,29 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settings".
+ */
+export interface Setting {
+  id: number;
+  /**
+   * Default price (USD) for new ZVC events. Existing events are not changed.
+   */
+  defaultTicketPrice: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settings_select".
+ */
+export interface SettingsSelect<T extends boolean = true> {
+  defaultTicketPrice?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -18,6 +18,8 @@ import { Orders } from './collections/Orders';
 import { Merch } from './collections/Merch';
 import { Authors } from './collections/Authors';
 import { Articles } from './collections/Articles';
+import { Rewards } from './collections/Rewards';
+import { Settings } from './globals/Settings';
 import { CustomBroadcasts } from './collections/CustomBroadcasts';
 
 const filename = fileURLToPath(import.meta.url);
@@ -60,6 +62,7 @@ export default buildConfig({
     Events,
     Locations,
     Orders,
+    Rewards,
     Articles,
     Authors,
     CustomBroadcasts,
@@ -67,6 +70,7 @@ export default buildConfig({
     Media,
     Users,
   ],
+  globals: [Settings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

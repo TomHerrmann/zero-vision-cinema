@@ -12,6 +12,7 @@ import {
 } from '@/app/contsants/constants';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import TicketEmail from '@/emails/TicketEmail';
+import { getTicketEmailNotice, type LoyaltyNotice } from '@/lib/loyalty';
 import type { Event, Location, Media } from '@/payload-types';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -135,7 +136,21 @@ export async function POST(req: Request) {
     const receipt = order.paymentIntentId
       ? await getReceiptDetails(order.paymentIntentId)
       : {};
-    const refundUrl = `${ZVC_SITE_URL}/refund?order=${order.id}&token=${signRefundToken(order.id)}`;
+    // Free (reward) tickets have no charge to refund, so no self-serve link.
+    const refundUrl = order.redeemedReward
+      ? undefined
+      : `${ZVC_SITE_URL}/refund?order=${order.id}&token=${signRefundToken(order.id)}`;
+
+    // Free-ticket reward status. Best-effort: a failure here must not hold up
+    // the buyer's ticket, so log it and send without the block.
+    let loyalty: LoyaltyNotice | null = null;
+    try {
+      loyalty = await getTicketEmailNotice(payload, order);
+    } catch (loyaltyErr) {
+      await logtail.error(
+        `API /tasks/send-ticket-email: loyalty status failed for order ${orderId}: ${loyaltyErr}`
+      );
+    }
 
     const { error: sendError } = await resend.emails.send({
       from: ZVC_DISPLAY_NAME_EMAIL,
@@ -157,8 +172,9 @@ export async function POST(req: Request) {
           cardBrand={receipt.cardBrand}
           cardLast4={receipt.cardLast4}
           currency={receipt.currency}
-          receiptUrl={receipt.receiptUrl ?? order.receiptUrl}
+          receiptUrl={receipt.receiptUrl ?? order.receiptUrl ?? undefined}
           refundUrl={refundUrl}
+          loyalty={loyalty}
         />
       ),
     });

@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Shared, hoisted mock handles so the module factory below and the tests both
 // reference the same spies.
@@ -181,5 +181,103 @@ describe('CheckoutForm required-email guard', () => {
       })
     );
     await waitFor(() => expect(props.onComplete).toHaveBeenCalledTimes(1));
+  });
+});
+
+describe('CheckoutForm free-ticket code', () => {
+  const fetchMock = vi.fn();
+  beforeEach(() => {
+    fetchMock.mockReset();
+    vi.stubGlobal('fetch', fetchMock);
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const respond = (status: number, body: unknown) =>
+    Promise.resolve(
+      new Response(JSON.stringify(body), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+
+  const applyCode = async (code = 'zvc-7k3q-m9xa') => {
+    fireEvent.click(screen.getByText('Have a free-ticket code?'));
+    fireEvent.change(screen.getByLabelText('Free-ticket code'), {
+      target: { value: code },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+  };
+
+  it('shows the real price struck through above $0.00 once the code is valid', async () => {
+    fetchMock.mockImplementation(() =>
+      respond(200, { valid: true, code: 'ZVC-7K3Q-M9XA' })
+    );
+    const { container } = render(<CheckoutForm {...props} />);
+
+    await applyCode();
+
+    await screen.findByText('ZVC-7K3Q-M9XA');
+    const struck = container.querySelector('s');
+    expect(struck?.textContent).toContain('$10.00');
+    expect(screen.getByText(/\$0\.00/)).toBeInTheDocument();
+    // Struck-through price sits above the new price.
+    expect(
+      struck!.compareDocumentPosition(screen.getByText(/\$0\.00/)) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Claim free ticket' })
+    ).toBeInTheDocument();
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/rewards/validate');
+  });
+
+  it('shows the error and keeps the paid price for an invalid code', async () => {
+    fetchMock.mockImplementation(() =>
+      respond(404, { error: 'That code is invalid, expired, or already used.' })
+    );
+    const { container } = render(<CheckoutForm {...props} />);
+
+    await applyCode('nope');
+
+    await screen.findByText('That code is invalid, expired, or already used.');
+    expect(container.querySelector('s')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Pay $10.00' })).toBeInTheDocument();
+  });
+
+  it('claims the free ticket without charging a card', async () => {
+    fetchMock
+      .mockImplementationOnce(() => respond(200, { valid: true, code: 'ZVC-7K3Q-M9XA' }))
+      .mockImplementationOnce(() => respond(200, { success: true, orderId: 1 }));
+    render(<CheckoutForm {...props} />);
+
+    await applyCode();
+    await screen.findByText('ZVC-7K3Q-M9XA');
+    fireEvent.change(screen.getByLabelText(/Email/), {
+      target: { value: 'buyer@example.com' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Claim free ticket' }));
+
+    await waitFor(() => expect(props.onComplete).toHaveBeenCalledTimes(1));
+    expect(h.confirmPayment).not.toHaveBeenCalled();
+    expect(fetchMock.mock.calls[1][0]).toBe('/api/rewards/redeem');
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toEqual({
+      eventId: 44,
+      code: 'ZVC-7K3Q-M9XA',
+      email: 'buyer@example.com',
+    });
+  });
+
+  it('removing the code restores paid checkout', async () => {
+    fetchMock.mockImplementation(() =>
+      respond(200, { valid: true, code: 'ZVC-7K3Q-M9XA' })
+    );
+    render(<CheckoutForm {...props} />);
+
+    await applyCode();
+    fireEvent.click(await screen.findByRole('button', { name: 'Remove' }));
+
+    expect(screen.getByRole('button', { name: 'Pay $10.00' })).toBeInTheDocument();
   });
 });

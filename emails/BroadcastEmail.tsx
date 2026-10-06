@@ -1,25 +1,30 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Img,
-  Link,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components';
+import { Img, Section, Text } from '@react-email/components';
 import { RichText } from '@payloadcms/richtext-lexical/react';
 import { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical';
-import {
-  EMAIL_HEADER_IMAGE_ZVC_URL,
-  LLC_NAME,
-  RESEND_UNSUBSCRIBE_URL,
-  ZVC_SITE_URL,
-} from '@/app/contsants/constants';
+import { LLC_NAME, RESEND_UNSUBSCRIBE_URL } from '@/app/contsants/constants';
 import { richTextIsEmpty } from '@/utils/richText';
 import type { MovieData } from '@/lib/omdb';
+import {
+  BODY_FONT,
+  BrandFooter,
+  BrandHeader,
+  EmailShell,
+  FooterLine,
+  FooterLink,
+  GLOW,
+  HEADLINE_FONT,
+  Kicker,
+  LABEL_FONT,
+  Label,
+  PrimaryButton,
+  RETRO_BLUE,
+  Row,
+  STATIC,
+  Title,
+  bodyTextStyle,
+  contentStyle,
+  panelStyle,
+} from './components/brand';
 
 export type BroadcastKind = 'announcement' | 'reminder';
 export type BroadcastEventType = 'zvc' | 'ahc' | 'bookclub';
@@ -42,7 +47,10 @@ interface Props {
    * itself carries all the details, and there's nothing to buy or RSVP to.
    */
   paid?: boolean;
-  /** Per-event-type header banner. */
+  /**
+   * Per-event-type header banner. ZVC events use the brand logo header instead;
+   * Astoria Horror Club and Book Club keep their own banners.
+   */
   headerImage: string;
   eventName: string;
   eventImage?: string;
@@ -132,12 +140,20 @@ function voiceKey(eventType: BroadcastEventType, paid?: boolean): VoiceKey {
   return paid ? 'zvcPaid' : 'zvcFree';
 }
 
-function formatEventDate(iso: string): string {
-  return new Date(iso).toLocaleString('en-US', {
-    timeZone: 'America/New_York',
-    dateStyle: 'full',
-    timeStyle: 'short',
-  });
+function formatEventDate(iso: string): { day: string; time: string } {
+  const d = new Date(iso);
+  return {
+    day: d.toLocaleDateString('en-US', {
+      timeZone: 'America/New_York',
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+    }),
+    time: d.toLocaleTimeString('en-US', {
+      timeZone: 'America/New_York',
+      timeStyle: 'short',
+    }),
+  };
 }
 
 export default function BroadcastEmail({
@@ -162,252 +178,177 @@ export default function BroadcastEmail({
   // Book club events show "About the Book"; everything else, "About the Film".
   const hasFilmDetails =
     !hasBook && Boolean(movie && (movie.director || movie.plot));
+  const showCta = Boolean(variant.cta && eventUrl);
+  const { day, time } = formatEventDate(eventDate);
 
   return (
-    <Html>
-      <Head />
-      <Preview>
-        {c.kicker}: {eventName}
-      </Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Img src={headerImage} width="100%" alt={LLC_NAME} style={header} />
-          <Section style={content}>
-            <Text style={kicker}>{c.kicker}</Text>
-            <Heading style={heading}>{eventName}</Heading>
-            <Text style={blurb}>{c.blurb}</Text>
+    <EmailShell preview={`${c.kicker}: ${eventName}`}>
+      {eventType === 'zvc' ? (
+        <BrandHeader />
+      ) : (
+        <Img src={headerImage} width="100%" alt={LLC_NAME} style={banner} />
+      )}
+      <Section style={contentStyle} className="zvc-pad">
+        <Kicker>{c.kicker}</Kicker>
+        <Title>{eventName}</Title>
+        <Text style={bodyTextStyle}>{c.blurb}</Text>
 
+        {/* Poster beside When / Where (stacks on a phone) */}
+        <table
+          width="100%"
+          cellPadding="0"
+          cellSpacing="0"
+          role="presentation"
+          style={{ margin: '8px 0 28px' }}
+        >
+          <tr>
             {eventImage && (
-              <Img src={eventImage} alt={eventName} style={poster} />
+              <td
+                width="220"
+                className="zvc-stack zvc-stack-gap"
+                style={{ width: '220px', verticalAlign: 'top', paddingRight: '24px' }}
+              >
+                <Img src={eventImage} width="220" alt={eventName} style={poster} />
+              </td>
             )}
+            <td className="zvc-stack" style={{ verticalAlign: 'middle' }}>
+              <Label>When</Label>
+              <Text style={whenDay}>{day}</Text>
+              <Text style={whenTime}>{time}</Text>
+              <Label>Where</Label>
+              <Text style={whereName}>{eventLocation}</Text>
+              {eventAddress && <Text style={whereAddress}>{eventAddress}</Text>}
+              {/* CTA only for paid ZVC screenings — free events have nothing to
+                  buy or RSVP to, so the email itself is the full detail. */}
+              {showCta && (
+                <div style={{ paddingTop: '22px' }}>
+                  <PrimaryButton href={eventUrl!}>{variant.cta}</PrimaryButton>
+                </div>
+              )}
+            </td>
+          </tr>
+        </table>
 
-            {/* Description — the event's own, else the book synopsis / film plot */}
-            {!descriptionIsEmpty ? (
-              <div style={richTextWrap}>
-                <RichText data={eventDescription!} />
-              </div>
-            ) : book?.description ? (
-              <Text style={plot}>{book.description}</Text>
-            ) : movie?.plot ? (
-              <Text style={plot}>{movie.plot}</Text>
-            ) : null}
+        {/* Description — the event's own, else the book synopsis / film plot */}
+        {!descriptionIsEmpty ? (
+          <div style={richTextWrap}>
+            <RichText data={eventDescription!} />
+          </div>
+        ) : book?.description ? (
+          <Text style={plot}>{book.description}</Text>
+        ) : movie?.plot ? (
+          <Text style={plot}>{movie.plot}</Text>
+        ) : null}
 
-            {/* About the Book — book-club events */}
-            {hasBook && (
-              <Section style={filmCard}>
-                <table width="100%" cellPadding="0" cellSpacing="0">
-                  <tr>
-                    <td style={filmTitle}>About the Book</td>
-                  </tr>
-                </table>
-                <SpecRow label="Title" value={book?.title} />
-                <SpecRow label="Author" value={book?.author} />
-              </Section>
-            )}
-
-            {/* About the Film — everything else with OMDB data */}
-            {hasFilmDetails && (
-              <Section style={filmCard}>
-                <table width="100%" cellPadding="0" cellSpacing="0">
-                  <tr>
-                    <td style={filmTitle}>About the Film</td>
-                    {movie?.imdbRating && (
-                      <td style={rating}>★ {movie.imdbRating}</td>
-                    )}
-                  </tr>
-                </table>
-                <SpecRow label="Director" value={movie?.director} />
-                <SpecRow label="Starring" value={movie?.actors} />
-                <SpecRow label="Year" value={movie?.year} />
-                <SpecRow
-                  label="Rated · Runtime"
-                  value={[movie?.rated, movie?.runtime]
-                    .filter(Boolean)
-                    .join(' · ')}
-                />
-                <SpecRow label="Genre" value={movie?.genre} />
-              </Section>
-            )}
-
-            {/* When / Where */}
-            <Section style={details}>
-              <Text style={detailRow}>
-                <span style={label}>When</span>
-                {formatEventDate(eventDate)}
-              </Text>
-              <Text style={detailRow}>
-                <span style={label}>Where</span>
-                {eventLocation}
-                {eventAddress ? ` — ${eventAddress}` : ''}
-              </Text>
-            </Section>
-
-            {/* CTA only for paid ZVC screenings — free events have nothing to
-                buy or RSVP to, so the email itself is the full detail. */}
-            {variant.cta && eventUrl && (
-              <Link href={eventUrl} style={button}>
-                {variant.cta}
-              </Link>
-            )}
+        {/* About the Book — book-club events */}
+        {hasBook && (
+          <Section style={panelStyle}>
+            <table width="100%" cellPadding="0" cellSpacing="0" role="presentation">
+              <tr>
+                <td style={panelTitle}>About the Book</td>
+              </tr>
+            </table>
+            <Row label="Title" value={book?.title} />
+            <Row label="Author" value={book?.author} last />
           </Section>
+        )}
 
-          <Section style={footer}>
-            <Text style={footerText}>{LLC_NAME}</Text>
-            <Text style={footerText}>
-              You&apos;re receiving this because you subscribed to Zero Vision
-              Cinema updates.{' '}
-              <Link href={RESEND_UNSUBSCRIBE_URL} style={footerLink}>
-                Unsubscribe
-              </Link>
-            </Text>
+        {/* About the Film — everything else with OMDB data */}
+        {hasFilmDetails && (
+          <Section style={panelStyle}>
+            <table width="100%" cellPadding="0" cellSpacing="0" role="presentation">
+              <tr>
+                <td style={panelTitle}>About the Film</td>
+                {movie?.imdbRating && (
+                  <td style={rating}>★ {movie.imdbRating}</td>
+                )}
+              </tr>
+            </table>
+            <Row label="Director" value={movie?.director} />
+            <Row label="Starring" value={movie?.actors} />
+            <Row label="Year" value={movie?.year} />
+            <Row
+              label="Rated · Runtime"
+              value={[movie?.rated, movie?.runtime].filter(Boolean).join(' · ')}
+            />
+            <Row label="Genre" value={movie?.genre} last />
           </Section>
-        </Container>
-      </Body>
-    </Html>
+        )}
+
+        {showCta && (
+          <Section style={{ textAlign: 'center', margin: '8px 0 0' }}>
+            <PrimaryButton href={eventUrl!}>{variant.cta}</PrimaryButton>
+          </Section>
+        )}
+      </Section>
+
+      <BrandFooter>
+        <FooterLine>
+          You&apos;re receiving this because you subscribed to Zero Vision
+          Cinema updates.{' '}
+          <FooterLink href={RESEND_UNSUBSCRIBE_URL}>Unsubscribe</FooterLink>
+        </FooterLine>
+      </BrandFooter>
+    </EmailShell>
   );
 }
 
-function SpecRow({ label, value }: { label: string; value?: string | null }) {
-  if (!value) return null;
-  return (
-    <table
-      width="100%"
-      cellPadding="0"
-      cellSpacing="0"
-      style={{ borderTop: '1px solid rgba(255,253,246,0.1)' }}
-    >
-      <tr>
-        <td style={specLabel}>{label}</td>
-        <td style={specValue}>{value}</td>
-      </tr>
-    </table>
-  );
-}
-
-export const main: React.CSSProperties = {
-  backgroundColor: '#141414',
-  fontFamily: 'Arial, Helvetica, sans-serif',
-  margin: 0,
-  padding: '24px 0',
-};
-export const container: React.CSSProperties = {
-  maxWidth: '600px',
-  margin: '0 auto',
-  backgroundColor: '#1F1F1F',
-  border: '1px solid rgba(255,253,246,0.12)',
-};
-export const header: React.CSSProperties = { display: 'block' };
-export const content: React.CSSProperties = { padding: '32px 28px' };
-const kicker: React.CSSProperties = {
-  color: '#4A8CC6',
-  textTransform: 'uppercase',
-  letterSpacing: '2px',
-  fontSize: '12px',
-  margin: '0 0 8px',
-};
-export const heading: React.CSSProperties = {
-  color: '#FFFDF6',
-  fontSize: '30px',
-  lineHeight: '1.15',
-  margin: '0 0 12px',
-};
-const blurb: React.CSSProperties = {
-  color: 'rgba(255,253,246,0.8)',
-  fontSize: '15px',
-  lineHeight: '1.6',
-  margin: '0 0 20px',
-};
+const banner: React.CSSProperties = { display: 'block', width: '100%' };
 const poster: React.CSSProperties = {
-  width: '100%',
-  maxWidth: '280px',
-  border: '2px solid rgba(255,253,246,0.15)',
-  margin: '0 0 20px',
+  display: 'block',
+  width: '220px',
+  maxWidth: '100%',
+  height: 'auto',
+  borderRadius: '2px',
 };
-export const richTextWrap: React.CSSProperties = {
-  color: 'rgba(255,253,246,0.8)',
-  fontSize: '14px',
-  lineHeight: '1.6',
-  margin: '0 0 20px',
+const whenDay: React.CSSProperties = {
+  fontFamily: HEADLINE_FONT,
+  fontWeight: 700,
+  letterSpacing: '0.05em',
+  fontSize: '26px',
+  lineHeight: '1.05',
+  textTransform: 'uppercase',
+  color: GLOW,
+  margin: '0 0 2px',
 };
-const plot: React.CSSProperties = {
-  color: 'rgba(255,253,246,0.8)',
-  fontSize: '14px',
-  lineHeight: '1.6',
-  margin: '0 0 20px',
+const whenTime: React.CSSProperties = {
+  fontFamily: BODY_FONT,
+  fontSize: '18px',
+  color: GLOW,
+  margin: '0 0 18px',
 };
-const filmCard: React.CSSProperties = {
-  border: '1px solid rgba(255,253,246,0.12)',
-  backgroundColor: '#262626',
-  padding: '14px 16px',
+const whereName: React.CSSProperties = {
+  fontFamily: BODY_FONT,
+  fontSize: '19px',
+  fontWeight: 700,
+  color: GLOW,
+  margin: 0,
+};
+const whereAddress: React.CSSProperties = {
+  fontFamily: BODY_FONT,
+  fontSize: '16px',
+  color: STATIC,
+  margin: '2px 0 0',
+};
+const richTextWrap: React.CSSProperties = {
+  fontFamily: BODY_FONT,
+  fontSize: '18px',
+  lineHeight: '1.55',
+  color: GLOW,
   margin: '0 0 24px',
 };
-const filmTitle: React.CSSProperties = {
-  color: '#4A8CC6',
+const plot: React.CSSProperties = { ...richTextWrap };
+const panelTitle: React.CSSProperties = {
+  fontFamily: LABEL_FONT,
+  fontWeight: 700,
+  fontSize: '12px',
+  letterSpacing: '2px',
   textTransform: 'uppercase',
-  letterSpacing: '1px',
-  fontSize: '11px',
-  fontWeight: 'bold',
+  color: RETRO_BLUE,
+  paddingBottom: '6px',
 };
 const rating: React.CSSProperties = {
-  color: '#4A8CC6',
-  fontSize: '13px',
-  fontWeight: 'bold',
+  ...panelTitle,
   textAlign: 'right',
   whiteSpace: 'nowrap',
-};
-const specLabel: React.CSSProperties = {
-  color: 'rgba(255,253,246,0.6)',
-  fontSize: '13px',
-  padding: '8px 8px 8px 0',
-  verticalAlign: 'top',
-  width: '38%',
-};
-const specValue: React.CSSProperties = {
-  color: 'rgba(255,253,246,0.9)',
-  fontSize: '13px',
-  padding: '8px 0',
-  textAlign: 'right',
-};
-const details: React.CSSProperties = {
-  borderTop: '1px solid rgba(255,253,246,0.12)',
-  borderBottom: '1px solid rgba(255,253,246,0.12)',
-  padding: '12px 0',
-  margin: '0 0 24px',
-};
-const detailRow: React.CSSProperties = {
-  color: 'rgba(255,253,246,0.9)',
-  fontSize: '14px',
-  margin: '8px 0',
-};
-const label: React.CSSProperties = {
-  display: 'block',
-  color: '#4A8CC6',
-  textTransform: 'uppercase',
-  fontSize: '11px',
-  letterSpacing: '1px',
-  marginBottom: '2px',
-};
-export const button: React.CSSProperties = {
-  display: 'inline-block',
-  backgroundColor: '#4A8CC6',
-  color: '#0f0f0f',
-  fontWeight: 'bold',
-  fontSize: '15px',
-  textDecoration: 'none',
-  padding: '14px 26px',
-};
-export const footer: React.CSSProperties = {
-  backgroundColor: '#09090b',
-  padding: '20px 28px',
-  textAlign: 'center',
-};
-export const footerText: React.CSSProperties = {
-  color: '#a1a1aa',
-  fontSize: '12px',
-  lineHeight: '1.6',
-  margin: '0 0 4px',
-};
-export const footerLink: React.CSSProperties = {
-  color: '#a1a1aa',
-  textDecoration: 'underline',
 };

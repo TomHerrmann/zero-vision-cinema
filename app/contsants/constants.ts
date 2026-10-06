@@ -110,6 +110,18 @@ export const STATUS_CODES = {
 export const EMAIL_HEADER_IMAGE_ZVC_URL = `${ZERO_VISION_BLOB_URL}/emailheader_zvc.png`;
 export const EMAIL_HEADER_IMAGE_AHC_URL = `${ZERO_VISION_BLOB_URL}/emailheader_ahc.png`;
 export const EMAIL_HEADER_IMAGE_BOOKCLUB_URL = `${ZERO_VISION_BLOB_URL}/emailheader_bookclub.png`;
+// Loyalty progress in emails is a row of eyeballs, one slashed ("zero vision")
+// per counted purchase. PNG (not SVG) because Gmail/Outlook block SVG; source:
+// public/logos/zvc_logo_logomark_slashed.svg (the plain one drops its slash).
+export const EMAIL_EYEBALL_SLASHED_PNG_URL = `${ZVC_SITE_URL}/logos/zvc_eyeball_slashed.png`;
+export const EMAIL_EYEBALL_PNG_URL = `${ZVC_SITE_URL}/logos/zvc_eyeball.png`;
+// Plain white primary logo (eyeball + wordmark) for email headers. PNG, not SVG:
+// Gmail and Outlook don't render SVG.
+export const EMAIL_LOGO_PRIMARY_WHITE_URL = `${ZVC_SITE_URL}/logos/zvc_logo_primary_white_email.png`;
+// Brand web fonts for email. Only clients that load web fonts use them (Apple
+// Mail, iOS Mail, Outlook for Mac); everyone else gets the fallback stacks.
+export const EMAIL_FONT_BOOTZY_CONDENSED_URL = `${ZVC_SITE_URL}/fonts/Bootzy-Condensed-TM/Web%20Fonts/bootzy_condensed_tm-webfont`;
+export const EMAIL_FONT_BOOTZY_URL = `${ZVC_SITE_URL}/fonts/Bootzy-TM/Web%20Fonts/bootzy_tm-webfont`;
 export const WEB_PAGE_HEADER_IMAGE_ZVC_URL = `${ZERO_VISION_BLOB_URL}/zvc_blank_header.png`;
 
 export const RESEND_BROADCASTS_API_URL = 'https://api.resend.com/broadcasts';
