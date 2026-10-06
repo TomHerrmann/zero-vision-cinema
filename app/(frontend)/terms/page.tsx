@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
 import {
   LLC_NAME,
   ZVC_EMAIL_ADDRESS,
@@ -119,7 +120,11 @@ export default function TermsPage() {
             Payments are processed by Stripe; we do not store your card details.
             We use your email only to deliver tickets, receipts, and — if you
             opt in — our newsletter. You can unsubscribe from marketing email at
-            any time.
+            any time. See our{' '}
+            <Link href="/privacy" className="text-blue-light underline">
+              Privacy Policy
+            </Link>{' '}
+            for details.
           </p>
         </Section>
 
