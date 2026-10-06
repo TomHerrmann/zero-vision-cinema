@@ -13,8 +13,8 @@ import {
   PANEL,
   RETRO_BLUE,
   STATIC,
-  labelStyle,
   linkStyle,
+  sectionTitleStyle,
 } from './brand';
 
 const EVENTS_URL = `${ZVC_SITE_URL}/events`;
@@ -146,7 +146,8 @@ const box: React.CSSProperties = {
 const eyesTable: React.CSSProperties = { margin: '0 0 12px' };
 const eyeCell: React.CSSProperties = { paddingRight: '10px' };
 const eye: React.CSSProperties = { display: 'block' };
-const kickerStyle: React.CSSProperties = { ...labelStyle, margin: '0 0 6px' };
+// Headline-sized so the offer draws the eye; Bootzy Condensed like section titles.
+const kickerStyle: React.CSSProperties = { ...sectionTitleStyle, margin: '0 0 8px' };
 const bodyStyle: React.CSSProperties = {
   fontFamily: BODY_FONT,
   color: GLOW,
