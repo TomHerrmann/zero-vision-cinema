@@ -247,6 +247,22 @@ const Footer = () => {
               &copy; {new Date().getFullYear()} {LLC_NAME}. All rights reserved.
             </p>
 
+            {/* Legal */}
+            <nav className="flex gap-6 text-base">
+              <Link
+                href="/privacy"
+                className="hover:text-blue-light transition-colors duration-200"
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                href="/terms"
+                className="hover:text-blue-light transition-colors duration-200"
+              >
+                Terms of Service
+              </Link>
+            </nav>
+
             {/* Made with love */}
             <p className="font-utility uppercase tracking-widest text-base text-foreground/40">
               Bringing cult cinema to NYC
