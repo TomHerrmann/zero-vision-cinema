@@ -199,6 +199,21 @@ describe('stripe webhook — payment_intent.succeeded', () => {
     expect(res.status).toBe(200);
     expect(h.publishJSON).not.toHaveBeenCalled();
   });
+
+  it('acknowledges a payment from outside our checkout (e.g. Tap to Pay at the door)', async () => {
+    const doorSale = { ...paymentIntent, metadata: {} };
+    h.constructEvent.mockReturnValue({
+      type: 'payment_intent.succeeded',
+      data: { object: doorSale },
+    });
+
+    const res = await POST(req());
+
+    expect(res.status).toBe(200);
+    expect(h.create).not.toHaveBeenCalled();
+    expect(h.update).not.toHaveBeenCalled();
+    expect(h.publishJSON).not.toHaveBeenCalled();
+  });
 });
 
 describe('stripe webhook — loyalty rewards', () => {
