@@ -20,10 +20,10 @@ const idOf = (value: unknown): number | null => {
 const SUBTITLES: Record<string, string> = {
   zvc: 'Paid screening',
   ahc: 'Free movie night',
-  bookclub: 'Free, picked by book',
+  bookclub: 'Free book discussion',
   rww: 'Free Wednesday night',
   fri: 'Free Friday at Medusa',
-  brew: 'Ticketed brewery night',
+  brew: 'Ticketed stand-up comedy',
   bingo: 'Free bingo night',
   brunch: 'Free Saturday brunch',
 };

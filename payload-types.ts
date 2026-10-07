@@ -205,7 +205,7 @@ export interface Location {
 export interface Event {
   id: number;
   /**
-   * ZVC = paid screening (full fields). AHC = free movie event. Book Club = free event driven by a book title + author. Brewscares = ticketed night. Rewind Wednesdays, Fridays at Medusa, Bingo and Horror Brunch = free. The last five keep their own description and poster (IMDb optional).
+   * ZVC = paid screening (full fields). AHC = free movie event. Book Club = free event driven by a book title + author. Brewscares = ticketed stand-up comedy. Rewind Wednesdays, Fridays at Medusa, Bingo and Horror Brunch = free. The last five keep their own description and poster (IMDb optional).
    */
   eventType: 'zvc' | 'ahc' | 'bookclub' | 'rww' | 'fri' | 'brew' | 'bingo' | 'brunch';
   /**
