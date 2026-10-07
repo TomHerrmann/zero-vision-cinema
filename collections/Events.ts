@@ -10,6 +10,7 @@ import {
 } from '@/lib/openlibrary';
 import { plotToLexical, richTextIsBlank } from '@/utils/omdbFill';
 import { Location } from '@/payload-types';
+import { EVENT_TYPE_NAMES, isCommunityEventType } from '@/utils/eventTypes';
 
 /** Relationship / upload fields come back as an id or a populated doc. */
 const relationId = (value: unknown): string | number | undefined => {
@@ -90,8 +91,8 @@ export const Events: CollectionConfig = {
       async ({ data }) => {
         if (!data) return data;
 
-        // AHC and Book Club events are always free.
-        if (data.eventType === 'ahc' || data.eventType === 'bookclub') {
+        // Only ZVC screenings are paid; every other type is always free.
+        if (data.eventType && data.eventType !== 'zvc') {
           data.price = 0;
         }
 
@@ -121,7 +122,7 @@ export const Events: CollectionConfig = {
           return data;
         }
 
-        // Movie types (zvc/ahc): fill name/description from OMDB when blank. The
+        // Movie and community types: fill name/description from OMDB when blank. The
         // admin IMDb field also fills name live on blur, but a richText editor
         // ignores programmatic values, so description is filled here on save.
         // (AHC hides its description field, so only fill it for zvc.)
@@ -330,15 +331,13 @@ export const Events: CollectionConfig = {
       type: 'select',
       required: true,
       defaultValue: 'zvc',
-      options: [
-        { label: 'Zero Vision Cinema', value: 'zvc' },
-        { label: 'Astoria Horror Club', value: 'ahc' },
-        { label: 'Astoria Horror Book Club', value: 'bookclub' },
-      ],
+      options: (
+        Object.entries(EVENT_TYPE_NAMES) as [keyof typeof EVENT_TYPE_NAMES, string][]
+      ).map(([value, label]) => ({ label, value })),
       label: 'Event type',
       admin: {
         description:
-          'ZVC = paid screening (full fields). AHC = free movie event. Book Club = free event driven by a book title + author.',
+          'ZVC = paid screening (full fields). AHC = free movie event. Book Club = free event driven by a book title + author. Rewind Wednesdays, Fridays at Medusa, Brewscares and Bingo = free nights with their own description and poster (IMDb optional).',
         components: {
           Field: '/components/admin/EventTypeField#EventTypeField',
         },
@@ -418,7 +417,8 @@ export const Events: CollectionConfig = {
       label: 'Poster image',
       admin: {
         position: 'sidebar',
-        condition: (data) => data.eventType === 'zvc',
+        condition: (data) =>
+          data.eventType === 'zvc' || isCommunityEventType(data.eventType),
         description:
           'Optional. If left blank and an IMDb ID is set, the OMDB poster is used.',
       },
@@ -462,12 +462,12 @@ export const Events: CollectionConfig = {
           },
           admin: {
             width: '50%',
-            // Only ZVC events are paid — AHC / Book Club are forced to 0 on save.
+            // Only ZVC events are paid — every other type is forced to 0 on save.
             condition: (data) => data.eventType === 'zvc',
           },
         },
         {
-          // ZVC events only: AHC and Book Club are free, so there are no tickets to
+          // ZVC events only: every other type is free, so there are no tickets to
           // count. Hidden on those in the editor, and shown as N/A in the list.
           name: 'ticketsSold',
           type: 'number',

@@ -7,6 +7,7 @@ import { BookOpen, Users, Calendar, Heart, Mail } from 'lucide-react';
 import {
   getUpcomingAhcEvents,
   getUpcomingBookClubEvents,
+  getUpcomingCommunityEvents,
 } from '@/utils/getEvents';
 import EventCard from '@/components/event-card/event-card';
 import { NewsletterSignupForm } from '@/components/newsletter-signup/newsletter-signup-form';
@@ -29,6 +30,7 @@ export const revalidate = 300;
 export default async function AstoriaHorrorClubPage() {
   const events = await getUpcomingAhcEvents();
   const bookClubEvents = await getUpcomingBookClubEvents();
+  const communityEvents = await getUpcomingCommunityEvents();
 
   return (
     <main className="ahc-legacy relative min-h-screen overflow-hidden font-sans">
@@ -221,6 +223,40 @@ export default async function AstoriaHorrorClubPage() {
 
             <div className="flex flex-col gap-8 md:gap-10 max-w-5xl mx-auto">
               {bookClubEvents.map((event) => (
+                <EventCard key={event.id} {...event} orientation="horz" />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Community nights: Rewind Wednesdays, Fridays at Medusa, Brewscares, Bingo */}
+        {communityEvents.length > 0 && (
+          <section
+            id="community"
+            className="mt-24 md:mt-32 animate-in fade-in slide-in-from-bottom-8 duration-1000"
+          >
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-3 mb-6 px-6 py-2 border border-blue-light/20 bg-blue-light/5 backdrop-blur-sm">
+                <Users className="w-5 h-5 text-blue-light" />
+                <span className="text-sm uppercase tracking-widest text-blue-light/80">
+                  Around the Neighborhood
+                </span>
+              </div>
+              <h2
+                className={cn(
+                  'text-[2.5rem] md:text-[5rem] lg:text-[6rem]',
+                  'leading-none mb-6',
+                  'bg-gradient-to-b from-foreground to-foreground/60 bg-clip-text text-transparent',
+                  creepsterfont.className
+                )}
+              >
+                Community Nights
+              </h2>
+              <div className="w-32 h-1 mx-auto bg-gradient-to-r from-transparent via-blue-light to-transparent" />
+            </div>
+
+            <div className="flex flex-col gap-8 md:gap-10 max-w-5xl mx-auto">
+              {communityEvents.map((event) => (
                 <EventCard key={event.id} {...event} orientation="horz" />
               ))}
             </div>

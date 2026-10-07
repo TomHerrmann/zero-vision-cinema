@@ -19,12 +19,20 @@ const TYPE_LABEL: Record<Event['eventType'], string> = {
   zvc: 'ZVC',
   ahc: 'AHC',
   bookclub: 'Book club',
+  rww: 'Rewind Wed',
+  fri: 'Medusa Fri',
+  brew: 'Brewscares',
+  bingo: 'Bingo',
 };
 
 const TYPE_LONG: Record<Event['eventType'], string> = {
   zvc: 'ZVC screening',
   ahc: 'Astoria Horror Club',
   bookclub: 'Book club',
+  rww: 'Rewind Wednesdays',
+  fri: 'Fridays at Medusa',
+  brew: 'Brewscares',
+  bingo: 'Bingo',
 };
 
 const venueOf = (event: Event): Location | null =>

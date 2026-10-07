@@ -258,6 +258,30 @@ describe('BroadcastEmail', () => {
     expect(html).not.toContain('About the Film');
     expect(html).not.toContain('Get Tickets');
   });
+
+  it.each(['rww', 'fri', 'brew', 'bingo'] as const)(
+    'community night (%s) → brand header, its own free copy, no CTA',
+    async (eventType) => {
+      const html = await render(
+        <BroadcastEmail
+          kind="announcement"
+          eventType={eventType}
+          paid={false}
+          headerImage="https://cdn.test/header.png"
+          eventName="Community Night"
+          eventDate="2026-08-15T23:00:00.000Z"
+          eventLocation="The Gaf"
+          eventUrl="https://zerovisioncinema.com/astoriahorrorclub"
+          movie={null}
+        />,
+        { pretty: true }
+      );
+      expect(html).not.toContain('https://cdn.test/header.png');
+      expect(html).toContain('free');
+      expect(html).not.toContain('Get Tickets');
+      expect(html).not.toContain('Our next Zero Vision Cinema event');
+    }
+  );
 });
 
 describe('Loyalty blocks', () => {

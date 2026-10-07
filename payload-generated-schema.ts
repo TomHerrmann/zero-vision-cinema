@@ -26,6 +26,10 @@ export const enum_events_event_type = pgEnum("enum_events_event_type", [
   "zvc",
   "ahc",
   "bookclub",
+  "rww",
+  "fri",
+  "brew",
+  "bingo",
 ]);
 export const enum_events_status = pgEnum("enum_events_status", [
   "draft",
@@ -33,7 +37,7 @@ export const enum_events_status = pgEnum("enum_events_status", [
 ]);
 export const enum__events_v_version_event_type = pgEnum(
   "enum__events_v_version_event_type",
-  ["zvc", "ahc", "bookclub"],
+  ["zvc", "ahc", "bookclub", "rww", "fri", "brew", "bingo"],
 );
 export const enum__events_v_version_status = pgEnum(
   "enum__events_v_version_status",

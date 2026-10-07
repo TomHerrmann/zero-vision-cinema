@@ -1,5 +1,6 @@
 import payloadConfig from '@/payload.config';
 import { getPayload } from 'payload';
+import { COMMUNITY_EVENT_TYPES } from '@/utils/eventTypes';
 
 const payload = await getPayload({ config: payloadConfig });
 
@@ -114,6 +115,31 @@ export const getUpcomingBookClubEvents = async () => {
       },
       eventType: {
         equals: 'bookclub',
+      },
+      datetime: {
+        greater_than: nowMinus30Minutes,
+      },
+    },
+    sort: ['datetime'],
+    depth: 1,
+  });
+
+  return docs;
+};
+
+/**
+ * Upcoming community nights (Rewind Wednesdays, Fridays at Medusa, Brewscares,
+ * Bingo), all free, for the AHC page.
+ */
+export const getUpcomingCommunityEvents = async () => {
+  const { docs } = await payload.find({
+    collection: 'events',
+    where: {
+      _status: {
+        equals: 'published',
+      },
+      eventType: {
+        in: [...COMMUNITY_EVENT_TYPES],
       },
       datetime: {
         greater_than: nowMinus30Minutes,

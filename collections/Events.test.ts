@@ -185,3 +185,29 @@ describe('Events beforeChange Stripe sync', () => {
     expect(h.linksList).not.toHaveBeenCalled();
   });
 });
+
+describe('Events beforeValidate pricing', () => {
+  const beforeValidate = (Events.hooks!.beforeValidate as any[])[0];
+
+  it.each(['ahc', 'bookclub', 'rww', 'fri', 'brew', 'bingo'])(
+    'forces %s events to free',
+    async (eventType) => {
+      const data = await beforeValidate({
+        data: { eventType, name: 'Night', price: 12 },
+      });
+      expect(data.price).toBe(0);
+    }
+  );
+
+  it('keeps the price on a ZVC screening', async () => {
+    const data = await beforeValidate({
+      data: { eventType: 'zvc', name: 'The Thing (1982)', price: 12 },
+    });
+    expect(data.price).toBe(12);
+  });
+
+  it('leaves the price alone on a partial update without an event type', async () => {
+    const data = await beforeValidate({ data: { name: 'Night', price: 12 } });
+    expect(data.price).toBe(12);
+  });
+});

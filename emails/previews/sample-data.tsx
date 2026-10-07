@@ -225,6 +225,23 @@ export const broadcastBookClubSample = {
   eventUrl: AHC_SITE_URL,
 };
 
+/** BroadcastEmail — free Rewind Wednesdays announcement (brand header, no CTA). */
+export const broadcastCommunitySample = {
+  kind: 'announcement' as const,
+  eventType: 'rww' as const,
+  paid: false,
+  headerImage: EMAIL_HEADER_IMAGE_ZVC_URL,
+  eventName: 'Rewind Wednesdays',
+  eventImage: undefined,
+  eventDate: EVENT_DATE,
+  eventLocation: 'The Gaf',
+  eventAddress: '47-22 30th Ave., Astoria, NY 11103',
+  eventDescription: undefined,
+  movie: null,
+  book: null,
+  eventUrl: AHC_SITE_URL,
+};
+
 /**
  * CustomBroadcastEmail — hand-written broadcast. The three images are
  * deliberately mismatched (wide banner, portrait poster, small square) to show
