@@ -92,14 +92,14 @@ export async function POST(req: Request) {
         const unitPrice = Number(pi.metadata?.unit_price ?? '0');
         const newsletterOptin = pi.metadata?.newsletter_optin === 'true';
 
+        // No productId means the payment didn't come from our checkout — e.g. a
+        // Tap to Pay sale at the door from the Stripe Dashboard app. Nothing to
+        // fulfil, so acknowledge it; a 4xx would make Stripe retry for days.
         if (!productId) {
-          await logtail.error(
-            `API /stripe/webhook: payment_intent ${pi.id} missing productId metadata`
+          await logtail.info(
+            `API /stripe/webhook: payment_intent ${pi.id} has no productId metadata (not a site checkout); ignoring.`
           );
-          return NextResponse.json(
-            { error: 'Missing product metadata' },
-            { status: 400 }
-          );
+          return NextResponse.json({ received: true }, { status: 200 });
         }
 
         // Expand the latest charge for the receipt URL and billing details.
