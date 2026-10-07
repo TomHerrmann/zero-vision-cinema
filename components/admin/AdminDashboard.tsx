@@ -6,6 +6,7 @@ import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import { fetchBookDataByOpenLibraryId } from '@/lib/openlibrary';
 import { eventClosesAt } from '@/utils/eventEnded';
 import { CopyLinkButton } from './CopyLinkButton';
+import { isPaidEventType } from '@/utils/eventTypes';
 import {
   dateBlock,
   daysUntil,
@@ -23,6 +24,7 @@ const TYPE_LABEL: Record<Event['eventType'], string> = {
   fri: 'Medusa Fri',
   brew: 'Brewscares',
   bingo: 'Bingo',
+  brunch: 'Brunch',
 };
 
 const TYPE_LONG: Record<Event['eventType'], string> = {
@@ -33,6 +35,7 @@ const TYPE_LONG: Record<Event['eventType'], string> = {
   fri: 'Fridays at Medusa',
   brew: 'Brewscares',
   bingo: 'Bingo',
+  brunch: 'Horror Brunch',
 };
 
 const venueOf = (event: Event): Location | null =>
@@ -172,9 +175,9 @@ export async function AdminDashboard({ payload, user }: AdminViewServerProps) {
                 {formatDay(next.datetime)} · {formatTime(next.datetime)}
               </span>
               {nextVenue?.name && <span>{nextVenue.name}</span>}
-              {next.eventType === 'zvc' && next.price ? <span>${next.price}</span> : <span>Free</span>}
+              {isPaidEventType(next.eventType) && next.price ? <span>${next.price}</span> : <span>Free</span>}
             </div>
-            {next.eventType === 'zvc' && nextVenue?.capacity ? (
+            {isPaidEventType(next.eventType) && nextVenue?.capacity ? (
               <div className="zvc-meter">
                 <div className="zvc-meter__label">
                   <span>Tickets sold</span>
@@ -257,7 +260,7 @@ export async function AdminDashboard({ payload, user }: AdminViewServerProps) {
                 </span>
                 <span className={`zvc-tag zvc-tag--${event.eventType}`}>{TYPE_LABEL[event.eventType]}</span>
                 <span className="zvc-row__end">
-                  {event.eventType === 'zvc'
+                  {isPaidEventType(event.eventType)
                     ? `${event.ticketsSold ?? 0}${venue?.capacity ? ` / ${venue.capacity}` : ''}`
                     : 'Free'}
                 </span>

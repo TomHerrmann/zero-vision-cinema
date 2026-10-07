@@ -1,6 +1,6 @@
 import payloadConfig from '@/payload.config';
 import { getPayload } from 'payload';
-import { COMMUNITY_EVENT_TYPES } from '@/utils/eventTypes';
+import { COMMUNITY_EVENT_TYPES, PAID_EVENT_TYPES } from '@/utils/eventTypes';
 
 const payload = await getPayload({ config: payloadConfig });
 
@@ -28,13 +28,14 @@ export const getUpcomingZvcEvents = async () => {
   return docs;
 };
 
-export const getZvcEventById = async (id: number) => {
+/** A published ticketed event (ZVC or Brewscares), for its ticket page. */
+export const getPaidEventById = async (id: number) => {
   const { docs } = await payload.find({
     collection: 'events',
     where: {
       _status: { equals: 'published' },
       id: { equals: id },
-      eventType: { equals: 'zvc' },
+      eventType: { in: [...PAID_EVENT_TYPES] },
     },
     // depth 2 resolves image + location.
     depth: 2,
@@ -129,7 +130,7 @@ export const getUpcomingBookClubEvents = async () => {
 
 /**
  * Upcoming community nights (Rewind Wednesdays, Fridays at Medusa, Brewscares,
- * Bingo), all free, for the AHC page.
+ * Bingo, Horror Brunch), for the AHC page.
  */
 export const getUpcomingCommunityEvents = async () => {
   const { docs } = await payload.find({

@@ -19,6 +19,8 @@ export function topicIdForEventType(
       return process.env.RESEND_TOPIC_ID_BREW;
     case 'bingo':
       return process.env.RESEND_TOPIC_ID_BINGO;
+    case 'brunch':
+      return process.env.RESEND_TOPIC_ID_BRUNCH;
     default:
       return undefined;
   }

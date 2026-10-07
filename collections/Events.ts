@@ -10,7 +10,12 @@ import {
 } from '@/lib/openlibrary';
 import { plotToLexical, richTextIsBlank } from '@/utils/omdbFill';
 import { Location } from '@/payload-types';
-import { EVENT_TYPE_NAMES, isCommunityEventType } from '@/utils/eventTypes';
+import {
+  EVENT_TYPE_NAMES,
+  isCommunityEventType,
+  isPaidEventType,
+  nextDefaultDatetime,
+} from '@/utils/eventTypes';
 
 /** Relationship / upload fields come back as an id or a populated doc. */
 const relationId = (value: unknown): string | number | undefined => {
@@ -91,8 +96,8 @@ export const Events: CollectionConfig = {
       async ({ data }) => {
         if (!data) return data;
 
-        // Only ZVC screenings are paid; every other type is always free.
-        if (data.eventType && data.eventType !== 'zvc') {
+        // Only ZVC and Brewscares are paid; every other type is always free.
+        if (data.eventType && !isPaidEventType(data.eventType)) {
           data.price = 0;
         }
 
@@ -337,7 +342,7 @@ export const Events: CollectionConfig = {
       label: 'Event type',
       admin: {
         description:
-          'ZVC = paid screening (full fields). AHC = free movie event. Book Club = free event driven by a book title + author. Rewind Wednesdays, Fridays at Medusa, Brewscares and Bingo = free nights with their own description and poster (IMDb optional).',
+          'ZVC = paid screening (full fields). AHC = free movie event. Book Club = free event driven by a book title + author. Brewscares = ticketed night. Rewind Wednesdays, Fridays at Medusa, Bingo and Horror Brunch = free. The last five keep their own description and poster (IMDb optional).',
         components: {
           Field: '/components/admin/EventTypeField#EventTypeField',
         },
@@ -431,6 +436,9 @@ export const Events: CollectionConfig = {
           type: 'date',
           label: 'Date and time',
           required: true,
+          // New events open as ZVC, so start on ZVC's next usual slot. The type
+          // picker moves it to the chosen type's slot (utils/eventTypes).
+          defaultValue: () => nextDefaultDatetime('zvc'),
           admin: {
             width: '50%',
             date: {
@@ -444,6 +452,15 @@ export const Events: CollectionConfig = {
           label: 'Venue',
           relationTo: 'locations' as CollectionSlug,
           required: true,
+          // New events open as ZVC, so start with ZVC's default venue. The
+          // type picker swaps it for the chosen type's default (Settings).
+          defaultValue: async ({ req }) => {
+            const settings = await req.payload.findGlobal({
+              slug: 'settings',
+              depth: 0,
+            });
+            return relationId(settings?.defaultVenueZvc);
+          },
           admin: { width: '50%' },
         },
       ],
@@ -462,12 +479,12 @@ export const Events: CollectionConfig = {
           },
           admin: {
             width: '50%',
-            // Only ZVC events are paid — every other type is forced to 0 on save.
-            condition: (data) => data.eventType === 'zvc',
+            // Only ZVC and Brewscares are paid — every other type is forced to 0 on save.
+            condition: (data) => isPaidEventType(data.eventType),
           },
         },
         {
-          // ZVC events only: every other type is free, so there are no tickets to
+          // Paid types only: every other type is free, so there are no tickets to
           // count. Hidden on those in the editor, and shown as N/A in the list.
           name: 'ticketsSold',
           type: 'number',
@@ -476,7 +493,7 @@ export const Events: CollectionConfig = {
           admin: {
             width: '50%',
             readOnly: true,
-            condition: (data) => data.eventType === 'zvc',
+            condition: (data) => isPaidEventType(data.eventType),
             components: {
               Cell: '/collections/components/TicketsSoldCell#TicketsSoldCell',
             },

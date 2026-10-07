@@ -259,7 +259,7 @@ describe('BroadcastEmail', () => {
     expect(html).not.toContain('Get Tickets');
   });
 
-  it.each(['rww', 'fri', 'brew', 'bingo'] as const)(
+  it.each(['rww', 'fri', 'brew', 'bingo', 'brunch'] as const)(
     'community night (%s) → brand header, its own free copy, no CTA',
     async (eventType) => {
       const html = await render(
@@ -282,6 +282,26 @@ describe('BroadcastEmail', () => {
       expect(html).not.toContain('Our next Zero Vision Cinema event');
     }
   );
+
+  it('paid Brewscares → Get Tickets CTA to its ticket page', async () => {
+    const html = await render(
+      <BroadcastEmail
+        kind="announcement"
+        eventType="brew"
+        paid
+        headerImage="https://cdn.test/header.png"
+        eventName="Brewscares"
+        eventDate="2026-08-15T23:00:00.000Z"
+        eventLocation="Medusa Art Studio"
+        eventUrl="https://zerovisioncinema.com/events/9"
+        movie={null}
+      />,
+      { pretty: true }
+    );
+    expect(html).toContain('Get Tickets');
+    expect(html).toContain('https://zerovisioncinema.com/events/9');
+    expect(html).not.toContain('https://cdn.test/header.png');
+  });
 });
 
 describe('Loyalty blocks', () => {

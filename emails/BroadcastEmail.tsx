@@ -40,11 +40,11 @@ export type BookInfo = {
 
 interface Props {
   kind: BroadcastKind;
-  /** Event type — drives the copy voice (one per type; ZVC splits paid/free). */
+  /** Event type — drives the copy voice (one per type; ZVC and Brewscares split paid/free). */
   eventType: BroadcastEventType;
   /**
-   * Whether the event is paid. Only a paid ZVC screening gets a "Get Tickets"
-   * CTA; every free event (ZVC $0, AHC, book club) renders no CTA — the email
+   * Whether the event is paid. Only a paid ZVC screening or Brewscares gets a
+   * "Get Tickets" CTA; every free event renders no CTA — the email
    * itself carries all the details, and there's nothing to buy or RSVP to.
    */
   paid?: boolean;
@@ -72,9 +72,9 @@ interface Props {
   eventUrl?: string;
 }
 
-type VoiceKey = 'zvcPaid' | 'zvcFree' | Exclude<EventType, 'zvc'>;
+type VoiceKey = 'zvcPaid' | 'zvcFree' | 'brewPaid' | Exclude<EventType, 'zvc'>;
 type Voice = {
-  /** Only paid ZVC has a CTA; free events render none. */
+  /** Only paid events (ZVC, Brewscares) have a CTA; free events render none. */
   cta?: string;
   announcement: { kicker: string; blurb: string };
   reminder: { kicker: string; blurb: string };
@@ -157,6 +157,18 @@ const COPY: Record<VoiceKey, Voice> = {
         "It's Friday at Medusa tonight. No ticket needed — come hang out with us.",
     },
   },
+  brewPaid: {
+    cta: 'Get Tickets',
+    announcement: {
+      kicker: 'On sale now',
+      blurb:
+        "Tickets are live for the next Brewscares — grab yours before they're gone.",
+    },
+    reminder: {
+      kicker: 'Tonight',
+      blurb: 'Brewscares is tonight. Last call for tickets.',
+    },
+  },
   brew: {
     announcement: {
       kicker: 'Coming up',
@@ -180,11 +192,23 @@ const COPY: Record<VoiceKey, Voice> = {
       blurb: 'Bingo is tonight. No ticket needed — just show up.',
     },
   },
+  brunch: {
+    announcement: {
+      kicker: 'Coming up',
+      blurb:
+        "Horror Brunch is on the calendar. It's free and open to all — here are the details.",
+    },
+    reminder: {
+      kicker: 'Today',
+      blurb: 'Horror Brunch is today. No ticket needed — just show up.',
+    },
+  },
 };
 
 function voiceKey(eventType: BroadcastEventType, paid?: boolean): VoiceKey {
-  if (eventType !== 'zvc') return eventType;
-  return paid ? 'zvcPaid' : 'zvcFree';
+  if (eventType === 'zvc') return paid ? 'zvcPaid' : 'zvcFree';
+  if (eventType === 'brew' && paid) return 'brewPaid';
+  return eventType;
 }
 
 function formatEventDate(iso: string): { day: string; time: string } {

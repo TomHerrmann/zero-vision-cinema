@@ -189,7 +189,7 @@ describe('Events beforeChange Stripe sync', () => {
 describe('Events beforeValidate pricing', () => {
   const beforeValidate = (Events.hooks!.beforeValidate as any[])[0];
 
-  it.each(['ahc', 'bookclub', 'rww', 'fri', 'brew', 'bingo'])(
+  it.each(['ahc', 'bookclub', 'rww', 'fri', 'bingo', 'brunch'])(
     'forces %s events to free',
     async (eventType) => {
       const data = await beforeValidate({
@@ -199,11 +199,11 @@ describe('Events beforeValidate pricing', () => {
     }
   );
 
-  it('keeps the price on a ZVC screening', async () => {
+  it.each(['zvc', 'brew'])('keeps the price on a paid %s event', async (eventType) => {
     const data = await beforeValidate({
-      data: { eventType: 'zvc', name: 'The Thing (1982)', price: 12 },
+      data: { eventType, name: 'The Thing (1982)', price: 13 },
     });
-    expect(data.price).toBe(12);
+    expect(data.price).toBe(13);
   });
 
   it('leaves the price alone on a partial update without an event type', async () => {

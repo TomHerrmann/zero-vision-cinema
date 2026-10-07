@@ -46,7 +46,7 @@ function tzOffsetMs(instant: Date, tz: string): number {
   return asUTC - instant.getTime();
 }
 
-function zonedDateParts(instant: Date, tz: string) {
+export function zonedDateParts(instant: Date, tz: string) {
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: tz,
     year: 'numeric',
@@ -62,7 +62,7 @@ function zonedDateParts(instant: Date, tz: string) {
   };
 }
 
-function zonedWallTimeToUtc(
+export function zonedWallTimeToUtc(
   year: number,
   month: number,
   day: number,

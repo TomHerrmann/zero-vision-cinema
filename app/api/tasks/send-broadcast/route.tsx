@@ -19,7 +19,7 @@ import {
 } from '@/app/contsants/constants';
 import BroadcastEmail from '@/emails/BroadcastEmail';
 import type { Event, Location, Media } from '@/payload-types';
-import { EVENT_TYPE_NAMES } from '@/utils/eventTypes';
+import { EVENT_TYPE_NAMES, isPaidEventType } from '@/utils/eventTypes';
 
 type Body = { eventId?: number; kind?: BroadcastKind };
 
@@ -146,7 +146,7 @@ export async function POST(req: Request) {
     const location = event_.location as Location;
     const isPaid = (event_.price ?? 0) > 0; // paid ZVC vs free AHC / book club
     const eventUrl =
-      event_.eventType === 'zvc'
+      isPaidEventType(event_.eventType)
         ? `${ZVC_SITE_URL}/events/${event_.id}`
         : AHC_SITE_URL;
 

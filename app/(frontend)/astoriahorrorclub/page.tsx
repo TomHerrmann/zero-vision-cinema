@@ -229,7 +229,7 @@ export default async function AstoriaHorrorClubPage() {
           </section>
         )}
 
-        {/* Community nights: Rewind Wednesdays, Fridays at Medusa, Brewscares, Bingo */}
+        {/* Community nights: Rewind Wednesdays, Fridays at Medusa, Brewscares, Bingo, Horror Brunch */}
         {communityEvents.length > 0 && (
           <section
             id="community"

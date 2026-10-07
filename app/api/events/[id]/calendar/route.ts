@@ -10,6 +10,7 @@ import {
   googleCalendarUrl,
   type CalendarEvent,
 } from '@/utils/eventCalendar';
+import { isPaidEventType } from '@/utils/eventTypes';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -40,7 +41,7 @@ export async function GET(req: Request, { params }: Params) {
   const location =
     typeof event.location === 'object' ? (event.location as Location) : null;
   const url =
-    event.eventType === 'zvc'
+    isPaidEventType(event.eventType)
       ? `${ZVC_SITE_URL}/events/${event.id}`
       : AHC_SITE_URL;
 
