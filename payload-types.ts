@@ -205,9 +205,9 @@ export interface Location {
 export interface Event {
   id: number;
   /**
-   * ZVC = paid screening (full fields). AHC = free movie event. Book Club = free event driven by a book title + author.
+   * ZVC = paid screening (full fields). AHC = free movie event. Book Club = free event driven by a book title + author. Brewscares = ticketed stand-up comedy. Rewind Wednesdays, Fridays at Medusa, Bingo and Horror Brunch = free. The last five keep their own description and poster (IMDb optional).
    */
-  eventType: 'zvc' | 'ahc' | 'bookclub';
+  eventType: 'zvc' | 'ahc' | 'bookclub' | 'rww' | 'fri' | 'brew' | 'bingo' | 'brunch';
   /**
    * Optional — leave blank to auto-fill from the movie ("Title (Year)") or book ("Title — Author").
    */
@@ -788,6 +788,14 @@ export interface Setting {
    * Default price (USD) for new ZVC events. Existing events are not changed.
    */
   defaultTicketPrice: number;
+  defaultVenueZvc?: (number | null) | Location;
+  defaultVenueAhc?: (number | null) | Location;
+  defaultVenueBookclub?: (number | null) | Location;
+  defaultVenueRww?: (number | null) | Location;
+  defaultVenueFri?: (number | null) | Location;
+  defaultVenueBrew?: (number | null) | Location;
+  defaultVenueBingo?: (number | null) | Location;
+  defaultVenueBrunch?: (number | null) | Location;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -797,6 +805,14 @@ export interface Setting {
  */
 export interface SettingsSelect<T extends boolean = true> {
   defaultTicketPrice?: T;
+  defaultVenueZvc?: T;
+  defaultVenueAhc?: T;
+  defaultVenueBookclub?: T;
+  defaultVenueRww?: T;
+  defaultVenueFri?: T;
+  defaultVenueBrew?: T;
+  defaultVenueBingo?: T;
+  defaultVenueBrunch?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

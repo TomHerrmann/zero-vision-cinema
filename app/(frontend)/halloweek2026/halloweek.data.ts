@@ -108,7 +108,7 @@ export const HALLOWEEK_VENUES: HalloweekVenue[] = [
     address: '33-07 Ditmars Blvd, Astoria, NY 11105',
   },
   {
-    name: 'Shillelagh Tavern',
+    name: 'The Gaf',
     address: '47-22 30th Ave., Astoria, NY 11103',
   },
   {
@@ -166,12 +166,12 @@ export const HALLOWEEK_SCHEDULE: HalloweekSlot[] = [
     meta: 'All-VHS marathon · you pick the movies',
     description:
       'One of our most beloved local events is back. Horror Brunch at ' +
-      'Shillelagh Tavern is a longstanding series that pairs the weirdest ' +
+      'The Gaf is a longstanding series that pairs the weirdest ' +
       'horror movies we can find, and the best takeout brunch you can order. ' +
       'Come and vote on what we watch throughout the day. This time, every ' +
       'movie in this marathon will be screened on glorious, low-fi VHS — so ' +
       'bring your own tapes.',
-    venueName: 'Shillelagh Tavern',
+    venueName: 'The Gaf',
     tags: ['BYO VHS', 'Audience vote'],
   },
   {

@@ -19,6 +19,7 @@ import {
 } from '@/app/contsants/constants';
 import BroadcastEmail from '@/emails/BroadcastEmail';
 import type { Event, Location, Media } from '@/payload-types';
+import { EVENT_TYPE_NAMES, isPaidEventType } from '@/utils/eventTypes';
 
 type Body = { eventId?: number; kind?: BroadcastKind };
 
@@ -34,20 +35,12 @@ const SENT_FIELD = {
   reminder: 'reminderSentAt',
 } as const;
 
-// Typed against Event['eventType'] so adding a fourth event type is a compile
-// error here, rather than silently mailing the segment a "— undefined" subject.
-const EventTypeMap: Record<Event['eventType'], string> = {
-  zvc: 'Zero Vision Cinema',
-  ahc: 'Astoria Horror Club',
-  bookclub: 'Astoria Horror Book Club',
-};
-
 // One line each: a newline in a subject header gets stripped or mangled.
 const SUBJECT = {
   announcement: (event_: Event) =>
-    `Coming up: ${event_.name} — ${EventTypeMap[event_.eventType]}`,
+    `Coming up: ${event_.name} — ${EVENT_TYPE_NAMES[event_.eventType]}`,
   reminder: (event_: Event) =>
-    `Today: ${event_.name} — ${EventTypeMap[event_.eventType]}`,
+    `Today: ${event_.name} — ${EVENT_TYPE_NAMES[event_.eventType]}`,
 };
 
 /**
@@ -107,6 +100,20 @@ export async function POST(req: Request) {
       );
     }
 
+    // Without a topic the broadcast would reach the whole segment, including
+    // people who unsubscribed from this event type. Skip loudly until the
+    // topic exists and its RESEND_TOPIC_ID_* env var is set.
+    const topicId = topicIdForEventType(event_.eventType);
+    if (!topicId) {
+      await logtail.error(
+        `API /tasks/send-broadcast: no Resend topic set for event type "${event_.eventType}"; skipping ${kind} for event ${eventId}`
+      );
+      return NextResponse.json(
+        { received: true, skipped: true },
+        { status: 200 }
+      );
+    }
+
     const isBookClub = event_.eventType === 'bookclub';
 
     // OMDB film data (film screenings), or Open Library book data (book club) —
@@ -139,7 +146,7 @@ export async function POST(req: Request) {
     const location = event_.location as Location;
     const isPaid = (event_.price ?? 0) > 0; // paid ZVC vs free AHC / book club
     const eventUrl =
-      event_.eventType === 'zvc'
+      isPaidEventType(event_.eventType)
         ? `${ZVC_SITE_URL}/events/${event_.id}`
         : AHC_SITE_URL;
 
@@ -202,7 +209,7 @@ export async function POST(req: Request) {
         },
         body: JSON.stringify({
           segment_id: segmentId,
-          topic_id: topicIdForEventType(event_.eventType),
+          topic_id: topicId,
           from: ZVC_DISPLAY_NAME_EMAIL,
           subject: SUBJECT[kind](event_),
           html,

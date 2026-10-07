@@ -4,6 +4,7 @@ import { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical';
 import { LLC_NAME, RESEND_UNSUBSCRIBE_URL } from '@/app/contsants/constants';
 import { richTextIsEmpty } from '@/utils/richText';
 import type { MovieData } from '@/lib/omdb';
+import { isCommunityEventType, type EventType } from '@/utils/eventTypes';
 import {
   BODY_FONT,
   BrandFooter,
@@ -27,7 +28,7 @@ import {
 } from './components/brand';
 
 export type BroadcastKind = 'announcement' | 'reminder';
-export type BroadcastEventType = 'zvc' | 'ahc' | 'bookclub';
+export type BroadcastEventType = EventType;
 
 /** Book details for book-club events (title/author from the event, cover/synopsis from Open Library). */
 export type BookInfo = {
@@ -39,17 +40,17 @@ export type BookInfo = {
 
 interface Props {
   kind: BroadcastKind;
-  /** Event type — drives the copy voice (ZVC / Astoria Horror Club / Book Club). */
+  /** Event type — drives the copy voice (one per type; ZVC and Brewscares split paid/free). */
   eventType: BroadcastEventType;
   /**
-   * Whether the event is paid. Only a paid ZVC screening gets a "Get Tickets"
-   * CTA; every free event (ZVC $0, AHC, book club) renders no CTA — the email
+   * Whether the event is paid. Only a paid ZVC screening or Brewscares gets a
+   * "Get Tickets" CTA; every free event renders no CTA — the email
    * itself carries all the details, and there's nothing to buy or RSVP to.
    */
   paid?: boolean;
   /**
-   * Per-event-type header banner. ZVC events use the brand logo header instead;
-   * Astoria Horror Club and Book Club keep their own banners.
+   * Per-event-type header banner. ZVC and the community nights use the brand
+   * logo header instead; Astoria Horror Club and Book Club keep their own banners.
    */
   headerImage: string;
   eventName: string;
@@ -71,9 +72,9 @@ interface Props {
   eventUrl?: string;
 }
 
-type VoiceKey = 'zvcPaid' | 'zvcFree' | 'ahc' | 'bookclub';
+type VoiceKey = 'zvcPaid' | 'zvcFree' | 'brewPaid' | Exclude<EventType, 'zvc'>;
 type Voice = {
-  /** Only paid ZVC has a CTA; free events render none. */
+  /** Only paid events (ZVC, Brewscares) have a CTA; free events render none. */
   cta?: string;
   announcement: { kicker: string; blurb: string };
   reminder: { kicker: string; blurb: string };
@@ -132,12 +133,82 @@ const COPY: Record<VoiceKey, Voice> = {
         'Astoria Horror Book Club meets tonight — come chat about this month’s read with us.',
     },
   },
+  rww: {
+    announcement: {
+      kicker: 'Coming up',
+      blurb:
+        "Rewind Wednesdays is back. Here's what's on — free and open to all, no ticket needed.",
+    },
+    reminder: {
+      kicker: 'Tonight',
+      blurb:
+        "Rewind Wednesdays is tonight. Just show up — we'll see you there.",
+    },
+  },
+  fri: {
+    announcement: {
+      kicker: 'Coming up',
+      blurb:
+        "Our next Friday at Medusa is set. It's free and open to all — here are the details.",
+    },
+    reminder: {
+      kicker: 'Tonight',
+      blurb:
+        "It's Friday at Medusa tonight. No ticket needed — come hang out with us.",
+    },
+  },
+  brewPaid: {
+    cta: 'Get Tickets',
+    announcement: {
+      kicker: 'On sale now',
+      blurb:
+        "Tickets are live for the next Brewscares — grab yours before they're gone.",
+    },
+    reminder: {
+      kicker: 'Tonight',
+      blurb: 'Brewscares is tonight. Last call for tickets.',
+    },
+  },
+  brew: {
+    announcement: {
+      kicker: 'Coming up',
+      blurb:
+        'Brewscares is coming up — free, no ticket needed. Here are the details.',
+    },
+    reminder: {
+      kicker: 'Tonight',
+      blurb:
+        'Brewscares is tonight. No ticket needed — just show up.',
+    },
+  },
+  bingo: {
+    announcement: {
+      kicker: 'Coming up',
+      blurb:
+        "Bingo night is on the calendar. It's free and open to all — here are the details.",
+    },
+    reminder: {
+      kicker: 'Tonight',
+      blurb: 'Bingo is tonight. No ticket needed — just show up.',
+    },
+  },
+  brunch: {
+    announcement: {
+      kicker: 'Coming up',
+      blurb:
+        "Horror Brunch is on the calendar. It's free and open to all — here are the details.",
+    },
+    reminder: {
+      kicker: 'Today',
+      blurb: 'Horror Brunch is today. No ticket needed — just show up.',
+    },
+  },
 };
 
 function voiceKey(eventType: BroadcastEventType, paid?: boolean): VoiceKey {
-  if (eventType === 'ahc') return 'ahc';
-  if (eventType === 'bookclub') return 'bookclub';
-  return paid ? 'zvcPaid' : 'zvcFree';
+  if (eventType === 'zvc') return paid ? 'zvcPaid' : 'zvcFree';
+  if (eventType === 'brew' && paid) return 'brewPaid';
+  return eventType;
 }
 
 function formatEventDate(iso: string): { day: string; time: string } {
@@ -183,7 +254,8 @@ export default function BroadcastEmail({
 
   return (
     <EmailShell preview={`${c.kicker}: ${eventName}`}>
-      {eventType === 'zvc' ? (
+      {/* AHC and Book Club have their own banner art; everything else uses the brand header. */}
+      {eventType === 'zvc' || isCommunityEventType(eventType) ? (
         <BrandHeader />
       ) : (
         <Img src={headerImage} width="100%" alt={LLC_NAME} style={banner} />

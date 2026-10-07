@@ -11,6 +11,16 @@ export function topicIdForEventType(
       return process.env.RESEND_TOPIC_ID_AHC;
     case 'bookclub':
       return process.env.RESEND_TOPIC_ID_BOOK_CLUB;
+    case 'rww':
+      return process.env.RESEND_TOPIC_ID_RWW;
+    case 'fri':
+      return process.env.RESEND_TOPIC_ID_FRI;
+    case 'brew':
+      return process.env.RESEND_TOPIC_ID_BREW;
+    case 'bingo':
+      return process.env.RESEND_TOPIC_ID_BINGO;
+    case 'brunch':
+      return process.env.RESEND_TOPIC_ID_BRUNCH;
     default:
       return undefined;
   }

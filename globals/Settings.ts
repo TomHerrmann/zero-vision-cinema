@@ -1,4 +1,18 @@
-import type { GlobalConfig } from 'payload';
+import type { CollectionSlug, Field, GlobalConfig } from 'payload';
+import {
+  EVENT_TYPE_NAMES,
+  defaultVenueField,
+  type EventType,
+} from '@/utils/eventTypes';
+
+const defaultVenueFields: Field[] = (
+  Object.entries(EVENT_TYPE_NAMES) as [EventType, string][]
+).map(([eventType, label]) => ({
+  name: defaultVenueField(eventType),
+  type: 'relationship',
+  relationTo: 'locations' as CollectionSlug,
+  label,
+}));
 
 /**
  * Site-wide settings editable in the admin. Holds values that change over time
@@ -21,6 +35,16 @@ export const Settings: GlobalConfig = {
         description:
           'Default price (USD) for new ZVC events. Existing events are not changed.',
       },
+    },
+    {
+      // Presentational only: the fields stay top-level in the data.
+      type: 'collapsible',
+      label: 'Default venues',
+      admin: {
+        description:
+          'The venue a new event starts with when its type is picked. You can still change it per event.',
+      },
+      fields: defaultVenueFields,
     },
   ],
 };

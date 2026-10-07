@@ -455,6 +455,34 @@
     color: var(--zvc-blackout);
   }
 
+  .zvc-tag--rww {
+    background: var(--zvc-glow);
+    color: var(--zvc-blackout);
+  }
+
+  .zvc-tag--fri {
+    background: var(--zvc-blackout);
+    color: var(--zvc-glow);
+    border: 1px solid var(--zvc-cult-classic);
+  }
+
+  .zvc-tag--brew {
+    background: var(--zvc-static);
+    color: var(--zvc-blackout);
+  }
+
+  .zvc-tag--bingo {
+    background: var(--zvc-blackout);
+    color: var(--zvc-retro-blue);
+    border: 1px solid var(--zvc-retro-blue);
+  }
+
+  .zvc-tag--brunch {
+    background: var(--zvc-cult-classic);
+    color: var(--zvc-static);
+    border: 1px solid var(--zvc-glow);
+  }
+
   .zvc-tag--draft {
     border: 1px dashed var(--zvc-static);
     color: var(--zvc-static);

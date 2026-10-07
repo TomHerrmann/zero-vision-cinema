@@ -7,13 +7,15 @@ const h = vi.hoisted(() => ({
   fetchMovie: vi.fn(),
   render: vi.fn(),
   fetch: vi.fn(),
+  topicId: vi.fn(),
 }));
 
 vi.mock('@/lib/qstash', () => ({ verifyQstashRequest: h.verify }));
 vi.mock('@react-email/render', () => ({ render: h.render }));
 vi.mock('@/lib/broadcasts', () => ({
-  topicIdForEventType: () => 'topic_zvc',
+  topicIdForEventType: h.topicId,
 }));
+vi.mock('@/lib/logtail', () => ({ logtail: { error: vi.fn() } }));
 vi.mock('payload', () => ({
   getPayload: vi.fn().mockResolvedValue({
     findByID: h.findByID,
@@ -53,6 +55,7 @@ beforeEach(() => {
   h.fetchMovie.mockReset().mockResolvedValue(null);
   h.render.mockReset().mockResolvedValue('<html>hi</html>');
   h.fetch.mockReset().mockResolvedValue({ ok: true, text: async () => '' });
+  h.topicId.mockReset().mockReturnValue('topic_zvc');
   vi.stubGlobal('fetch', h.fetch);
 });
 
@@ -121,6 +124,26 @@ describe('send-broadcast task', () => {
 
     const { subject } = JSON.parse(h.fetch.mock.calls[0][1].body);
     expect(subject).toBe('Today: The Thing — Astoria Horror Club');
+  });
+
+  it('uses the Rewind Wednesdays name for a community night', async () => {
+    h.findByID.mockResolvedValue({ ...event, eventType: 'rww', price: 0 });
+
+    await POST(req());
+
+    const { subject } = JSON.parse(h.fetch.mock.calls[0][1].body);
+    expect(subject).toBe('Coming up: The Thing — Rewind Wednesdays');
+  });
+
+  it('skips without claiming when the event type has no Resend topic yet', async () => {
+    h.findByID.mockResolvedValue({ ...event, eventType: 'bingo', price: 0 });
+    h.topicId.mockReturnValue(undefined);
+
+    const res = await POST(req());
+
+    expect(await res.json()).toEqual({ received: true, skipped: true });
+    expect(h.fetch).not.toHaveBeenCalled();
+    expect(h.update).not.toHaveBeenCalled();
   });
 
   it('fails loudly when the full-access key is missing', async () => {

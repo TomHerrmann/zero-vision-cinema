@@ -27,6 +27,7 @@ import {
   broadcastZvcFreeSample,
   broadcastAhcSample,
   broadcastBookClubSample,
+  broadcastCommunitySample,
   customBroadcastSample,
 } from '../emails/previews/sample-data';
 import {
@@ -90,6 +91,10 @@ async function main() {
     {
       subject: `[QA] Book Club: ${broadcastBookClubSample.eventName} — Zero Vision Cinema`,
       react: <BroadcastEmail {...broadcastBookClubSample} />,
+    },
+    {
+      subject: `[QA] Community night: ${broadcastCommunitySample.eventName} — Zero Vision Cinema`,
+      react: <BroadcastEmail {...broadcastCommunitySample} />,
     },
     {
       subject: `[QA] Custom broadcast: ${customBroadcastSample.subject}`,

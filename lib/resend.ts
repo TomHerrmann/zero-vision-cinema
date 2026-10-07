@@ -1,5 +1,9 @@
 import { CreateContactOptions, Resend } from 'resend';
 import { logtail } from './logtail';
+import { topicIdForEventType } from './broadcasts';
+import { EVENT_TYPE_NAMES, type EventType } from '@/utils/eventTypes';
+
+const EVENT_TYPES = Object.keys(EVENT_TYPE_NAMES) as EventType[];
 
 export const resend = new Resend(process.env.RESEND_FULL_API_KEY);
 
@@ -21,14 +25,11 @@ export async function addResendContact({
     lastName,
     unsubscribed: false,
     segments: [{ id: process.env.RESEND_SEGMENT_ID as string }],
-    topics: [
-      { id: process.env.RESEND_TOPIC_ID_ZVC as string, subscription: 'opt_in' },
-      { id: process.env.RESEND_TOPIC_ID_AHC as string, subscription: 'opt_in' },
-      {
-        id: process.env.RESEND_TOPIC_ID_BOOK_CLUB as string,
-        subscription: 'opt_in',
-      },
-    ],
+    // A topic whose env var isn't set yet is left out rather than sent as an
+    // empty id, which would fail the whole signup.
+    topics: EVENT_TYPES.map(topicIdForEventType)
+      .filter((id): id is string => Boolean(id))
+      .map((id) => ({ id, subscription: 'opt_in' as const })),
   });
 
   console.log(`Resend contact create response: ${JSON.stringify(data)}`);
