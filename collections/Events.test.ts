@@ -11,6 +11,7 @@ const h = vi.hoisted(() => ({
   linksList: vi.fn(),
   findByID: vi.fn(),
   logError: vi.fn(),
+  fetchMovie: vi.fn(),
 }));
 
 vi.mock('@/lib/stripe', () => ({
@@ -26,7 +27,7 @@ vi.mock('@/lib/stripe', () => ({
   },
 }));
 vi.mock('@/lib/logtail', () => ({ logtail: { error: h.logError } }));
-vi.mock('@/lib/omdb', () => ({ fetchMovieDataByImdbId: vi.fn() }));
+vi.mock('@/lib/omdb', () => ({ fetchMovieDataByImdbId: h.fetchMovie }));
 vi.mock('@/lib/openlibrary', () => ({
   searchBookByTitleAuthor: vi.fn(),
   fetchBookDataByOpenLibraryId: vi.fn(),
@@ -209,5 +210,43 @@ describe('Events beforeValidate pricing', () => {
   it('leaves the price alone on a partial update without an event type', async () => {
     const data = await beforeValidate({ data: { name: 'Night', price: 12 } });
     expect(data.price).toBe(12);
+  });
+});
+
+describe('Events poster requirement', () => {
+  const requirePoster = (Events.hooks!.beforeValidate as any[])[1];
+  const run = (data: Record<string, unknown>, originalDoc?: object, context = {}) =>
+    requirePoster({ data, originalDoc, context });
+
+  it('blocks publishing an event with no image and no IMDb poster', async () => {
+    h.fetchMovie.mockResolvedValue({ poster: '' });
+    await expect(
+      run({ eventType: 'rww', _status: 'published', imdbId: 'tt0000001' })
+    ).rejects.toThrow();
+  });
+
+  it('allows an uploaded image', async () => {
+    await expect(
+      run({ eventType: 'brew', _status: 'published', image: 7 })
+    ).resolves.toBeTruthy();
+  });
+
+  it('allows an IMDb id whose movie has a poster', async () => {
+    h.fetchMovie.mockResolvedValue({ poster: 'https://img.test/p.jpg' });
+    await expect(
+      run({ eventType: 'zvc', _status: 'published', imdbId: 'tt0082418' })
+    ).resolves.toBeTruthy();
+  });
+
+  it('lets drafts save without a poster', async () => {
+    await expect(run({ eventType: 'fri', _status: 'draft' })).resolves.toBeTruthy();
+  });
+
+  it('leaves internal writes on an older poster-less event alone', async () => {
+    const published = { eventType: 'zvc', _status: 'published' };
+    await expect(run({ ticketsSold: 5 }, published)).resolves.toBeTruthy();
+    await expect(
+      run({ announcementSentAt: 'x' }, published, { skipStripeSync: true })
+    ).resolves.toBeTruthy();
   });
 });

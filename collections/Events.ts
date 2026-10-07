@@ -1,4 +1,4 @@
-import { CollectionConfig, CollectionSlug } from 'payload';
+import { CollectionConfig, CollectionSlug, ValidationError } from 'payload';
 import { formatEventDescription } from '../utils/formatDate';
 import { ZVC_SITE_URL } from '../app/contsants/constants';
 import { logtail } from '@/lib/logtail';
@@ -12,7 +12,6 @@ import { plotToLexical, richTextIsBlank } from '@/utils/omdbFill';
 import { Location } from '@/payload-types';
 import {
   EVENT_TYPE_NAMES,
-  isCommunityEventType,
   isPaidEventType,
   nextDefaultDatetime,
 } from '@/utils/eventTypes';
@@ -76,6 +75,42 @@ const resolvePaymentLinkId = async (data: {
   }
 
   throw new Error(`No Stripe payment link found for ${data.paymentLink}`);
+};
+
+/** Fields that decide whether an event has a poster (plus publishing it). */
+const POSTER_INPUTS = [
+  'image',
+  'imdbId',
+  'eventType',
+  'bookTitle',
+  'bookAuthor',
+  'openLibraryId',
+  '_status',
+] as const;
+
+/**
+ * Whether the event will have a poster: an uploaded image, the OMDB poster for
+ * its IMDb id, or the Open Library cover for its book (same fallbacks the
+ * event card uses).
+ */
+const hasPoster = async (event: Record<string, any>): Promise<boolean> => {
+  if (relationId(event.image) != null) return true;
+  if (event.eventType === 'bookclub') {
+    if (event.openLibraryId) {
+      const book = await fetchBookDataByOpenLibraryId(event.openLibraryId);
+      if (book?.cover) return true;
+    }
+    if (event.bookTitle && event.bookAuthor) {
+      const match = await searchBookByTitleAuthor(event.bookTitle, event.bookAuthor);
+      if (match?.cover) return true;
+    }
+    return false;
+  }
+  if (event.imdbId) {
+    const movie = await fetchMovieDataByImdbId(event.imdbId);
+    if (movie?.poster) return true;
+  }
+  return false;
 };
 
 export const Events: CollectionConfig = {
@@ -147,6 +182,33 @@ export const Events: CollectionConfig = {
           }
         }
 
+        return data;
+      },
+      // Every published event needs a poster. Runs after the fill above, so a
+      // book looked up on this save counts. Internal writes (ticket counts,
+      // broadcast stamps) touch none of these fields and are left alone, so an
+      // older event without a poster can still sell and send.
+      async ({ data, originalDoc, context }) => {
+        if (!data || context?.skipStripeSync) return data;
+        if (!POSTER_INPUTS.some((key) => key in data)) return data;
+
+        const event = { ...(originalDoc ?? {}), ...data };
+        if (event._status !== 'published') return data;
+
+        if (!(await hasPoster(event))) {
+          throw new ValidationError({
+            collection: 'events',
+            errors: [
+              {
+                path: 'image',
+                message:
+                  event.eventType === 'bookclub'
+                    ? 'No cover was found for this book. Upload a poster image to publish.'
+                    : 'Upload a poster image, or add an IMDb ID that has a poster, to publish.',
+              },
+            ],
+          });
+        }
         return data;
       },
     ],
@@ -422,10 +484,8 @@ export const Events: CollectionConfig = {
       label: 'Poster image',
       admin: {
         position: 'sidebar',
-        condition: (data) =>
-          data.eventType === 'zvc' || isCommunityEventType(data.eventType),
         description:
-          'Optional. If left blank and an IMDb ID is set, the OMDB poster is used.',
+          'Required to publish unless the IMDb ID or book has a poster of its own, which is used when this is blank.',
       },
     },
     {
