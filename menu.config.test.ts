@@ -32,6 +32,12 @@ describe('getMainMenu', () => {
 
   it('orders a seasonal item after the key it names', () => {
     const keys = Object.keys(getMainMenu(et('2026-10-28T12:00:00')));
-    expect(keys).toEqual(['home', 'events', 'Halloweek', 'Astoria Horror Club']);
+    expect(keys).toEqual([
+      'home',
+      'events',
+      'Halloweek',
+      'substack',
+      'Astoria Horror Club',
+    ]);
   });
 });
