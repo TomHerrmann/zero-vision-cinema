@@ -51,13 +51,10 @@ export default function PressPage() {
           <p>
             Zero Vision Cinema is built on a love of genre film and bringing
             people together. We screen films at venues throughout NYC, from
-            bars and breweries to block parties. We curate a selection of niche
-            movies, genre films, and cult classics.
+            bars and breweries to block parties. We build community online
+            through our series of movie reviews, editorials, and social
+            content.
           </p>
-          <Blank>
-            a line on the reviews, essays and videos you make (YouTube,
-            Substack, physical media)
-          </Blank>
         </Section>
 
         <Section title="Who We Are">
