@@ -2,12 +2,23 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const h = vi.hoisted(() => ({
   verify: vi.fn(),
-  create: vi.fn(),
+  findByID: vi.fn(),
+  find: vi.fn(),
+  refundCreate: vi.fn(),
+  requestCreate: vi.fn(),
 }));
 
 vi.mock('@/lib/refundToken', () => ({ verifyRefundToken: h.verify }));
-vi.mock('@/lib/refundRequests', () => ({ createRefundRequest: h.create }));
-vi.mock('payload', () => ({ getPayload: vi.fn().mockResolvedValue({}) }));
+vi.mock('@/lib/refundRequests', () => ({ createRefundRequest: h.requestCreate }));
+vi.mock('@/lib/stripe', () => ({
+  stripeCheckout: { refunds: { create: h.refundCreate } },
+}));
+vi.mock('payload', () => ({
+  getPayload: vi.fn().mockResolvedValue({
+    findByID: h.findByID,
+    find: h.find,
+  }),
+}));
 vi.mock('@payload-config', () => ({ default: {} }));
 vi.mock('@/lib/logtail', () => ({
   logtail: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
@@ -15,39 +26,63 @@ vi.mock('@/lib/logtail', () => ({
 
 import { POST } from './route';
 
+const farFuture = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString();
+const soon = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
+
+const order = {
+  id: 5,
+  productId: 'prod_1',
+  paymentIntentId: 'pi_1',
+  amountPaid: 10,
+  quantity: 1,
+  refundedAt: null as string | null,
+};
+
 const req = (body: unknown) =>
   ({ json: async () => body }) as unknown as import('next/server').NextRequest;
 
 beforeEach(() => {
   h.verify.mockReset().mockReturnValue(true);
-  h.create.mockReset().mockResolvedValue({ ok: true, id: 1, existing: false });
+  h.findByID.mockReset().mockResolvedValue({ ...order });
+  h.find.mockReset().mockResolvedValue({ docs: [{ id: 1, datetime: farFuture }] });
+  h.refundCreate.mockReset().mockResolvedValue({ id: 're_1' });
+  h.requestCreate.mockReset().mockResolvedValue({ ok: true, id: 9, existing: false });
 });
 
 describe('POST /api/refund', () => {
-  it('403s on an invalid token, without filing a request', async () => {
+  it('403s on an invalid token, without issuing a refund', async () => {
     h.verify.mockReturnValue(false);
     const res = await POST(req({ order: 5, token: 'bad' }));
     expect(res.status).toBe(403);
-    expect(h.create).not.toHaveBeenCalled();
+    expect(h.refundCreate).not.toHaveBeenCalled();
   });
 
-  it('files a buyer refund request (no refund issued here)', async () => {
-    const res = await POST(req({ order: 5, token: 'ok' }));
-    expect(res.status).toBe(200);
-    expect(h.create).toHaveBeenCalledWith({}, 5, 'buyer');
-  });
-
-  it('passes through already-refunded / missing-order errors', async () => {
-    h.create.mockResolvedValue({ ok: false, status: 409, error: 'This order has already been refunded.' });
+  it('409s when the order is already refunded', async () => {
+    h.findByID.mockResolvedValue({ ...order, refundedAt: '2026-01-01T00:00:00Z' });
     const res = await POST(req({ order: 5, token: 'ok' }));
     expect(res.status).toBe(409);
-    expect((await res.json()).error).toBe('This order has already been refunded.');
+    expect(h.refundCreate).not.toHaveBeenCalled();
   });
 
-  it('tells the buyer to email us when the order has no Stripe payment', async () => {
-    h.create.mockResolvedValue({ ok: false, status: 400, error: 'internal' });
+  it('files a refund request (and does not refund) when the event is within 48h', async () => {
+    h.find.mockResolvedValue({ docs: [{ id: 1, datetime: soon }] });
     const res = await POST(req({ order: 5, token: 'ok' }));
-    expect(res.status).toBe(400);
-    expect((await res.json()).error).toBe('This order cannot be refunded online. Please email us.');
+    expect(res.status).toBe(200);
+    expect((await res.json()).requested).toBe(true);
+    expect(h.requestCreate).toHaveBeenCalledWith(expect.anything(), 5, 'buyer');
+    expect(h.refundCreate).not.toHaveBeenCalled();
+  });
+
+  it('issues the Stripe refund when valid and >48h out', async () => {
+    const res = await POST(req({ order: 5, token: 'ok' }));
+    expect(res.status).toBe(200);
+    expect(h.refundCreate).toHaveBeenCalledWith({ payment_intent: 'pi_1' });
+    expect(h.requestCreate).not.toHaveBeenCalled();
+  });
+
+  it('404s when the order is missing', async () => {
+    h.findByID.mockResolvedValue(null);
+    const res = await POST(req({ order: 5, token: 'ok' }));
+    expect(res.status).toBe(404);
   });
 });
