@@ -1,6 +1,7 @@
 import { EventTypeField as EventTypeField_9a1e52025310f537714897500a4159f7 } from '../../../components/admin/EventTypeField'
 import { ImdbLookupField as ImdbLookupField_0b08921257147c9a5e1fd96459f74a16 } from '../../../collections/components/ImdbLookupField'
 import { BookLookupField as BookLookupField_6bf847ea001bacb93724a0cf1b713f4d } from '../../../collections/components/BookLookupField'
+import { BroadcastPreviewField as BroadcastPreviewField_4b192ce4ccfe04ad55819ee96d7e2ce4 } from '../../../collections/components/BroadcastPreviewField'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -38,6 +39,7 @@ export const importMap = {
   "/components/admin/EventTypeField#EventTypeField": EventTypeField_9a1e52025310f537714897500a4159f7,
   "/collections/components/ImdbLookupField#ImdbLookupField": ImdbLookupField_0b08921257147c9a5e1fd96459f74a16,
   "/collections/components/BookLookupField#BookLookupField": BookLookupField_6bf847ea001bacb93724a0cf1b713f4d,
+  "/collections/components/BroadcastPreviewField#BroadcastPreviewField": BroadcastPreviewField_4b192ce4ccfe04ad55819ee96d7e2ce4,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
