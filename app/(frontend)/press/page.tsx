@@ -29,7 +29,7 @@ function Section({
 
 const PRESS_AUDIENCES = [
   'Filmmakers',
-  'PR agencies running screenings',
+  'PR agencies',
   'Distributors',
 ];
 
