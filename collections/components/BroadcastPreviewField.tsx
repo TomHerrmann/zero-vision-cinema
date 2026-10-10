@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useField } from '@payloadcms/ui';
 import type { UIFieldClientComponent } from 'payload';
 
@@ -8,6 +9,11 @@ import type { UIFieldClientComponent } from 'payload';
  * Sidebar widget for the Custom Broadcasts collection: renders the draft's
  * current field values through the real send template and shows the result in
  * a modal. Pure preview — nothing is sent and nothing is saved.
+ *
+ * The dialog is portaled to document.body with a z-index above the admin's
+ * highest layers: the Lexical editor's floating toolbar renders at
+ * --z-popup (60), above Payload's own modal layer, so a plain in-tree overlay
+ * would have the command bar paint over it.
  */
 export const BroadcastPreviewField: UIFieldClientComponent = () => {
   const { value: subject } = useField<string>({ path: 'subject' });
@@ -21,6 +27,12 @@ export const BroadcastPreviewField: UIFieldClientComponent = () => {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
   const [html, setHtml] = useState<string | null>(null);
+  // Portals need document, which doesn't exist during server render.
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Upload field values arrive as ids or populated docs, like the send path.
   const toIds = (value: unknown): (number | string)[] => {
@@ -75,50 +87,54 @@ export const BroadcastPreviewField: UIFieldClientComponent = () => {
         Renders this draft exactly as it would send. Nothing is sent.
       </p>
 
-      {open && (
-        <div
-          style={overlay}
-          onClick={() => setOpen(false)}
-          role="dialog"
-          aria-label="Email preview"
-        >
-          <div style={panel} onClick={(e) => e.stopPropagation()}>
-            <div style={header}>
-              <div>
-                <strong>Email preview</strong>
-                <div style={{ opacity: 0.65, fontSize: 13 }}>
-                  {subject?.trim() ? subject : 'Untitled draft'} — draft only,
-                  nothing was sent.
+      {mounted &&
+        open &&
+        createPortal(
+          <div
+            style={overlay}
+            onClick={() => setOpen(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Email preview"
+          >
+            <div style={panel} onClick={(e) => e.stopPropagation()}>
+              <div style={header}>
+                <div>
+                  <strong>Email preview</strong>
+                  <div style={{ opacity: 0.65, fontSize: 13 }}>
+                    {subject?.trim() ? subject : 'Untitled draft'} — draft
+                    only, nothing was sent.
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  className="btn btn--style-secondary btn--size-small"
+                  onClick={() => setOpen(false)}
+                >
+                  Close
+                </button>
               </div>
-              <button
-                type="button"
-                className="btn btn--style-secondary btn--size-small"
-                onClick={() => setOpen(false)}
-              >
-                Close
-              </button>
-            </div>
 
-            {status === 'loading' && (
-              <p style={{ padding: 24, opacity: 0.7 }}>Rendering…</p>
-            )}
-            {status === 'error' && (
-              <p style={{ padding: 24, color: 'var(--theme-error-500)' }}>
-                Couldn&apos;t render the preview — try again.
-              </p>
-            )}
-            {status === 'idle' && html && (
-              <iframe
-                title="Broadcast preview"
-                srcDoc={html}
-                sandbox=""
-                style={{ width: '100%', height: '70vh', border: 0 }}
-              />
-            )}
-          </div>
-        </div>
-      )}
+              {status === 'loading' && (
+                <p style={{ padding: 24, opacity: 0.7 }}>Rendering…</p>
+              )}
+              {status === 'error' && (
+                <p style={{ padding: 24, color: 'var(--theme-error-500)' }}>
+                  Couldn&apos;t render the preview — try again.
+                </p>
+              )}
+              {status === 'idle' && html && (
+                <iframe
+                  title="Broadcast preview"
+                  srcDoc={html}
+                  sandbox=""
+                  style={{ width: '100%', height: '70vh', border: 0 }}
+                />
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };
@@ -126,7 +142,9 @@ export const BroadcastPreviewField: UIFieldClientComponent = () => {
 const overlay: React.CSSProperties = {
   position: 'fixed',
   inset: 0,
-  zIndex: 1000,
+  // Above every admin layer: the editor's floating toolbar sits at --z-popup
+  // (60), higher than Payload's own modal layer (--z-modal: 30).
+  zIndex: 10000,
   background: 'rgba(0, 0, 0, 0.7)',
   display: 'flex',
   alignItems: 'center',
