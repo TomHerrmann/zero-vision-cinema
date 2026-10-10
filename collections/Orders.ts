@@ -52,6 +52,16 @@ export const Orders: CollectionConfig = {
   },
   fields: [
     {
+      // "Start a refund request" for buyers who email in (see RefundRequests).
+      name: 'refundRequest',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '/components/admin/OrderRefundRequest#OrderRefundRequest',
+        },
+      },
+    },
+    {
       // Legacy: set by the old Checkout Session flow. Kept (optional, unique)
       // for historical orders; new orders use `paymentIntentId` instead.
       name: 'checkoutSessionId',

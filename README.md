@@ -170,6 +170,11 @@ and calls the failure endpoint (logged to BetterStack).
 | `POST /api/tasks/send-ticket-email`           | QStash worker: sends the ticket email (idempotent, retried)             |
 | `POST /api/tasks/send-ticket-email/failure`   | QStash dead-letter callback (alerting)                                  |
 | `POST /api/tasks/send-refund-email`           | QStash worker: sends the refund email (idempotent, retried)             |
+| `POST /api/refund`                            | Buyer's ticket-email link: files a refund request (no refund issued)    |
+| `POST /api/refund-requests/:id/approve`       | Admin: issue the Stripe refund (optionally void the buyer's codes)      |
+| `POST /api/refund-requests/:id/decline`       | Admin: decline; queues the decline email once its wording exists        |
+| `POST /api/refund-requests/for-order/:id`     | Admin: file a request for a buyer who emailed in                        |
+| `POST /api/tasks/send-refund-request-email`   | QStash worker: emails us about a new refund request                     |
 | `POST /api/tasks/send-due-broadcasts`         | QStash schedule (daily 9am ET): dispatches the broadcasts due that day  |
 | `POST /api/tasks/send-broadcast`              | QStash worker: sends one event announcement/reminder broadcast          |
 | `POST /api/subscribe`                         | Newsletter sign-up → MailerLite                                         |
