@@ -55,8 +55,9 @@ export default function PressPage() {
 
         <Section title="Who We Are">
           <p>
-            We are professional critics and reviewers who do this for the love
-            of movies and community.
+            We are Tom and Mary, movie lovers and professional critics. We aim
+            to bring viewing parties to our community and share our love of
+            film with our neighbors.
           </p>
         </Section>
 
