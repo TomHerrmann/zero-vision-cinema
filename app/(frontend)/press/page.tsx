@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { Disc3, Megaphone, Video } from 'lucide-react';
 import ContactForm from '@/components/contact-form/contact-form';
 
 export const metadata: Metadata = {
@@ -27,9 +28,9 @@ function Section({
 }
 
 const PRESS_AUDIENCES = [
-  'Filmmakers',
-  'PR agencies',
-  'Distributors',
+  { icon: Video, label: 'Filmmakers' },
+  { icon: Megaphone, label: 'PR agencies' },
+  { icon: Disc3, label: 'Distributors' },
 ];
 
 export default function PressPage() {
@@ -78,9 +79,12 @@ export default function PressPage() {
           inbox="press"
           title="Press Contact"
           description={
-            <ul className="zvc-body text-lg text-glow/80 leading-relaxed space-y-2 list-disc pl-6">
-              {PRESS_AUDIENCES.map((audience) => (
-                <li key={audience}>{audience}</li>
+            <ul className="flex flex-wrap gap-3">
+              {PRESS_AUDIENCES.map(({ icon: Icon, label }) => (
+                <li key={label} className="zvc-badge">
+                  <Icon className="w-4 h-4" aria-hidden="true" />
+                  {label}
+                </li>
               ))}
             </ul>
           }
