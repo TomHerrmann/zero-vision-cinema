@@ -250,6 +250,12 @@ const Footer = () => {
             {/* Legal */}
             <nav className="flex gap-6 text-base">
               <Link
+                href="/press"
+                className="hover:text-blue-light transition-colors duration-200"
+              >
+                Press
+              </Link>
+              <Link
                 href="/privacy"
                 className="hover:text-blue-light transition-colors duration-200"
               >
