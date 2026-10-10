@@ -3,12 +3,11 @@
 import { useState } from 'react';
 
 /**
- * Wording for the request flow. Blanks in [brackets] are Tom & Mary's to write
- * — replace each before this ships.
+ * Wording for a refund request inside 48h. Blanks in [brackets] are Tom &
+ * Mary's to write — replace each before this ships.
  */
-const COPY = {
+const REQUEST_COPY = {
   submit: '[Tom & Mary: button label for sending the refund request]',
-  working: 'Processing…',
   doneHeading: '[Tom & Mary: heading once the request is sent]',
   doneBody: '[Tom & Mary: what happens next, shown once the request is sent]',
 };
@@ -18,25 +17,43 @@ type Props = {
   token: string;
   eventName: string;
   amount: number;
+  /**
+   * True when the event is within 48h: no automatic refund, the button files a
+   * refund request for an admin to approve or decline instead.
+   */
+  withinWindow: boolean;
 };
 
-/** Files a refund request; an admin approves or declines it. */
 export default function RefundConfirm({
   orderId,
   token,
   eventName,
   amount,
+  withinWindow,
 }: Props) {
   const [status, setStatus] = useState<'idle' | 'working' | 'done' | 'error'>(
     'idle'
   );
   const [message, setMessage] = useState<string | null>(null);
 
+  if (status === 'done' && withinWindow) {
+    return (
+      <div className="text-center">
+        <p className="zvc-heading text-2xl mb-3">{REQUEST_COPY.doneHeading}</p>
+        <p className="zvc-body text-glow/80">{REQUEST_COPY.doneBody}</p>
+      </div>
+    );
+  }
+
   if (status === 'done') {
     return (
       <div className="text-center">
-        <p className="zvc-heading text-2xl mb-3">{COPY.doneHeading}</p>
-        <p className="zvc-body text-glow/80">{COPY.doneBody}</p>
+        <p className="zvc-heading text-2xl mb-3">Refund issued</p>
+        <p className="zvc-body text-glow/80">
+          Your refund for <span className="text-blue-light">{eventName}</span> is
+          on its way (5–10 business days). A confirmation email is on the way, and
+          your ticket has been invalidated.
+        </p>
       </div>
     );
   }
@@ -78,7 +95,11 @@ export default function RefundConfirm({
         disabled={status === 'working'}
         className="zvc-btn text-base py-3 disabled:opacity-60"
       >
-        {status === 'working' ? COPY.working : COPY.submit}
+        {status === 'working'
+          ? 'Processing…'
+          : withinWindow
+            ? REQUEST_COPY.submit
+            : 'Yes, refund my ticket'}
       </button>
       {message && (
         <p className="zvc-body text-cult-classic text-sm mt-4">{message}</p>

@@ -8,8 +8,8 @@ import { refundDeclinedEmailReady } from '@/emails/RefundDeclinedEmail';
 import type { Event, Order, RefundRequest, Reward } from '@/payload-types';
 
 /**
- * Refunds are approved by hand: a request is filed (by the buyer's link or by
- * an admin), we're emailed, and nothing moves until an admin clicks Approve or
+ * Refunds inside 48 hours of an event are approved by hand: a request is filed
+ * (by the buyer's link or by an admin), we're emailed, and nothing moves until an admin clicks Approve or
  * Decline on the request in the admin. Approve issues the Stripe refund; the
  * `charge.refunded` webhook then does what it always did (order refunded,
  * seats freed, loyalty, refund email).

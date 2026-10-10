@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
+
 type Props = {
   searchParams: Promise<{ order?: string; token?: string }>;
 };
@@ -85,6 +87,10 @@ export default async function RefundPage({ searchParams }: Props) {
   });
   const event_ = eventDocs.docs[0] as Event | undefined;
 
+  const withinWindow = event_
+    ? new Date(event_.datetime).getTime() - Date.now() < FORTY_EIGHT_HOURS
+    : false;
+
   return (
     <Shell>
       <RefundConfirm
@@ -92,6 +98,7 @@ export default async function RefundPage({ searchParams }: Props) {
         token={token}
         eventName={event_?.name ?? 'your event'}
         amount={orderDoc.amountPaid}
+        withinWindow={withinWindow}
       />
     </Shell>
   );

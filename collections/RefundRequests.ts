@@ -7,8 +7,9 @@ const lib = () => import('@/lib/refundRequests');
 
 /**
  * Refund requests: nothing is refunded until an admin approves one. Filed by
- * the buyer's "Request a refund" link (POST /api/refund) or by an admin from an
- * order's page (for buyers who email in). Approving issues the Stripe refund;
+ * the buyer's "Request a refund" link (POST /api/refund) when the event is
+ * within 48 hours (further out it still refunds automatically), or by an admin
+ * from an order's page (for buyers who email in). Approving issues the Stripe refund;
  * the `charge.refunded` webhook does the rest exactly as before (mark the order
  * refunded, free the seats, loyalty, refund email).
  *
