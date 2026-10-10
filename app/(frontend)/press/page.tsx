@@ -52,16 +52,14 @@ export default function PressPage() {
             Zero Vision Cinema is built on a love of genre film and bringing
             people together. We screen films at venues throughout NYC, from
             bars and breweries to block parties. We build community online
-            through our series of movie reviews, editorials, and social
-            content.
+            through our movie reviews, editorials, and social content.
           </p>
         </Section>
 
         <Section title="Who We Are">
           <p>
-            We&apos;re Tom and Mary, a married couple in NYC who love film. We
-            aim to bring viewing parties to our community and share our love of
-            film with our neighbors.
+            We are professional critics and reviewers who do this for the love
+            of movies and community.
           </p>
         </Section>
 
