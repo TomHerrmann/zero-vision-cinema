@@ -5,7 +5,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 // reference the same spies.
 const h = vi.hoisted(() => ({
   confirmPayment: vi.fn(),
-  fetchUpdates: vi.fn().mockResolvedValue({}),
+  submit: vi.fn().mockResolvedValue({}),
+  update: vi.fn(),
+  fetch: vi.fn(),
 }));
 
 // Stub Stripe so `useStripe`/`useElements` return our controllable spies and the
@@ -14,7 +16,7 @@ const h = vi.hoisted(() => ({
 // — the path that isn't gated by React's disabled button state.
 vi.mock('@stripe/react-stripe-js', () => ({
   useStripe: () => ({ confirmPayment: h.confirmPayment }),
-  useElements: () => ({ fetchUpdates: h.fetchUpdates }),
+  useElements: () => ({ submit: h.submit, update: h.update }),
   Elements: ({ children }: { children: React.ReactNode }) => children,
   PaymentElement: () => <div data-testid="payment-element" />,
   // Clicking it simulates the buyer entering a valid email (fires onChange), so
@@ -61,16 +63,95 @@ function deferred<T>() {
 const props = {
   eventId: 44,
   price: 10,
-  paymentIntentId: 'pi_test_123',
   maxQuantity: 5,
   paymentLink: null,
   onComplete: vi.fn(),
 };
 
+const respond = (status: number, body: unknown) =>
+  Promise.resolve(
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  );
+
+// Default: the server creates the PaymentIntent when the buyer pays.
+const createdIntent = () =>
+  respond(200, { clientSecret: 'cs_test_123', paymentIntentId: 'pi_test_123' });
+
 beforeEach(() => {
   h.confirmPayment.mockReset();
-  h.fetchUpdates.mockReset().mockResolvedValue({});
+  h.submit.mockReset().mockResolvedValue({});
+  h.update.mockReset();
+  h.fetch.mockReset().mockImplementation(createdIntent);
+  vi.stubGlobal('fetch', h.fetch);
   props.onComplete.mockReset();
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+describe('CheckoutForm deferred PaymentIntent', () => {
+  it('creates nothing in Stripe until the buyer pays', () => {
+    render(<CheckoutForm {...props} />);
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '3' } });
+
+    expect(h.fetch).not.toHaveBeenCalled();
+    // The quantity only updates the amount the Elements show.
+    expect(h.update).toHaveBeenCalledWith({ amount: 3000 });
+  });
+
+  it('creates the PaymentIntent on Pay, then confirms with its client secret', async () => {
+    h.confirmPayment.mockResolvedValue({ paymentIntent: { status: 'succeeded' } });
+    render(<CheckoutForm {...props} />);
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '2' } });
+    fireEvent.click(screen.getByTestId('email-element'));
+    fireEvent.click(screen.getByRole('button', { name: /pay \$20/i }));
+
+    await waitFor(() => expect(h.confirmPayment).toHaveBeenCalledTimes(1));
+    expect(h.submit).toHaveBeenCalledTimes(1);
+    expect(h.fetch).toHaveBeenCalledTimes(1);
+    expect(h.fetch.mock.calls[0][0]).toBe('/api/stripe/payment-intent');
+    expect(JSON.parse(h.fetch.mock.calls[0][1].body)).toEqual({
+      eventId: 44,
+      quantity: 2,
+      newsletter: false,
+      paymentIntentId: null,
+    });
+    expect(h.confirmPayment).toHaveBeenCalledWith(
+      expect.objectContaining({ clientSecret: 'cs_test_123' })
+    );
+    await waitFor(() => expect(props.onComplete).toHaveBeenCalledTimes(1));
+  });
+
+  it('does not create a PaymentIntent when the payment details are invalid', async () => {
+    h.submit.mockResolvedValue({ error: { message: 'Your card number is incomplete.' } });
+    render(<CheckoutForm {...props} />);
+    fireEvent.click(screen.getByTestId('email-element'));
+    fireEvent.click(screen.getByRole('button', { name: /pay \$10/i }));
+
+    await screen.findByText(/card number is incomplete/i);
+    expect(h.fetch).not.toHaveBeenCalled();
+    expect(h.confirmPayment).not.toHaveBeenCalled();
+  });
+
+  it('shows the server error and lowers the limit when seats ran out', async () => {
+    h.fetch.mockImplementation(() =>
+      respond(409, { error: 'Only 1 ticket left.', maxQuantity: 1 })
+    );
+    render(<CheckoutForm {...props} />);
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '3' } });
+    fireEvent.click(screen.getByTestId('email-element'));
+    fireEvent.click(screen.getByRole('button', { name: /pay \$30/i }));
+
+    await screen.findByText('Only 1 ticket left.');
+    expect(h.confirmPayment).not.toHaveBeenCalled();
+    expect(screen.getAllByRole('option')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: /pay \$10/i })).toBeInTheDocument();
+    expect(h.update).toHaveBeenLastCalledWith({ amount: 1000 });
+  });
 });
 
 describe('CheckoutForm double-submit guard', () => {
@@ -88,7 +169,8 @@ describe('CheckoutForm double-submit guard', () => {
     fireEvent.click(payButton);
     fireEvent.click(payButton);
 
-    expect(h.confirmPayment).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(h.confirmPayment).toHaveBeenCalledTimes(1));
+    expect(h.fetch).toHaveBeenCalledTimes(1);
 
     // Button reflects the in-flight state.
     expect(screen.getByRole('button', { name: /processing/i })).toBeDisabled();
@@ -114,7 +196,8 @@ describe('CheckoutForm double-submit guard', () => {
     fireEvent.click(screen.getByTestId('wallet'));
     fireEvent.click(screen.getByTestId('wallet'));
 
-    expect(h.confirmPayment).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(h.confirmPayment).toHaveBeenCalledTimes(1));
+    expect(h.fetch).toHaveBeenCalledTimes(1);
 
     d.resolve({ paymentIntent: { status: 'succeeded' } });
     await waitFor(() => expect(props.onComplete).toHaveBeenCalledTimes(1));
@@ -141,7 +224,11 @@ describe('CheckoutForm double-submit guard', () => {
     const d = deferred<{ paymentIntent: { status: string } }>();
     h.confirmPayment.mockReturnValueOnce(d.promise);
     fireEvent.click(payButton);
-    expect(h.confirmPayment).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(h.confirmPayment).toHaveBeenCalledTimes(2));
+    // The retry reuses the first attempt's PaymentIntent.
+    expect(JSON.parse(h.fetch.mock.calls[1][1].body).paymentIntentId).toBe(
+      'pi_test_123'
+    );
 
     d.resolve({ paymentIntent: { status: 'succeeded' } });
     await waitFor(() => expect(props.onComplete).toHaveBeenCalledTimes(1));
@@ -185,22 +272,7 @@ describe('CheckoutForm required-email guard', () => {
 });
 
 describe('CheckoutForm free-ticket code', () => {
-  const fetchMock = vi.fn();
-  beforeEach(() => {
-    fetchMock.mockReset();
-    vi.stubGlobal('fetch', fetchMock);
-  });
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  const respond = (status: number, body: unknown) =>
-    Promise.resolve(
-      new Response(JSON.stringify(body), {
-        status,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    );
+  const fetchMock = h.fetch;
 
   const applyCode = async (code = 'zvc-7k3q-m9xa') => {
     fireEvent.click(screen.getByText('Have a free-ticket code?'));

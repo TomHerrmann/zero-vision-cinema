@@ -68,7 +68,6 @@ const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 type Props = {
   eventId: number;
   eventName: string;
-  price: number;
   /** Hosted Stripe payment link, shown as a fallback if checkout can't start. */
   paymentLink?: string | null;
 };
@@ -76,17 +75,18 @@ type Props = {
 export default function CheckoutClient({
   eventId,
   eventName,
-  price,
   paymentLink,
 }: Props) {
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
+  // Deferred-intent checkout: Elements renders from the amount alone, and the
+  // PaymentIntent is only created when the buyer pays (see CheckoutForm). That
+  // way a page view doesn't leave an incomplete payment in Stripe.
+  const [unitAmount, setUnitAmount] = useState<number | null>(null);
   const [maxQuantity, setMaxQuantity] = useState(5);
   const [error, setError] = useState(false);
   const [completed, setCompleted] = useState(false);
 
   // If we're returning from a redirect-based payment (e.g. 3DS), resolve the
-  // outcome from the URL instead of starting a new PaymentIntent.
+  // outcome from the URL instead of starting checkout again.
   const [returning] = useState(() => {
     if (typeof window === 'undefined') return false;
     return new URLSearchParams(window.location.search).has(
@@ -114,24 +114,19 @@ export default function CheckoutClient({
     };
   }, [returning]);
 
-  // Create the PaymentIntent once on mount.
+  // Load the current price and ticket limit. Nothing is created in Stripe here.
   useEffect(() => {
     if (returning || !stripePromise) return;
     let active = true;
-    fetch('/api/stripe/payment-intent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventId, quantity: 1, newsletter: false }),
-    })
+    fetch(`/api/stripe/payment-intent?eventId=${eventId}`)
       .then((res) => {
-        if (!res.ok) throw new Error('intent failed');
+        if (!res.ok) throw new Error('checkout unavailable');
         return res.json();
       })
       .then((data) => {
-        if (!data.clientSecret) throw new Error('missing client secret');
+        if (!(data.unitAmount > 0)) throw new Error('missing amount');
         if (!active) return;
-        setClientSecret(data.clientSecret);
-        setPaymentIntentId(data.paymentIntentId);
+        setUnitAmount(data.unitAmount);
         setMaxQuantity(data.maxQuantity ?? 5);
       })
       .catch(() => {
@@ -168,19 +163,23 @@ export default function CheckoutClient({
     );
   }
 
-  if (!clientSecret || !paymentIntentId) {
+  if (unitAmount == null) {
     return <CheckoutSkeleton className={STABLE} />;
   }
 
-  const options: StripeElementsOptions = { clientSecret, appearance };
+  const options: StripeElementsOptions = {
+    mode: 'payment',
+    amount: unitAmount,
+    currency: 'usd',
+    appearance,
+  };
 
   return (
     <div className={STABLE}>
       <Elements stripe={stripePromise} options={options}>
         <CheckoutForm
           eventId={eventId}
-          price={price}
-          paymentIntentId={paymentIntentId}
+          price={unitAmount / 100}
           maxQuantity={maxQuantity}
           paymentLink={paymentLink}
           onComplete={() => setCompleted(true)}
@@ -195,14 +194,12 @@ export default function CheckoutClient({
 export function CheckoutForm({
   eventId,
   price,
-  paymentIntentId,
-  maxQuantity,
+  maxQuantity: initialMaxQuantity,
   paymentLink,
   onComplete,
 }: {
   eventId: number;
   price: number;
-  paymentIntentId: string;
   maxQuantity: number;
   paymentLink?: string | null;
   onComplete: () => void;
@@ -211,10 +208,10 @@ export function CheckoutForm({
   const elements = useElements();
 
   const [quantity, setQuantity] = useState(1);
+  const [maxQuantity, setMaxQuantity] = useState(initialMaxQuantity);
   const [email, setEmail] = useState('');
   const [newsletter, setNewsletter] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [syncing, setSyncing] = useState(false);
   const [walletAvailable, setWalletAvailable] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   // Free-ticket reward code: `rewardCode` is set once the server says the code
@@ -231,57 +228,20 @@ export function CheckoutForm({
       ? `${window.location.origin}/events/${eventId}?checkout=success`
       : '';
 
-  // Tracks the in-flight metadata/amount sync so payment confirmation can wait
-  // for it to finish before charging (see `confirm`). `tokenRef` identifies the
-  // latest sync so a superseded one doesn't clear the spinner early.
-  const pendingSync = useRef<Promise<void> | null>(null);
-  const tokenRef = useRef<symbol | null>(null);
+  // The PaymentIntent from an earlier attempt that didn't go through (e.g. a
+  // declined card). A retry updates and reuses it instead of creating another.
+  const paymentIntentIdRef = useRef<string | null>(null);
   // Synchronous re-entrancy guard: prevents a second charge if `confirm` is
   // invoked again (rapid double-click, or the wallet's onConfirm) before React
   // has re-rendered the disabled button. This is the real double-charge guard;
   // the button's `disabled` state is only a visual affordance on top of it.
   const submittingRef = useRef(false);
 
-  // Push quantity/newsletter changes to the PaymentIntent, then re-sync Elements
-  // so the card form and wallet sheet reflect the new amount.
-  const syncIntent = useCallback(
-    (nextQuantity: number, nextNewsletter: boolean): Promise<void> => {
-      if (!elements) return Promise.resolve();
-      setSyncing(true);
-      const token = Symbol('sync');
-      tokenRef.current = token;
-      const run = (async () => {
-        try {
-          await fetch('/api/stripe/payment-intent', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              eventId,
-              quantity: nextQuantity,
-              newsletter: nextNewsletter,
-              paymentIntentId,
-            }),
-          });
-          await elements.fetchUpdates();
-        } finally {
-          // Only clear the spinner if no newer sync superseded this one.
-          if (tokenRef.current === token) setSyncing(false);
-        }
-      })();
-      pendingSync.current = run;
-      return run;
-    },
-    [elements, eventId, paymentIntentId]
-  );
-
+  // Keep the wallet sheet and card form on the current total. Quantity and
+  // newsletter are sent to the server only when the buyer pays.
   const handleQuantity = (value: number) => {
     setQuantity(value);
-    void syncIntent(value, newsletter);
-  };
-
-  const handleNewsletter = (value: boolean) => {
-    setNewsletter(value);
-    void syncIntent(quantity, value);
+    elements?.update({ amount: Math.round(price * 100) * value });
   };
 
   const confirm = useCallback(
@@ -306,14 +266,57 @@ export function CheckoutForm({
       setSubmitting(true);
       setMessage(null);
 
-      // Wait for any in-flight quantity/newsletter sync to finish so the
-      // PaymentIntent's amount and metadata are current before we charge. The
-      // wallet (Express Checkout) button isn't blocked by React's disabled state,
-      // so without this a fast tap could confirm against a stale PaymentIntent.
-      if (pendingSync.current) await pendingSync.current;
+      // Any failure before the charge goes through lets the buyer try again.
+      const fail = (msg: string) => {
+        submittingRef.current = false;
+        setMessage(msg);
+        setSubmitting(false);
+      };
+
+      // Validate the payment details before creating anything in Stripe.
+      const { error: submitError } = await elements.submit();
+      if (submitError) {
+        fail(submitError.message ?? 'Please check your payment details.');
+        return;
+      }
+
+      // Only now does a PaymentIntent exist.
+      let clientSecret: string;
+      try {
+        const res = await fetch('/api/stripe/payment-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventId,
+            quantity,
+            newsletter,
+            paymentIntentId: paymentIntentIdRef.current,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.clientSecret) {
+          // Seats sold since the form loaded: shrink the picker to what's left.
+          if (typeof data.maxQuantity === 'number') {
+            const left = data.maxQuantity;
+            setMaxQuantity(left);
+            setQuantity((q) => Math.min(q, left));
+            elements.update({
+              amount: Math.round(price * 100) * Math.min(quantity, left),
+            });
+          }
+          fail(data.error ?? 'Could not start your payment. Please try again.');
+          return;
+        }
+        paymentIntentIdRef.current = data.paymentIntentId;
+        clientSecret = data.clientSecret;
+      } catch {
+        fail('Could not start your payment. Please try again.');
+        return;
+      }
 
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
+        clientSecret,
         confirmParams: {
           return_url: returnUrl,
           receipt_email: effectiveEmail,
@@ -323,9 +326,7 @@ export function CheckoutForm({
 
       if (error) {
         // Payment failed — allow another attempt.
-        submittingRef.current = false;
-        setMessage(error.message ?? 'Payment failed. Please try again.');
-        setSubmitting(false);
+        fail(error.message ?? 'Payment failed. Please try again.');
         return;
       }
 
@@ -337,7 +338,7 @@ export function CheckoutForm({
       // Redirecting to complete (e.g. 3DS) — leave the submitting state (and the
       // guard) set; the page is navigating away.
     },
-    [stripe, elements, returnUrl, email, onComplete]
+    [stripe, elements, returnUrl, email, eventId, price, quantity, newsletter, onComplete]
   );
 
   const applyCode = async () => {
@@ -536,9 +537,7 @@ export function CheckoutForm({
       {/* Wallet buttons (Apple Pay / Google Pay / Link). Hidden entirely when no
           wallet is available so the divider below doesn't dangle. */}
       <div className={walletAvailable && !rewardCode ? 'space-y-5' : 'hidden'}>
-        {/* While a quantity/newsletter sync is in flight, block the wallet so its
-            payment sheet can't open against a stale amount. */}
-        <div className={syncing ? 'pointer-events-none opacity-60' : undefined}>
+        <div>
           <ExpressCheckoutElement
             options={{ emailRequired: true }}
             onConfirm={(e) => confirm(e.billingDetails?.email)}
@@ -567,7 +566,7 @@ export function CheckoutForm({
       >
         <Checkbox
           checked={newsletter}
-          onCheckedChange={(v) => handleNewsletter(v === true)}
+          onCheckedChange={(v) => setNewsletter(v === true)}
           disabled={submitting}
           className="mt-1 border-blue-light data-[state=checked]:bg-blue-light data-[state=checked]:border-blue-light"
         />
@@ -583,7 +582,7 @@ export function CheckoutForm({
 
       <button
         type="submit"
-        disabled={!stripe || submitting || syncing}
+        disabled={!stripe || submitting}
         className="zvc-btn w-full text-base py-3 disabled:opacity-60"
       >
         {submitting

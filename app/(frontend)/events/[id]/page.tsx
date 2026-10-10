@@ -208,7 +208,6 @@ export default async function EventTicketPage({ params }: Props) {
                 <CheckoutClient
                   eventId={event.id}
                   eventName={event.name}
-                  price={price}
                   paymentLink={event.paymentLink}
                 />
               ) : (
