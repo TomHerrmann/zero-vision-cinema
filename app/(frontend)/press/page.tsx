@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
 import ContactForm from '@/components/contact-form/contact-form';
-import { ZVC_PRESS_EMAIL_ADDRESS } from '@/app/contsants/constants';
 
 export const metadata: Metadata = {
   title: 'Press — Zero Vision Cinema',
@@ -75,28 +74,17 @@ export default function PressPage() {
           </p>
         </Section>
 
-        <section className="zvc-card p-8 md:p-10">
-          <h2 className="font-display uppercase text-glow text-2xl md:text-3xl mb-4">
-            Press Contact
-          </h2>
-          <ul className="zvc-body text-lg text-glow/80 leading-relaxed mb-6 space-y-2 list-disc pl-6">
-            {PRESS_AUDIENCES.map((audience) => (
-              <li key={audience}>{audience}</li>
-            ))}
-          </ul>
-          <p className="zvc-body text-glow/70">
-            <a
-              href={`mailto:${ZVC_PRESS_EMAIL_ADDRESS}`}
-              className="text-blue-light underline"
-            >
-              {ZVC_PRESS_EMAIL_ADDRESS}
-            </a>
-          </p>
-        </section>
-
-        <div className="mt-12">
-          <ContactForm inbox="press" />
-        </div>
+        <ContactForm
+          inbox="press"
+          title="Press Contact"
+          description={
+            <ul className="zvc-body text-lg text-glow/80 leading-relaxed space-y-2 list-disc pl-6">
+              {PRESS_AUDIENCES.map((audience) => (
+                <li key={audience}>{audience}</li>
+              ))}
+            </ul>
+          }
+        />
       </div>
     </main>
   );

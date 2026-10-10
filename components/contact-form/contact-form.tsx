@@ -30,6 +30,9 @@ import { toast } from 'sonner';
 type Props = {
   /** Which ZVC inbox the message is emailed to. Defaults to info@. */
   inbox?: ContactInbox;
+  title?: string;
+  /** Shown between the title and the fields. */
+  description?: React.ReactNode;
 };
 
 /**
@@ -37,7 +40,13 @@ type Props = {
  * Resend and nothing is stored on our side; the sender's email is only used
  * as the reply-to so we can write back.
  */
-export default function ContactForm({ inbox = 'info' }: Props) {
+export default function ContactForm({
+  inbox = 'info',
+  title = 'Send A Message',
+  description = (
+    <>Fill out the form below and we&apos;ll get back to you shortly.</>
+  ),
+}: Props) {
   const [inFlight, setInFlight] = useState(false);
 
   const form = useForm<z.infer<typeof contactEmailSchema>>({
@@ -81,11 +90,11 @@ export default function ContactForm({ inbox = 'info' }: Props) {
       <CardHeader className="pb-6">
         <CardTitle>
           <h3 className="font-display uppercase text-glow text-2xl md:text-3xl mb-6">
-            Send A Message
+            {title}
           </h3>
         </CardTitle>
         <CardDescription className="zvc-body text-base text-glow/60">
-          Fill out the form below and we&apos;ll get back to you shortly.
+          {description}
         </CardDescription>
       </CardHeader>
       <CardContent>
