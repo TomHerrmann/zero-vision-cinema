@@ -27,14 +27,11 @@ function Section({
   );
 }
 
-// Visible gap for Tom & Mary to fill in their own words before this ships.
-function Blank({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="block border-2 border-dashed border-blue-light/50 bg-blue-light/5 px-4 py-3 text-blue-light text-base">
-      [FILL: {children}]
-    </span>
-  );
-}
+const PRESS_AUDIENCES = [
+  'Filmmakers',
+  'PR agencies running screenings',
+  'Distributors',
+];
 
 export default function PressPage() {
   return (
@@ -81,12 +78,11 @@ export default function PressPage() {
           <h2 className="font-display uppercase text-glow text-2xl md:text-3xl mb-4">
             Press Contact
           </h2>
-          <div className="zvc-body text-lg text-glow/80 leading-relaxed mb-6">
-            <Blank>
-              who should write to you and what about (PR agencies,
-              distributors, screeners, review copies, venues, sponsors)
-            </Blank>
-          </div>
+          <ul className="zvc-body text-lg text-glow/80 leading-relaxed mb-8 space-y-2 list-disc pl-6">
+            {PRESS_AUDIENCES.map((audience) => (
+              <li key={audience}>{audience}</li>
+            ))}
+          </ul>
           <a
             href={`mailto:${ZVC_PRESS_EMAIL_ADDRESS}`}
             className="zvc-btn text-base md:text-lg py-4 inline-flex items-center gap-2"
