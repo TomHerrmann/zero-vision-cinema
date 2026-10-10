@@ -55,8 +55,7 @@ export default function PressPage() {
 
         <Section title="Who We Are">
           <p>
-            We are Tom and Mary, movie lovers and professional critics. We
-            bring people together through a shared love of genre films with
+            We are Tom and Mary, movie lovers and critics. We bring people together through a shared love of genre films with
             events like Astoria Horror Club, Astoria Horror Book Club, Rewind
             Wednesday, and other film screenings.
           </p>
