@@ -2,6 +2,7 @@ import {
   APIError,
   type CollectionAfterDeleteHook,
   type CollectionBeforeChangeHook,
+  type Payload,
   type PayloadRequest,
 } from "payload";
 import { logtail } from "@/lib/logtail";
@@ -129,23 +130,24 @@ const relationId = (value: unknown): number | string | undefined => {
   return value as number | string;
 };
 
-/** Resolve the entry's uploads to absolute blob URLs, in the entry's order. */
-async function resolveImages(
-  images: unknown[] | null | undefined,
-  req: PayloadRequest,
+/**
+ * Resolve media ids to absolute blob URLs, in the given order. Exported so the
+ * admin preview route renders the same images as the send path.
+ */
+export async function resolveBroadcastImages(
+  payload: Payload,
+  ids: (number | string)[],
+  req?: PayloadRequest,
 ): Promise<CustomBroadcastImage[]> {
-  const ids = (images ?? [])
-    .map(relationId)
-    .filter((id): id is number | string => id != null);
   if (ids.length === 0) return [];
 
-  const { docs } = await req.payload.find({
+  const { docs } = await payload.find({
     collection: "media",
     where: { id: { in: ids } },
     limit: ids.length,
     pagination: false,
     depth: 0,
-    req,
+    ...(req ? { req } : {}),
   });
   const byId = new Map(docs.map((doc) => [String(doc.id), doc]));
   const base = (process.env.VERCEL_BLOB_URL ?? "").replace(/\/$/, "");
@@ -164,13 +166,38 @@ async function resolveImages(
   });
 }
 
+/** Resolve the entry's uploads to absolute blob URLs, in the entry's order. */
+async function resolveImages(
+  images: unknown[] | null | undefined,
+  req: PayloadRequest,
+): Promise<CustomBroadcastImage[]> {
+  const ids = (images ?? [])
+    .map(relationId)
+    .filter((id): id is number | string => id != null);
+  return resolveBroadcastImages(req.payload, ids, req);
+}
+
 /** One line: a newline in a subject header gets stripped or mangled. */
 const cleanSubject = (subject?: string | null) =>
   (subject ?? "").replace(/\s+/g, " ").trim();
 
-async function renderHtml(
-  data: BroadcastData,
-  req: PayloadRequest,
+export type BroadcastRenderProps = {
+  /** Inbox preview line; also the fallback headline. */
+  subject?: string | null;
+  heading?: string | null;
+  /** Already resolved to absolute URLs — see resolveBroadcastImages. */
+  images?: CustomBroadcastImage[];
+  body?: unknown;
+  cta?: { label: string; url: string } | null;
+};
+
+/**
+ * Renders a broadcast to its send-ready HTML. Exported so the admin preview
+ * route uses the exact same template path as the save-time send — what Tom
+ * sees in the preview is what subscribers would receive.
+ */
+export async function renderBroadcastHtml(
+  props: BroadcastRenderProps,
 ): Promise<string> {
   // Imported here, not at the top: this module is part of the Payload config
   // graph, which the `payload migrate` CLI loads during the production build.
@@ -184,20 +211,36 @@ async function renderHtml(
     ]);
 
   const cta =
-    data.cta?.enabled && data.cta.label && data.cta.url
-      ? { label: data.cta.label, url: data.cta.url }
+    props.cta?.label && props.cta?.url
+      ? { label: props.cta.label, url: props.cta.url }
       : null;
 
   return render(
     createElement(CustomBroadcastEmail, {
-      subject: cleanSubject(data.subject),
-      heading: data.heading,
-      images: await resolveImages(data.images, req),
+      subject: cleanSubject(props.subject),
+      heading: props.heading,
+      images: props.images ?? [],
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      body: data.body as any,
+      body: props.body as any,
       cta,
     }),
   );
+}
+
+async function renderHtml(
+  data: BroadcastData,
+  req: PayloadRequest,
+): Promise<string> {
+  return renderBroadcastHtml({
+    subject: data.subject,
+    heading: data.heading,
+    images: await resolveImages(data.images, req),
+    body: data.body,
+    cta:
+      data.cta?.enabled && data.cta.label && data.cta.url
+        ? { label: data.cta.label, url: data.cta.url }
+        : null,
+  });
 }
 
 async function sendTest(to: string, subject: string, html: string) {

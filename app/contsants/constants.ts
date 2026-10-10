@@ -3,6 +3,7 @@ export const LLC_NAME = 'Zero Vision Cinema LLC';
 export const ZVC_SITE_URL = 'https://zerovisioncinema.com';
 export const ZVC_NEWSLETTER_URL = `${ZVC_SITE_URL}#newsletter`;
 export const ZVC_EMAIL_ADDRESS = 'info@zerovisioncinema.com';
+export const ZVC_PRESS_EMAIL_ADDRESS = 'press@zerovisioncinema.com';
 export const ZVC_DISPLAY_NAME_EMAIL = `Zero Vision Cinema <${ZVC_EMAIL_ADDRESS}>`;
 
 export const ADDRESS_LINE_1 = '418 Broadway Ste N';
