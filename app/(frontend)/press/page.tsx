@@ -64,10 +64,10 @@ export default function PressPage() {
 
         <Section title="How It Started">
           <p>
-            It started with Astoria Horror Club. In 2021 Tom posted on the
-            Astoria subreddit that he was &ldquo;looking to watch weird movies
-            with people,&rdquo; and about 100 people responded. Now it&apos;s a
-            neighborhood staple with a vibrant community.
+            It started with Astoria Horror Club. AHC was started in 2021 with a
+            reddit post to r/astoria with the goal of finding other horror fans
+            in the neighborhood. Now it&apos;s a neighborhood staple with a
+            vibrant community.
           </p>
           <p>
             Over the years we&apos;ve expanded to bring you Zero Vision Cinema,
