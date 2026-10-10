@@ -8,7 +8,11 @@ vi.mock("@react-email/render", () => ({
 }));
 vi.mock("@/emails/CustomBroadcastEmail", () => ({ default: () => null }));
 
-import { syncCustomBroadcast, cancelCustomBroadcast } from "./customBroadcasts";
+import {
+  syncCustomBroadcast,
+  cancelCustomBroadcast,
+  renderBroadcastHtml,
+} from "./customBroadcasts";
 
 const NOW = new Date("2026-10-01T16:00:00.000Z");
 const IN_AN_HOUR = "2026-10-01T17:00:00.000Z";
@@ -399,5 +403,42 @@ describe("cancelCustomBroadcast", () => {
       sendAt: "2026-09-01T12:00:00.000Z",
     });
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("renderBroadcastHtml", () => {
+  const renderedProps = async () => {
+    const { render } = await import("@react-email/render");
+    const renderMock = render as unknown as ReturnType<typeof vi.fn>;
+    const calls = renderMock.mock.calls;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return calls[calls.length - 1][0] as any;
+  };
+
+  it("renders through the send template with a cleaned subject", async () => {
+    const html = await renderBroadcastHtml({
+      subject: "  Hello\nWorld  ",
+      heading: "Big night",
+      images: [],
+      body: null,
+      cta: { label: "Get tickets", url: "https://zerovisioncinema.com" },
+    });
+    expect(html).toBe("<html>email</html>");
+    const element = await renderedProps();
+    expect(element.props.subject).toBe("Hello World");
+    expect(element.props.heading).toBe("Big night");
+    expect(element.props.cta).toEqual({
+      label: "Get tickets",
+      url: "https://zerovisioncinema.com",
+    });
+  });
+
+  it("drops the CTA when the label or url is missing", async () => {
+    await renderBroadcastHtml({
+      subject: "Hi",
+      cta: { label: "", url: "https://zerovisioncinema.com" },
+    });
+    const element = await renderedProps();
+    expect(element.props.cta).toBeNull();
   });
 });
