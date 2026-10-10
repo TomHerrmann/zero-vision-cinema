@@ -394,3 +394,28 @@ export async function getRefundEmailNotice(
     afterRefund: true,
   };
 }
+
+/**
+ * Void a customer's unused codes by hand (an admin approving a refund chose
+ * to). Unlike `voidRewardForRefund`, the purchases that earned them stay used
+ * up rather than counting toward a new code. `exceptRewardId` skips the code
+ * the refunded order itself earned — the webhook voids that one as usual.
+ */
+export async function voidUsableRewardsForCustomer(
+  payload: Payload,
+  customerId: string,
+  { exceptRewardId, reason }: { exceptRewardId: number | null; reason: string }
+): Promise<string[]> {
+  const rows = await execute<{ code: string }>(
+    payload,
+    sql`UPDATE "rewards"
+        SET "voided_at" = now(), "void_reason" = ${reason}, "updated_at" = now()
+        WHERE "customer_id" = ${customerId}
+          AND "redeemed_at" IS NULL
+          AND "voided_at" IS NULL
+          AND "expires_at" > now()
+          AND "id" <> ${exceptRewardId ?? 0}
+        RETURNING "code"`
+  );
+  return rows.map((r) => r.code);
+}

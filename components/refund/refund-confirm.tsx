@@ -1,14 +1,26 @@
 'use client';
 
 import { useState } from 'react';
-import { ZVC_EMAIL_ADDRESS } from '@/app/contsants/constants';
+
+/**
+ * Wording for a refund request inside 48h. Blanks in [brackets] are Tom &
+ * Mary's to write — replace each before this ships.
+ */
+const REQUEST_COPY = {
+  submit: '[Tom & Mary: button label for sending the refund request]',
+  doneHeading: '[Tom & Mary: heading once the request is sent]',
+  doneBody: '[Tom & Mary: what happens next, shown once the request is sent]',
+};
 
 type Props = {
   orderId: number;
   token: string;
   eventName: string;
   amount: number;
-  /** True when the event is within 48h — self-service refund is disabled. */
+  /**
+   * True when the event is within 48h: no automatic refund, the button files a
+   * refund request for an admin to approve or decline instead.
+   */
   withinWindow: boolean;
 };
 
@@ -24,19 +36,11 @@ export default function RefundConfirm({
   );
   const [message, setMessage] = useState<string | null>(null);
 
-  if (withinWindow) {
+  if (status === 'done' && withinWindow) {
     return (
       <div className="text-center">
-        <p className="zvc-body text-glow/80 mb-4">
-          This event is within 48 hours, so refunds are no longer automatic. To
-          request one, email us and we&apos;ll take care of it.
-        </p>
-        <a
-          href={`mailto:${ZVC_EMAIL_ADDRESS}?subject=Refund request — Order ${orderId}`}
-          className="zvc-btn text-base py-3"
-        >
-          Email us for a refund
-        </a>
+        <p className="zvc-heading text-2xl mb-3">{REQUEST_COPY.doneHeading}</p>
+        <p className="zvc-body text-glow/80">{REQUEST_COPY.doneBody}</p>
       </div>
     );
   }
@@ -91,7 +95,11 @@ export default function RefundConfirm({
         disabled={status === 'working'}
         className="zvc-btn text-base py-3 disabled:opacity-60"
       >
-        {status === 'working' ? 'Processing…' : 'Yes, refund my ticket'}
+        {status === 'working'
+          ? 'Processing…'
+          : withinWindow
+            ? REQUEST_COPY.submit
+            : 'Yes, refund my ticket'}
       </button>
       {message && (
         <p className="zvc-body text-cult-classic text-sm mt-4">{message}</p>

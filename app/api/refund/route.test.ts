@@ -5,9 +5,11 @@ const h = vi.hoisted(() => ({
   findByID: vi.fn(),
   find: vi.fn(),
   refundCreate: vi.fn(),
+  requestCreate: vi.fn(),
 }));
 
 vi.mock('@/lib/refundToken', () => ({ verifyRefundToken: h.verify }));
+vi.mock('@/lib/refundRequests', () => ({ createRefundRequest: h.requestCreate }));
 vi.mock('@/lib/stripe', () => ({
   stripeCheckout: { refunds: { create: h.refundCreate } },
 }));
@@ -44,6 +46,7 @@ beforeEach(() => {
   h.findByID.mockReset().mockResolvedValue({ ...order });
   h.find.mockReset().mockResolvedValue({ docs: [{ id: 1, datetime: farFuture }] });
   h.refundCreate.mockReset().mockResolvedValue({ id: 're_1' });
+  h.requestCreate.mockReset().mockResolvedValue({ ok: true, id: 9, existing: false });
 });
 
 describe('POST /api/refund', () => {
@@ -61,11 +64,12 @@ describe('POST /api/refund', () => {
     expect(h.refundCreate).not.toHaveBeenCalled();
   });
 
-  it('422s (and does not refund) when the event is within 48h', async () => {
+  it('files a refund request (and does not refund) when the event is within 48h', async () => {
     h.find.mockResolvedValue({ docs: [{ id: 1, datetime: soon }] });
     const res = await POST(req({ order: 5, token: 'ok' }));
-    expect(res.status).toBe(422);
-    expect((await res.json()).withinWindow).toBe(true);
+    expect(res.status).toBe(200);
+    expect((await res.json()).requested).toBe(true);
+    expect(h.requestCreate).toHaveBeenCalledWith(expect.anything(), 5, 'buyer');
     expect(h.refundCreate).not.toHaveBeenCalled();
   });
 
@@ -73,6 +77,7 @@ describe('POST /api/refund', () => {
     const res = await POST(req({ order: 5, token: 'ok' }));
     expect(res.status).toBe(200);
     expect(h.refundCreate).toHaveBeenCalledWith({ payment_intent: 'pi_1' });
+    expect(h.requestCreate).not.toHaveBeenCalled();
   });
 
   it('404s when the order is missing', async () => {

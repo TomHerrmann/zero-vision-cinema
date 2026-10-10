@@ -3,6 +3,7 @@ import { getPayload } from 'payload';
 import payloadConfig from '@payload-config';
 import { stripeCheckout } from '@/lib/stripe';
 import { verifyRefundToken } from '@/lib/refundToken';
+import { createRefundRequest } from '@/lib/refundRequests';
 import { logtail } from '@/lib/logtail';
 import type { Event } from '@/payload-types';
 
@@ -10,9 +11,10 @@ const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
 
 /**
  * Self-service refund. Requires the signed token from the buyer's ticket email.
- * Auto-issues a Stripe refund only when the event is >48h away; within 48h the
- * buyer is told to email support. The `charge.refunded` webhook then marks the
- * order refunded, frees the seat, cancels reminders, and sends the refund email.
+ * Auto-issues a Stripe refund only when the event is >48h away; within 48h it
+ * files a refund request instead, which an admin approves or declines (see
+ * lib/refundRequests). The `charge.refunded` webhook then marks the order
+ * refunded, frees the seat, cancels reminders, and sends the refund email.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -62,14 +64,11 @@ export async function POST(req: NextRequest) {
     }
     const msUntilEvent = new Date(event_.datetime).getTime() - Date.now();
     if (msUntilEvent < FORTY_EIGHT_HOURS) {
-      return NextResponse.json(
-        {
-          error:
-            'This event is within 48 hours. Email us to request a refund.',
-          withinWindow: true,
-        },
-        { status: 422 }
-      );
+      const result = await createRefundRequest(payload, id, 'buyer');
+      if (!result.ok) {
+        return NextResponse.json({ error: result.error }, { status: result.status });
+      }
+      return NextResponse.json({ success: true, requested: true }, { status: 200 });
     }
 
     // Issue the refund. Fulfillment (mark refunded, free seat, email, cancel

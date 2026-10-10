@@ -67,16 +67,17 @@ export interface Config {
   };
   blocks: {};
   collections: {
-    users: User;
-    media: Media;
-    locations: Location;
     events: Event;
-    merch: Merch;
+    locations: Location;
     orders: Order;
+    'refund-requests': RefundRequest;
     rewards: Reward;
-    authors: Author;
     articles: Article;
+    authors: Author;
     'custom-broadcasts': CustomBroadcast;
+    merch: Merch;
+    media: Media;
+    users: User;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -84,16 +85,17 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
-    users: UsersSelect<false> | UsersSelect<true>;
-    media: MediaSelect<false> | MediaSelect<true>;
-    locations: LocationsSelect<false> | LocationsSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
-    merch: MerchSelect<false> | MerchSelect<true>;
+    locations: LocationsSelect<false> | LocationsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
+    'refund-requests': RefundRequestsSelect<false> | RefundRequestsSelect<true>;
     rewards: RewardsSelect<false> | RewardsSelect<true>;
-    authors: AuthorsSelect<false> | AuthorsSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
+    authors: AuthorsSelect<false> | AuthorsSelect<true>;
     'custom-broadcasts': CustomBroadcastsSelect<false> | CustomBroadcastsSelect<true>;
+    merch: MerchSelect<false> | MerchSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -136,67 +138,6 @@ export interface UserAuthOperations {
     email: string;
     password: string;
   };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'users';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media".
- */
-export interface Media {
-  id: number;
-  alt: string;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "locations".
- */
-export interface Location {
-  id: number;
-  name: string;
-  capacity: number;
-  address: string;
-  city: string;
-  state: string;
-  zip: number;
-  url: string;
-  logo?: (number | null) | Media;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -244,12 +185,13 @@ export interface Event {
     [k: string]: unknown;
   } | null;
   /**
-   * Optional. If left blank and an IMDb ID is set, the OMDB poster is used.
+   * Required to publish unless the IMDb ID or book has a poster of its own, which is used when this is blank.
    */
   image?: (number | null) | Media;
-  price?: number | null;
-  location: number | Location;
   datetime: string;
+  location: number | Location;
+  price?: number | null;
+  ticketsSold?: number | null;
   /**
    * This link is automatically generated when the event is published
    */
@@ -266,7 +208,6 @@ export interface Event {
    * This id is automatically generated when the event is published
    */
   priceId?: string | null;
-  ticketsSold?: number | null;
   announcementSentAt?: string | null;
   reminderSentAt?: string | null;
   updatedAt: string;
@@ -275,20 +216,37 @@ export interface Event {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "merch".
+ * via the `definition` "media".
  */
-export interface Merch {
+export interface Media {
   id: number;
-  name?: string | null;
-  /**
-   * This id is automatically generated when the event is published
-   */
-  productId?: string | null;
-  /**
-   * Maximum number of tickets that can be sold for this event
-   */
-  merchLimit?: number | null;
-  merchSold?: number | null;
+  alt: string;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "locations".
+ */
+export interface Location {
+  id: number;
+  name: string;
+  capacity: number;
+  address: string;
+  city: string;
+  state: string;
+  zip: number;
+  url: string;
+  logo?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -326,6 +284,25 @@ export interface Order {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "merch".
+ */
+export interface Merch {
+  id: number;
+  name?: string | null;
+  /**
+   * This id is automatically generated when the event is published
+   */
+  productId?: string | null;
+  /**
+   * Maximum number of tickets that can be sold for this event
+   */
+  merchLimit?: number | null;
+  merchSold?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "rewards".
  */
 export interface Reward {
@@ -344,15 +321,48 @@ export interface Reward {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "authors".
+ * via the `definition` "refund-requests".
  */
-export interface Author {
+export interface RefundRequest {
   id: number;
-  name: string;
-  bio?: string | null;
-  image?: (number | null) | Media;
+  order: number | Order;
+  customerId: string;
+  status: 'pending' | 'approved' | 'declined';
+  source: 'buyer' | 'admin';
+  requestedAt: string;
+  decidedAt?: string | null;
+  decidedBy?: (number | null) | User;
+  stripeRefundId?: string | null;
+  voidedRewardCodes?: string | null;
+  notifiedAt?: string | null;
+  declineEmailSentAt?: string | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -385,6 +395,18 @@ export interface Article {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "authors".
+ */
+export interface Author {
+  id: number;
+  name: string;
+  bio?: string | null;
+  image?: (number | null) | Media;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * One-off emails to the whole mailing list. Nothing is sent while an entry is a Draft.
@@ -469,44 +491,48 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
-        relationTo: 'users';
-        value: number | User;
-      } | null)
-    | ({
-        relationTo: 'media';
-        value: number | Media;
+        relationTo: 'events';
+        value: number | Event;
       } | null)
     | ({
         relationTo: 'locations';
         value: number | Location;
       } | null)
     | ({
-        relationTo: 'events';
-        value: number | Event;
-      } | null)
-    | ({
-        relationTo: 'merch';
-        value: number | Merch;
-      } | null)
-    | ({
         relationTo: 'orders';
         value: number | Order;
+      } | null)
+    | ({
+        relationTo: 'refund-requests';
+        value: number | RefundRequest;
       } | null)
     | ({
         relationTo: 'rewards';
         value: number | Reward;
       } | null)
     | ({
-        relationTo: 'authors';
-        value: number | Author;
-      } | null)
-    | ({
         relationTo: 'articles';
         value: number | Article;
       } | null)
     | ({
+        relationTo: 'authors';
+        value: number | Author;
+      } | null)
+    | ({
         relationTo: 'custom-broadcasts';
         value: number | CustomBroadcast;
+      } | null)
+    | ({
+        relationTo: 'merch';
+        value: number | Merch;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -552,43 +578,30 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
+ * via the `definition` "events_select".
  */
-export interface UsersSelect<T extends boolean = true> {
+export interface EventsSelect<T extends boolean = true> {
+  eventType?: T;
+  name?: T;
+  imdbId?: T;
+  bookTitle?: T;
+  bookAuthor?: T;
+  openLibraryId?: T;
+  description?: T;
+  image?: T;
+  datetime?: T;
+  location?: T;
+  price?: T;
+  ticketsSold?: T;
+  paymentLink?: T;
+  paymentLinkId?: T;
+  productId?: T;
+  priceId?: T;
+  announcementSentAt?: T;
+  reminderSentAt?: T;
   updatedAt?: T;
   createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media_select".
- */
-export interface MediaSelect<T extends boolean = true> {
-  alt?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -603,45 +616,6 @@ export interface LocationsSelect<T extends boolean = true> {
   zip?: T;
   url?: T;
   logo?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "events_select".
- */
-export interface EventsSelect<T extends boolean = true> {
-  eventType?: T;
-  name?: T;
-  imdbId?: T;
-  bookTitle?: T;
-  bookAuthor?: T;
-  openLibraryId?: T;
-  description?: T;
-  image?: T;
-  price?: T;
-  location?: T;
-  datetime?: T;
-  paymentLink?: T;
-  paymentLinkId?: T;
-  productId?: T;
-  priceId?: T;
-  ticketsSold?: T;
-  announcementSentAt?: T;
-  reminderSentAt?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "merch_select".
- */
-export interface MerchSelect<T extends boolean = true> {
-  name?: T;
-  productId?: T;
-  merchLimit?: T;
-  merchSold?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -670,6 +644,25 @@ export interface OrdersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "refund-requests_select".
+ */
+export interface RefundRequestsSelect<T extends boolean = true> {
+  order?: T;
+  customerId?: T;
+  status?: T;
+  source?: T;
+  requestedAt?: T;
+  decidedAt?: T;
+  decidedBy?: T;
+  stripeRefundId?: T;
+  voidedRewardCodes?: T;
+  notifiedAt?: T;
+  declineEmailSentAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "rewards_select".
  */
 export interface RewardsSelect<T extends boolean = true> {
@@ -682,17 +675,6 @@ export interface RewardsSelect<T extends boolean = true> {
   voidedAt?: T;
   voidReason?: T;
   rewardEmailSentAt?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "authors_select".
- */
-export interface AuthorsSelect<T extends boolean = true> {
-  name?: T;
-  bio?: T;
-  image?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -712,6 +694,17 @@ export interface ArticlesSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "authors_select".
+ */
+export interface AuthorsSelect<T extends boolean = true> {
+  name?: T;
+  bio?: T;
+  image?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -737,6 +730,58 @@ export interface CustomBroadcastsSelect<T extends boolean = true> {
   resendBroadcastId?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "merch_select".
+ */
+export interface MerchSelect<T extends boolean = true> {
+  name?: T;
+  productId?: T;
+  merchLimit?: T;
+  merchSold?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  alt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
