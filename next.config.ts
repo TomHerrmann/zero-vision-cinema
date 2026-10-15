@@ -45,6 +45,26 @@ const nextConfig: NextConfig = {
         destination: '/?utm_source=qr&utm_medium=event#newsletter',
         permanent: false,
       },
+      {
+        // Short link for Tom's contact QR code. Not permanent, so the QR can
+        // point somewhere else later without making a new one.
+        source: '/tom',
+        destination: '/contacts/tom-herrmann.vcf',
+        permanent: false,
+      },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        // Serve contact cards as vCards so phones offer "Add to Contacts"
+        // instead of showing the raw text.
+        source: '/contacts/:file*',
+        headers: [
+          { key: 'Content-Type', value: 'text/vcard; charset=utf-8' },
+          { key: 'X-Robots-Tag', value: 'noindex' },
+        ],
+      },
     ];
   },
   async rewrites() {
