@@ -1,4 +1,4 @@
-import { ArrowUpRight, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import {
   AHC_DISCORD_URL,
   AHC_INSTAGRAM_URL,
@@ -19,12 +19,6 @@ import { cn } from '@/utils/utils';
 
 const SUBSTACK_SUBSCRIBE_URL = new URL('subscribe', ZVC_SUBSTACK_URL).toString();
 
-type ChannelLink = {
-  label: string;
-  url: string;
-  icon: React.ComponentType<{ className?: string }>;
-};
-
 type Channel = {
   name: string;
   /**
@@ -32,78 +26,78 @@ type Channel = {
    * Left empty until they write it; the card simply skips the line.
    */
   blurb: string;
-  links: ChannelLink[];
+  label: string;
+  url: string;
+  icon: React.ComponentType<{ className?: string }>;
 };
 
-// Instagram and TikTok share one card: the same videos go to both, so they're
-// offered as two doors to one feed rather than two things to follow.
 const CHANNELS: Channel[] = [
   {
     name: 'YouTube',
     blurb: '',
-    links: [
-      {
-        label: 'Subscribe',
-        url: ZVC_YOUTUBE_SUBSCRIBE_URL,
-        icon: YouTubeIcon,
-      },
-    ],
+    label: 'Subscribe',
+    url: ZVC_YOUTUBE_SUBSCRIBE_URL,
+    icon: YouTubeIcon,
   },
   {
     name: 'Substack',
     blurb: '',
-    links: [
-      {
-        label: 'Subscribe',
-        url: SUBSTACK_SUBSCRIBE_URL,
-        icon: SubstackIcon,
-      },
-    ],
+    label: 'Subscribe',
+    url: SUBSTACK_SUBSCRIBE_URL,
+    icon: SubstackIcon,
   },
   {
-    name: 'Instagram & TikTok',
+    name: 'Instagram',
     blurb: '',
-    links: [
-      { label: 'Instagram', url: ZVC_INSTAGRAM_URL, icon: InstagramIcon },
-      { label: 'TikTok', url: ZVC_TIKTOK_URL, icon: TikTokIcon },
-    ],
+    label: 'Follow',
+    url: ZVC_INSTAGRAM_URL,
+    icon: InstagramIcon,
   },
-];
-
-const EXTRA_LINKS: ChannelLink[] = [
   {
-    label: 'Astoria Horror Club on Instagram',
+    name: 'TikTok',
+    blurb: '',
+    label: 'Follow',
+    url: ZVC_TIKTOK_URL,
+    icon: TikTokIcon,
+  },
+  {
+    name: 'Astoria Horror Club',
+    blurb: '',
+    label: 'Follow',
     url: AHC_INSTAGRAM_URL,
     icon: InstagramIcon,
   },
-  { label: 'Join Our Discord', url: AHC_DISCORD_URL, icon: DiscordIcon },
+  {
+    name: 'Discord',
+    blurb: '',
+    label: 'Join',
+    url: AHC_DISCORD_URL,
+    icon: DiscordIcon,
+  },
 ];
 
 function ChannelCard({ channel }: { channel: Channel }) {
+  const { name, blurb, label, url, icon: Icon } = channel;
+
   return (
     <div className="zvc-card flex flex-col p-6 md:p-8">
       <h3 className="font-display uppercase text-glow text-2xl md:text-3xl leading-none mb-4">
-        {channel.name}
+        {name}
       </h3>
-      {channel.blurb && (
+      {blurb && (
         <p className="zvc-body text-glow/70 text-base md:text-lg leading-relaxed mb-6">
-          {channel.blurb}
+          {blurb}
         </p>
       )}
-      <div className="mt-auto flex flex-col gap-3">
-        {channel.links.map(({ label, url, icon: Icon }) => (
-          <a
-            key={url}
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="zvc-btn justify-center"
-          >
-            <Icon className="w-4 h-4" />
-            {label}
-          </a>
-        ))}
-      </div>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="zvc-btn justify-center mt-auto"
+      >
+        <Icon className="w-4 h-4" />
+        {label}
+      </a>
     </div>
   );
 }
@@ -165,27 +159,9 @@ export default function JoinSection({ as = 'h2' }: Props) {
 
         <NewsletterSignupForm />
 
-        <div className="grid gap-6 md:gap-8 md:grid-cols-3 mt-16 md:mt-20">
+        <div className="grid gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-3 mt-16 md:mt-20">
           {CHANNELS.map((channel) => (
             <ChannelCard key={channel.name} channel={channel} />
-          ))}
-        </div>
-
-        <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-x-8 gap-y-4 mt-10">
-          {EXTRA_LINKS.map(({ label, url, icon: Icon }) => (
-            <a
-              key={url}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-3 text-foreground/70 hover:text-blue-light transition-colors duration-200 text-lg"
-            >
-              <span className="zvc-icon-frame w-10 h-10 group-hover:bg-blue-light/20 transition-colors">
-                <Icon className="w-5 h-5" />
-              </span>
-              {label}
-              <ArrowUpRight className="w-4 h-4" aria-hidden="true" />
-            </a>
           ))}
         </div>
       </div>
