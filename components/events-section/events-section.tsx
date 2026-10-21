@@ -1,12 +1,17 @@
 import EventCard from '../event-card/event-card';
 import { Event } from '@/payload-types';
 import { cn } from '@/utils/utils';
-import { Film } from 'lucide-react';
+import { ArrowRight, Film } from 'lucide-react';
+import Link from 'next/link';
 import SectionHeading from '../ui/section-heading';
 
-type Props = { events: Event[] };
+type Props = {
+  events: Event[];
+  /** Show a "More Events" link to /events under the cards. */
+  showMoreLink?: boolean;
+};
 
-export default function EventsSection({ events }: Props) {
+export default function EventsSection({ events, showMoreLink = false }: Props) {
   return (
     <section
       id="events"
@@ -58,6 +63,15 @@ export default function EventsSection({ events }: Props) {
                 </div>
               ))}
             </div>
+
+            {showMoreLink && (
+              <div className="text-center">
+                <Link href="/events" className="zvc-btn-outline text-lg py-4">
+                  More Events
+                  <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                </Link>
+              </div>
+            )}
           </>
         )}
       </div>
