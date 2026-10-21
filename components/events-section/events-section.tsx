@@ -5,14 +5,22 @@ import { ArrowRight, Film } from 'lucide-react';
 import Link from 'next/link';
 import SectionHeading from '../ui/section-heading';
 
+/** Cards shown in the section; the rest are a click away on /events. */
+const MAX_CARDS = 3;
+
 type Props = {
   /** Every upcoming event, Halloweek included (see buildEventListing). */
   events: ListedEvent[];
-  /** Show a "More Events" link to /events under the cards. */
+  /**
+   * Always show the "More Events" link to /events. Without it, the link still
+   * shows whenever there are more events than cards.
+   */
   showMoreLink?: boolean;
 };
 
 export default function EventsSection({ events, showMoreLink = false }: Props) {
+  const showMore = showMoreLink || events.length > MAX_CARDS;
+
   return (
     <section
       id="events"
@@ -48,7 +56,7 @@ export default function EventsSection({ events, showMoreLink = false }: Props) {
           <>
             {/* Events grid */}
             <div className="flex flex-wrap justify-center gap-8 md:gap-10 lg:gap-12 mb-16">
-              {events.slice(0, 3).map((item, idx) => (
+              {events.slice(0, MAX_CARDS).map((item, idx) => (
                 <div
                   key={
                     item.kind === 'event'
@@ -70,7 +78,7 @@ export default function EventsSection({ events, showMoreLink = false }: Props) {
               ))}
             </div>
 
-            {showMoreLink && (
+            {showMore && (
               <div className="text-center">
                 <Link href="/events" className="zvc-btn-outline text-lg py-4">
                   More Events
