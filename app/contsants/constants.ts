@@ -30,6 +30,9 @@ export const ZVC_TIKTOK_URL = 'https://www.tiktok.com/@zerovisioncinema';
 
 export const ZVC_SUBSTACK_URL = 'https://zerovisioncinema.substack.com/';
 
+// Empty until the account's address is added; emails skip the button while it's blank.
+export const ZVC_BLUESKY_URL = '';
+
 export const ZVC_YOUTUBE_URL = 'https://www.youtube.com/@zerovisioncinema';
 // Opens YouTube's own "Subscribe?" prompt as soon as the channel loads.
 export const ZVC_YOUTUBE_SUBSCRIBE_URL = `${ZVC_YOUTUBE_URL}?sub_confirmation=1`;
