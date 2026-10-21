@@ -354,7 +354,7 @@ export default function BroadcastEmail({
         )}
       </Section>
 
-      <BrandFooter>
+      <BrandFooter kind="broadcast">
         <FooterLine>
           You&apos;re receiving this because you subscribed to Zero Vision
           Cinema updates.{' '}
