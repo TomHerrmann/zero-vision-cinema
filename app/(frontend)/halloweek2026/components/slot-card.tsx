@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { Clock, Film, MapPin } from 'lucide-react';
 import AddToCalendar from '@/components/add-to-calendar/add-to-calendar';
+import { cn } from '@/utils/utils';
 import {
   formatDayLong,
   formatTime,
@@ -9,7 +10,15 @@ import {
   type HalloweekSlot,
 } from '../halloweek.data';
 
-type Props = { slot: HalloweekSlot };
+type Props = {
+  slot: HalloweekSlot;
+  /**
+   * `list` sizes the poster to match the film cards on /events (a 450px
+   * column with 16px gutters, full width on phones) so the two kinds of card
+   * line up when they're stacked together.
+   */
+  layout?: 'carousel' | 'list';
+};
 
 function InfoRow({
   icon: Icon,
@@ -80,29 +89,49 @@ function InfoRow({
  * sold-out state. The one action is Add to Calendar (two hours per event). The card carries its own date, since the carousel replaced
  * the per-day headings that used to group these.
  */
-export default function SlotCard({ slot }: Props) {
+export default function SlotCard({ slot, layout = 'carousel' }: Props) {
+  const isList = layout === 'list';
+
   return (
     <Card className="group flex flex-col md:flex-row md:h-full overflow-hidden gap-0 py-0">
       {/* Poster */}
-      <div className="relative w-full max-w-[280px] mx-auto aspect-[4/5] overflow-hidden bg-blackout/60 md:mx-0 md:w-[240px] md:min-w-[240px] md:max-w-none md:self-center">
-        {slot.image ? (
-          <Image
-            src={slot.image}
-            alt={slot.title}
-            fill
-            className="object-cover object-center group-hover:brightness-90"
-            sizes="(max-width: 768px) 280px, 240px"
-            loading="lazy"
-          />
-        ) : (
-          // Placeholder until artwork lands — keeps the card's shape stable.
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-glow/20">
-            <Film className="w-10 h-10" />
-            <span className="font-utility uppercase text-xs tracking-[0.2em]">
-              Artwork TBA
-            </span>
-          </div>
+      <div
+        className={cn(
+          isList
+            ? 'w-full px-4 md:w-[450px] md:min-w-[450px] md:self-center'
+            : 'contents'
         )}
+      >
+        <div
+          className={cn(
+            'relative w-full aspect-[4/5] overflow-hidden bg-blackout/60',
+            !isList &&
+              'max-w-[280px] mx-auto md:mx-0 md:w-[240px] md:min-w-[240px] md:max-w-none md:self-center'
+          )}
+        >
+          {slot.image ? (
+            <Image
+              src={slot.image}
+              alt={slot.title}
+              fill
+              className="object-cover object-center group-hover:brightness-90"
+              sizes={
+                isList
+                  ? '(max-width: 768px) 100vw, 418px'
+                  : '(max-width: 768px) 280px, 240px'
+              }
+              loading="lazy"
+            />
+          ) : (
+            // Placeholder until artwork lands — keeps the card's shape stable.
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-glow/20">
+              <Film className="w-10 h-10" />
+              <span className="font-utility uppercase text-xs tracking-[0.2em]">
+                Artwork TBA
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Details */}

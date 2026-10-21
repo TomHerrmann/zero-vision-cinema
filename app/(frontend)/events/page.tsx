@@ -5,10 +5,7 @@ import { EVENT_TYPE_NAMES } from '@/utils/eventTypes';
 import { buildEventListing } from '@/utils/eventsListing';
 import EventCard from '@/components/event-card/event-card';
 import SlotCard from '../halloweek2026/components/slot-card';
-import {
-  HALLOWEEK,
-  HALLOWEEK_SCHEDULE,
-} from '../halloweek2026/halloweek.data';
+import { HALLOWEEK, HALLOWEEK_SCHEDULE } from '../halloweek2026/halloweek.data';
 import '../globals.css';
 import { cn } from '@/utils/utils';
 import { Film } from 'lucide-react';
@@ -87,7 +84,7 @@ export default async function EventsPage() {
                     >
                       {HALLOWEEK.name} {HALLOWEEK.year}
                     </Link>
-                    <SlotCard slot={item.slot} />
+                    <SlotCard slot={item.slot} layout="list" />
                   </>
                 )}
               </div>
