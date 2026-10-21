@@ -30,6 +30,10 @@ export const ZVC_TIKTOK_URL = 'https://www.tiktok.com/@zerovisioncinema';
 
 export const ZVC_SUBSTACK_URL = 'https://zerovisioncinema.substack.com/';
 
+export const ZVC_YOUTUBE_URL = 'https://www.youtube.com/@zerovisioncinema';
+// Opens YouTube's own "Subscribe?" prompt as soon as the channel loads.
+export const ZVC_YOUTUBE_SUBSCRIBE_URL = `${ZVC_YOUTUBE_URL}?sub_confirmation=1`;
+
 export const AHC_LOGO_PNG_URL =
   'https://fzuxxxhgqwm9izz9.public.blob.vercel-storage.com/ahc_logo_transparent_yellow-SITE.png';
 
