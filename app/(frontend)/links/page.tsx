@@ -6,6 +6,7 @@ import {
   ZVC_NEWSLETTER_URL,
   ZVC_SITE_URL,
   ZVC_SUBSTACK_URL,
+  ZVC_YOUTUBE_URL,
 } from '@/app/contsants/constants';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -39,6 +40,10 @@ const promoLinks: LinkItem[] = [
 ];
 
 const socialLins: LinkItem[] = [
+  {
+    title: 'ZVC on YouTube',
+    url: `${ZVC_YOUTUBE_URL}`,
+  },
   {
     title: 'ZVC on TikTok',
     url: `${ZVC_TIKTOK_URL}`,

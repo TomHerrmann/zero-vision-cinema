@@ -1,8 +1,8 @@
 import About from '@/components/about/about';
 import EventsSection from '@/components/events-section/events-section';
-import { NewsletterSignup } from '@/components/newsletter-signup/newsletter-signup';
 import ContactSection from '@/components/contact-section/contact-section';
 import Hero from '@/components/hero/hero';
+import JoinSection from '@/components/join-section/join-section';
 import SubstackSection from '@/components/substack-section/substack-section';
 import { getUpcomingZvcEvents } from '@/utils/getEvents';
 import { getLatestSubstackPosts } from '@/utils/getLatestSubstackPosts';
@@ -25,7 +25,7 @@ export default async function Home() {
       <EventsSection events={events} />
       <About />
       <SubstackSection posts={substackPosts} />
-      <NewsletterSignup />
+      <JoinSection />
       <ContactSection />
     </>
   );
