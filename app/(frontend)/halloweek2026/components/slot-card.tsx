@@ -15,9 +15,11 @@ type Props = {
   /**
    * `list` sizes the poster to match the film cards on /events (a 450px
    * column with 16px gutters, full width on phones) so the two kinds of card
-   * line up when they're stacked together.
+   * line up when they're stacked together. `grid` stacks the full-width
+   * poster above the details at every size, like the vertical film cards in
+   * the home page's Upcoming Events grid.
    */
-  layout?: 'carousel' | 'list';
+  layout?: 'carousel' | 'list' | 'grid';
 };
 
 function InfoRow({
@@ -91,9 +93,15 @@ function InfoRow({
  */
 export default function SlotCard({ slot, layout = 'carousel' }: Props) {
   const isList = layout === 'list';
+  const isGrid = layout === 'grid';
 
   return (
-    <Card className="group flex flex-col md:flex-row md:h-full overflow-hidden gap-0 py-0">
+    <Card
+      className={cn(
+        'group flex flex-col md:h-full overflow-hidden gap-0 py-0',
+        !isGrid && 'md:flex-row'
+      )}
+    >
       {/* Poster */}
       <div
         className={cn(
@@ -105,7 +113,7 @@ export default function SlotCard({ slot, layout = 'carousel' }: Props) {
         <div
           className={cn(
             'relative w-full aspect-[4/5] overflow-hidden bg-blackout/60',
-            !isList &&
+            layout === 'carousel' &&
               'max-w-[280px] mx-auto md:mx-0 md:w-[240px] md:min-w-[240px] md:max-w-none md:self-center'
           )}
         >
@@ -118,7 +126,9 @@ export default function SlotCard({ slot, layout = 'carousel' }: Props) {
               sizes={
                 isList
                   ? '(max-width: 768px) 100vw, 418px'
-                  : '(max-width: 768px) 280px, 240px'
+                  : isGrid
+                    ? '(max-width: 640px) 100vw, 450px'
+                    : '(max-width: 768px) 280px, 240px'
               }
               loading="lazy"
             />

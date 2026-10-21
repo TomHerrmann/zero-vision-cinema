@@ -1,11 +1,7 @@
-import Link from 'next/link';
 import { getUpcomingEvents } from '@/utils/getEvents';
-import { isSoldOut } from '@/utils/isSoldOut';
-import { EVENT_TYPE_NAMES } from '@/utils/eventTypes';
 import { buildEventListing } from '@/utils/eventsListing';
-import EventCard from '@/components/event-card/event-card';
-import SlotCard from '../halloweek2026/components/slot-card';
-import { HALLOWEEK, HALLOWEEK_SCHEDULE } from '../halloweek2026/halloweek.data';
+import { HALLOWEEK_SCHEDULE } from '../halloweek2026/halloweek.data';
+import ListedEventCard from '@/components/listed-event-card/listed-event-card';
 import '../globals.css';
 import { cn } from '@/utils/utils';
 import { Film } from 'lucide-react';
@@ -64,29 +60,7 @@ export default async function EventsPage() {
                 )}
                 style={{ animationDelay: `${idx * 100}ms` }}
               >
-                {/* Series label, so a book club night reads differently from a screening. */}
-                {item.kind === 'event' ? (
-                  <>
-                    <span className="zvc-kicker block text-xs">
-                      {EVENT_TYPE_NAMES[item.event.eventType]}
-                    </span>
-                    <EventCard
-                      {...item.event}
-                      orientation="horz"
-                      isSoldOut={isSoldOut(item.event)}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href="/halloweek2026"
-                      className="zvc-kicker block text-xs hover:text-glow transition-colors"
-                    >
-                      {HALLOWEEK.name} {HALLOWEEK.year}
-                    </Link>
-                    <SlotCard slot={item.slot} layout="list" />
-                  </>
-                )}
+                <ListedEventCard item={item} orientation="horz" />
               </div>
             ))}
           </div>
