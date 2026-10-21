@@ -1,4 +1,4 @@
-import { ArrowUpRight, Mail } from 'lucide-react';
+import { ArrowUpRight, Mail } from "lucide-react";
 import {
   AHC_DISCORD_URL,
   AHC_INSTAGRAM_URL,
@@ -6,18 +6,21 @@ import {
   ZVC_SUBSTACK_URL,
   ZVC_TIKTOK_URL,
   ZVC_YOUTUBE_SUBSCRIBE_URL,
-} from '@/app/contsants/constants';
-import { NewsletterSignupForm } from '@/components/newsletter-signup/newsletter-signup-form';
-import SubstackIcon from '@/components/ui/substack-icon';
+} from "@/app/contsants/constants";
+import { NewsletterSignupForm } from "@/components/newsletter-signup/newsletter-signup-form";
+import SubstackIcon from "@/components/ui/substack-icon";
 import {
   DiscordIcon,
   InstagramIcon,
   TikTokIcon,
   YouTubeIcon,
-} from '@/components/ui/social-icons';
-import { cn } from '@/utils/utils';
+} from "@/components/ui/social-icons";
+import { cn } from "@/utils/utils";
 
-const SUBSTACK_SUBSCRIBE_URL = new URL('subscribe', ZVC_SUBSTACK_URL).toString();
+const SUBSTACK_SUBSCRIBE_URL = new URL(
+  "subscribe",
+  ZVC_SUBSTACK_URL,
+).toString();
 
 type ChannelLink = {
   label: string;
@@ -39,44 +42,44 @@ type Channel = {
 // offered as two doors to one feed rather than two things to follow.
 const CHANNELS: Channel[] = [
   {
-    name: 'YouTube',
-    blurb: '',
+    name: "YouTube",
+    blurb: "",
     links: [
       {
-        label: 'Subscribe',
+        label: "Subscribe",
         url: ZVC_YOUTUBE_SUBSCRIBE_URL,
         icon: YouTubeIcon,
       },
     ],
   },
   {
-    name: 'Substack',
-    blurb: '',
+    name: "Substack",
+    blurb: "",
     links: [
       {
-        label: 'Subscribe',
+        label: "Subscribe",
         url: SUBSTACK_SUBSCRIBE_URL,
         icon: SubstackIcon,
       },
     ],
   },
   {
-    name: 'Instagram & TikTok',
-    blurb: '',
+    name: "Instagram & TikTok",
+    blurb: "",
     links: [
-      { label: 'Instagram', url: ZVC_INSTAGRAM_URL, icon: InstagramIcon },
-      { label: 'TikTok', url: ZVC_TIKTOK_URL, icon: TikTokIcon },
+      { label: "Instagram", url: ZVC_INSTAGRAM_URL, icon: InstagramIcon },
+      { label: "TikTok", url: ZVC_TIKTOK_URL, icon: TikTokIcon },
     ],
   },
 ];
 
 const EXTRA_LINKS: ChannelLink[] = [
   {
-    label: 'Astoria Horror Club on Instagram',
+    label: "Astoria Horror Club on Instagram",
     url: AHC_INSTAGRAM_URL,
     icon: InstagramIcon,
   },
-  { label: 'Join Our Discord', url: AHC_DISCORD_URL, icon: DiscordIcon },
+  { label: "Join Our Discord", url: AHC_DISCORD_URL, icon: DiscordIcon },
 ];
 
 function ChannelCard({ channel }: { channel: Channel }) {
@@ -110,7 +113,7 @@ function ChannelCard({ channel }: { channel: Channel }) {
 
 type Props = {
   /** h1 on the /join page, h2 when it's a section of the homepage. */
-  as?: 'h1' | 'h2';
+  as?: "h1" | "h2";
 };
 
 /**
@@ -119,15 +122,15 @@ type Props = {
  *
  * Keeps the `newsletter` anchor so older links to /#newsletter still land here.
  */
-export default function JoinSection({ as = 'h2' }: Props) {
+export default function JoinSection({ as = "h2" }: Props) {
   const Heading = as;
 
   return (
     <section
       id="newsletter"
       className={cn(
-        'relative pb-16 md:pb-20 overflow-hidden bg-blackout',
-        as === 'h1' ? 'pt-32 md:pt-40' : 'pt-24 md:pt-32'
+        "relative pb-16 md:pb-20 overflow-hidden bg-blackout",
+        as === "h1" ? "pt-32 md:pt-40" : "pt-24 md:pt-32",
       )}
     >
       {/* Blue riso wash + texture */}

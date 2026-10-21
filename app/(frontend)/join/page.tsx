@@ -1,16 +1,16 @@
-import { Metadata } from 'next';
-import EventsSection from '@/components/events-section/events-section';
-import JoinSection from '@/components/join-section/join-section';
-import { getUpcomingZvcEvents } from '@/utils/getEvents';
-import { isSoldOut } from '@/utils/isSoldOut';
+import { Metadata } from "next";
+import EventsSection from "@/components/events-section/events-section";
+import JoinSection from "@/components/join-section/join-section";
+import { getUpcomingZvcEvents } from "@/utils/getEvents";
+import { isSoldOut } from "@/utils/isSoldOut";
 
 // Revalidate every 5 minutes (300 seconds)
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: 'Join — Zero Vision Cinema',
+  title: "Join — Zero Vision Cinema",
   description:
-    'A pop-up movie theater, screening niche movies, genre films, and cult favorites around NYC.',
+    "A pop-up movie theater, screening niche movies, genre films, and cult favorites around NYC.",
 };
 
 /**
