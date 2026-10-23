@@ -1,6 +1,7 @@
-import { getUpcomingZvcEvents } from '@/utils/getEvents';
-import { isSoldOut } from '@/utils/isSoldOut';
-import EventCard from '@/components/event-card/event-card';
+import { getUpcomingEvents } from '@/utils/getEvents';
+import { buildEventListing } from '@/utils/eventsListing';
+import { HALLOWEEK_SCHEDULE } from '../halloweek2026/halloweek.data';
+import ListedEventCard from '@/components/listed-event-card/listed-event-card';
 import '../globals.css';
 import { cn } from '@/utils/utils';
 import { Film } from 'lucide-react';
@@ -10,7 +11,10 @@ import SectionHeading from '@/components/ui/section-heading';
 export const revalidate = 300;
 
 export default async function EventsPage() {
-  const events = await getUpcomingZvcEvents();
+  const events = buildEventListing(
+    await getUpcomingEvents(),
+    HALLOWEEK_SCHEDULE
+  );
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-blackout">
@@ -43,19 +47,20 @@ export default async function EventsPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-8 md:gap-10 max-w-5xl mx-auto">
-            {events.map((event, idx) => (
+            {events.map((item, idx) => (
               <div
-                key={event.id}
+                key={
+                  item.kind === 'event'
+                    ? `event-${item.event.id}`
+                    : `halloweek-${item.slot.id}`
+                }
                 className={cn(
+                  'flex flex-col gap-3',
                   'animate-in fade-in slide-in-from-bottom-8 duration-700'
                 )}
                 style={{ animationDelay: `${idx * 100}ms` }}
               >
-                <EventCard
-                  {...event}
-                  orientation="horz"
-                  isSoldOut={isSoldOut(event)}
-                />
+                <ListedEventCard item={item} orientation="horz" />
               </div>
             ))}
           </div>

@@ -4,7 +4,6 @@ import { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical';
 import {
   AHC_DISCORD_URL,
   PARTIFUL_URL,
-  ZVC_INSTAGRAM_URL,
   LLC_NAME,
   ZVC_EMAIL_ADDRESS,
   ZVC_SITE_URL,
@@ -336,10 +335,6 @@ export default function TicketEmail({
               <h2 style={smallHeading}>Join the Community</h2>
               <Text style={mutedTextStyle}>Stay connected and never miss an update!</Text>
               <Text style={linkList}>
-                <Link href={ZVC_INSTAGRAM_URL} style={linkStyle}>
-                  Follow us on Instagram
-                </Link>
-                <br />
                 <Link href={PARTIFUL_URL} style={linkStyle}>
                   Follow us on Partiful
                 </Link>
@@ -376,7 +371,7 @@ export default function TicketEmail({
         </table>
       </Section>
 
-      <BrandFooter>
+      <BrandFooter kind="ticket">
         <FooterLine>
           Support:{' '}
           <FooterLink href={`mailto:${ZVC_EMAIL_ADDRESS}`}>
