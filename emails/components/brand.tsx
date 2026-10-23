@@ -17,7 +17,6 @@ import {
   EMAIL_FONT_BOOTZY_URL,
   EMAIL_LOGO_PRIMARY_WHITE_URL,
   LLC_NAME,
-  ZVC_BLUESKY_URL,
   ZVC_INSTAGRAM_URL,
   ZVC_SITE_URL,
   ZVC_SUBSTACK_URL,
@@ -238,7 +237,6 @@ const FOLLOW_CHANNELS: { name: string; url: string }[] = [
   { name: 'Instagram', url: ZVC_INSTAGRAM_URL },
   { name: 'TikTok', url: ZVC_TIKTOK_URL },
   { name: 'Substack', url: new URL('subscribe', ZVC_SUBSTACK_URL).toString() },
-  { name: 'Bluesky', url: ZVC_BLUESKY_URL },
 ];
 
 /**
