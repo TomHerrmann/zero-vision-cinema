@@ -18,9 +18,12 @@ skill gives for it. Rules that apply to every target:
   `event.description` exactly as given. Never rewrite, summarize, punch up or
   add copy, hashtags or emoji. If something they wrote is missing, leave the
   field empty and say so in `notes`; do not fill the gap.
-- **Times are New York time.** Convert `start` / `end` (UTC) to
-  America/New_York and write both the ISO value and a human label such as
-  `Wednesday, October 14, 7:30 PM`. Double-check daylight saving.
+- **Times are Eastern (New York) time, always.** Every event is in NYC. The
+  feed already gives New York time: `start` / `end` are ISO values with the
+  Eastern offset (e.g. `2026-10-03T19:30:00-04:00`), `startLabel` /
+  `endLabel` are the human labels and `date` is the New York date. Copy them
+  exactly. Never convert to or from UTC or any other zone, never drop the
+  offset, and always keep the `ET` on a label.
 - **Venue** is `venue.name`, then the street address, city, state and zip.
 - **Links**: `eventUrl` always; `ticketUrl` too when it is not null.
 - **Poster**: `posterUrl`. If it is null, set it to null and say so in

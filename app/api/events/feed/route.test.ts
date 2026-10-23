@@ -73,9 +73,13 @@ describe('GET /api/events/feed', () => {
     expect(event).toMatchObject({
       id: 10,
       eventTypeName: 'Zero Vision Cinema',
-      start: '2026-10-03T23:30:00.000Z',
+      timeZone: 'America/New_York',
+      date: '2026-10-03',
+      start: '2026-10-03T19:30:00-04:00',
       // 7:30pm + 15 + 85 = 9:10pm ET.
-      end: '2026-10-04T01:10:00.000Z',
+      end: '2026-10-03T21:10:00-04:00',
+      startLabel: 'Saturday, October 3, 2026, 7:30 PM ET',
+      endLabel: '9:10 PM ET',
       description: 'Groovy.\n\nBring a chainsaw.',
       posterUrl: 'https://zerovisioncinema.com/api/media/file/evil-dead.jpg',
       eventUrl: 'https://zerovisioncinema.com/events/10',
@@ -83,6 +87,18 @@ describe('GET /api/events/feed', () => {
       venue: { name: 'The Bar', address: '12-34 Broadway' },
     });
     expect(h.movie).not.toHaveBeenCalled();
+  });
+
+  it('gives times in New York time, with the winter offset after DST ends', async () => {
+    // 11pm ET on Nov 30 is 4am UTC on Dec 1: the date must stay the 30th.
+    h.find.mockResolvedValue({
+      docs: [{ ...screening, datetime: '2026-12-01T04:00:00.000Z' }],
+    });
+    const [event] = await feed();
+    expect(event.date).toBe('2026-11-30');
+    expect(event.start).toBe('2026-11-30T23:00:00-05:00');
+    expect(event.startLabel).toBe('Monday, November 30, 2026, 11:00 PM ET');
+    expect(new Date(event.start).toISOString()).toBe('2026-12-01T04:00:00.000Z');
   });
 
   it('falls back to the OMDB poster and plot like the event card', async () => {
