@@ -2,14 +2,11 @@
 
 import { useState } from 'react';
 
-/**
- * Wording for a refund request inside 48h. Blanks in [brackets] are Tom &
- * Mary's to write — replace each before this ships.
- */
+/** Wording for a refund request inside 48h. */
 const REQUEST_COPY = {
-  submit: '[Tom & Mary: button label for sending the refund request]',
-  doneHeading: '[Tom & Mary: heading once the request is sent]',
-  doneBody: '[Tom & Mary: what happens next, shown once the request is sent]',
+  submit: 'Request a refund',
+  doneHeading: 'Request received',
+  doneBody: "We'll review your request and email you either way.",
 };
 
 type Props = {
