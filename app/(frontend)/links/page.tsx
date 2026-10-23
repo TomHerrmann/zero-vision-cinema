@@ -6,6 +6,7 @@ import {
   ZVC_NEWSLETTER_URL,
   ZVC_SITE_URL,
   ZVC_SUBSTACK_URL,
+  ZVC_YOUTUBE_URL,
 } from '@/app/contsants/constants';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,7 +28,22 @@ const siteLink = {
   url: `${ZVC_SITE_URL}`,
 };
 
+const promoLinks: LinkItem[] = [
+  {
+    title: 'Halloweek',
+    url: '/halloweek2026',
+  },
+  {
+    title: '20% off A Ghost In Your Ear Tickets',
+    url: 'https://www.ticketmaster.com/a-ghost-in-your-ear-tickets/artist/4584634?venueId=393226&did=ghost20&list_view=1',
+  },
+];
+
 const socialLins: LinkItem[] = [
+  {
+    title: 'ZVC on YouTube',
+    url: `${ZVC_YOUTUBE_URL}`,
+  },
   {
     title: 'ZVC on TikTok',
     url: `${ZVC_TIKTOK_URL}`,
@@ -99,7 +115,7 @@ export default async function TreeLinkPage() {
         {/* Links sticker sheet */}
         <Card className="w-full overflow-hidden">
           <CardContent className="p-6 sm:p-8 md:p-10 space-y-4">
-            {[siteLink, ...eventLinks, ...latestPostLinks, ...socialLins].map((link, idx) => (
+            {[siteLink, ...promoLinks, ...eventLinks, ...latestPostLinks, ...socialLins].map((link, idx) => (
               <div
                 key={`${link.title}-link`}
                 className="animate-in fade-in slide-in-from-bottom-4 duration-500"

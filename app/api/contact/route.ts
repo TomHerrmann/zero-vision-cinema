@@ -1,46 +1,54 @@
-import { NextResponse, NextRequest } from 'next/server';
-import contactEmailSchema from '../../(frontend)/(schemas)/contactEmailSchema';
-import { Resend } from 'resend';
+import { NextResponse, NextRequest } from "next/server";
+import contactEmailSchema from "../../(frontend)/(schemas)/contactEmailSchema";
+import { Resend } from "resend";
 import {
   ZVC_DISPLAY_NAME_EMAIL,
   ZVC_EMAIL_ADDRESS,
-} from '@/app/contsants/constants';
-import { logtail } from '@/lib/logtail';
+  ZVC_PRESS_EMAIL_ADDRESS,
+} from "@/app/contsants/constants";
+import { logtail } from "@/lib/logtail";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+const INBOX_ADDRESSES = {
+  info: ZVC_EMAIL_ADDRESS,
+  press: ZVC_PRESS_EMAIL_ADDRESS,
+};
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = contactEmailSchema.parse(body);
+    const inbox = validatedData.inbox ?? "info";
 
     const response = await resend.emails.send({
       from: ZVC_DISPLAY_NAME_EMAIL,
-      subject: `New Message From ${validatedData.name}`,
-      to: ZVC_EMAIL_ADDRESS,
+      subject: `New ${inbox === "press" ? "Press " : ""}Message From ${validatedData.name}`,
+      to: INBOX_ADDRESSES[inbox],
+      replyTo: validatedData.email,
       text: `Message from ${validatedData.name} <${validatedData.email}> | ${validatedData.message}`,
     });
 
     if (response.error) {
       await logtail.error(`API /contact error: ${response.error.message}`, {
-        method: 'POST',
+        method: "POST",
         timestamp: new Date().toISOString(),
       });
       return NextResponse.json(
         { error: response.error.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {
     await logtail.error(`API /contact email error: ${err}`, {
-      method: 'POST',
+      method: "POST",
       timestamp: new Date().toISOString(),
     });
     return NextResponse.json(
-      { error: 'Failed to send contact email' },
-      { status: 500 }
+      { error: "Failed to send contact email" },
+      { status: 500 },
     );
   }
 }

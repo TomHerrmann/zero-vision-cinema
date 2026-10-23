@@ -1,10 +1,12 @@
 import About from '@/components/about/about';
 import EventsSection from '@/components/events-section/events-section';
-import { NewsletterSignup } from '@/components/newsletter-signup/newsletter-signup';
 import ContactSection from '@/components/contact-section/contact-section';
 import Hero from '@/components/hero/hero';
+import JoinSection from '@/components/join-section/join-section';
 import SubstackSection from '@/components/substack-section/substack-section';
-import { getUpcomingZvcEvents } from '@/utils/getEvents';
+import { getUpcomingEvents } from '@/utils/getEvents';
+import { buildEventListing } from '@/utils/eventsListing';
+import { HALLOWEEK_SCHEDULE } from '@/app/(frontend)/halloweek2026/halloweek.data';
 import { getLatestSubstackPosts } from '@/utils/getLatestSubstackPosts';
 
 // Revalidate every 5 minutes (300 seconds)
@@ -14,10 +16,12 @@ export const revalidate = 300;
 const SUBSTACK_POST_COUNT = 1;
 
 export default async function Home() {
-  const [events, substackPosts] = await Promise.all([
-    getUpcomingZvcEvents(),
+  const [payloadEvents, substackPosts] = await Promise.all([
+    getUpcomingEvents(),
     getLatestSubstackPosts(SUBSTACK_POST_COUNT),
   ]);
+
+  const events = buildEventListing(payloadEvents, HALLOWEEK_SCHEDULE);
 
   return (
     <>
@@ -25,7 +29,7 @@ export default async function Home() {
       <EventsSection events={events} />
       <About />
       <SubstackSection posts={substackPosts} />
-      <NewsletterSignup />
+      <JoinSection />
       <ContactSection />
     </>
   );
