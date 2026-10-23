@@ -10,6 +10,13 @@ import {
   searchBookByTitleAuthor,
 } from '@/lib/openlibrary';
 import { eventCalendarEnd } from '@/utils/eventCalendar';
+import {
+  EVENT_TIME_ZONE,
+  easternDate,
+  easternLabel,
+  easternTimeLabel,
+  toEasternIso,
+} from '@/utils/easternTime';
 import { EVENT_TYPE_NAMES, isPaidEventType } from '@/utils/eventTypes';
 import { richTextIsEmpty, richTextToPlain } from '@/utils/richText';
 
@@ -21,6 +28,10 @@ import { richTextIsEmpty, richTextToPlain } from '@/utils/richText';
  * Descriptions are flattened to plain text so the listing copy elsewhere is
  * exactly what Tom and Mary wrote in Payload (or the OMDB / Open Library
  * summary the site falls back to when they left it blank).
+ *
+ * Every event is in NYC, so every time here is already New York time: ISO
+ * values carry the Eastern offset (-04:00 / -05:00) and the labels end in
+ * "ET". Readers copy them as they are and never convert from UTC.
  */
 export const dynamic = 'force-dynamic';
 
@@ -78,17 +89,21 @@ export async function GET() {
         : richTextToPlain(event.description);
 
       const paid = isPaidEventType(event.eventType);
+      const end = eventCalendarEnd(
+        event.datetime,
+        await getEventRuntimeMinutes(event)
+      );
       return {
         id: event.id,
         eventType: event.eventType,
         eventTypeName: EVENT_TYPE_NAMES[event.eventType],
         name: event.name,
-        start: new Date(event.datetime).toISOString(),
-        end: eventCalendarEnd(
-          event.datetime,
-          await getEventRuntimeMinutes(event)
-        ).toISOString(),
-        timeZone: 'America/New_York',
+        timeZone: EVENT_TIME_ZONE,
+        date: easternDate(event.datetime),
+        start: toEasternIso(event.datetime),
+        end: toEasternIso(end),
+        startLabel: easternLabel(event.datetime),
+        endLabel: easternTimeLabel(end),
         venue: location
           ? {
               name: location.name,

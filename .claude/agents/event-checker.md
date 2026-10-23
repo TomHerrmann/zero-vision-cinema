@@ -13,9 +13,12 @@ trust it. Do not edit, create or publish anything.
 Check every point and report each one:
 
 1. **Title** is exactly `event.name`.
-2. **Date and time**: the start, converted from UTC to America/New_York,
-   matches the draft's time to the minute, and so does the end. Recompute it
-   yourself; check daylight saving.
+2. **Date and time (Eastern)**: every time in the draft is New York time and
+   matches the feed to the minute: ISO values equal `event.start` /
+   `event.end` including the `-04:00` / `-05:00` offset, labels equal
+   `event.startLabel` / `event.endLabel` including `ET`, and any date equals
+   `event.date`. A time in UTC (`Z`), with no offset, in another zone, or
+   with no `ET` on a label fails.
 3. **Venue**: name and full address match `event.venue`.
 4. **Description** is exactly `event.description` (whitespace aside), with no
    added, removed or reworded words.

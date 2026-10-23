@@ -78,5 +78,6 @@ describe('googleCalendarUrl', () => {
       '20261003T233000Z/20261004T010000Z'
     );
     expect(url.searchParams.get('location')).toBe(event.location);
+    expect(url.searchParams.get('ctz')).toBe('America/New_York');
   });
 });

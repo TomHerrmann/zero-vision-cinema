@@ -30,6 +30,10 @@ use it.
 
 ## Hard rules
 
+- Every event is in NYC: every date and time you draft, check, title or
+  publish is Eastern (America/New_York), taken from the feed's `date`,
+  `start`, `end`, `startLabel` and `endLabel`, which are already New York
+  time. Never convert to or from UTC or your own zone.
 - Never publish without approval (above). Linear issues are internal and are
   not publishing.
 - Never store, copy or post personal data of customers or attendees. The feed
@@ -77,8 +81,8 @@ Every listing goes through four independent passes:
 3. A second `event-checker` (Haiku), in a separate call that is **not** shown
    the first verdict, checks it again.
 4. You check it last: inconsistencies between the two verdicts, brand
-   problems, a missing poster, wrong times (recompute New York time
-   yourself), wrong venue, any wording that is not in the feed.
+   problems, a missing poster, wrong times (anything not equal to the feed's
+   Eastern `start` / `end` / labels, or missing its offset or `ET`), wrong venue, any wording that is not in the feed.
 
 Any `fail` → send the problems back to a fresh `event-drafter` as feedback
 and repeat. After three failed rounds, stop on that target and put the
@@ -87,7 +91,8 @@ problems in the approval issue for Tom and Mary instead of a draft.
 ## The approval issue
 
 One Linear issue per event in team `ZER`, labels `event-rollout`, title
-`Approve listings: <event name> (<Mon D>)`. Description:
+`Approve listings: <event name> (<Mon D>)`, where the date is the feed's
+New York `date`. Description:
 
 ```
 zvc-event-id: <id>
@@ -118,7 +123,8 @@ ticket link (if any) and the event page link on their own lines at the end.
 ### Calendar draft shape
 
 `{ summary, startIso, endIso, timeZone: "America/New_York", location,
-description, notes }` where `location` is venue name + full address and
+description, notes }` where `startIso` / `endIso` are the feed's `start` /
+`end` exactly (Eastern offset included), and `location` is venue name + full address and
 `description` is the feed's description, then `Details: <eventUrl>`, then
 `Tickets: <ticketUrl>` when there is one, then a final line
 `zvc-event-id: <id>`.
@@ -127,7 +133,9 @@ description, notes }` where `location` is venue name + full address and
 
 Search the public calendar for `zvc-event-id: <id>` first; update that event
 if it exists, otherwise create it with `mcp__Google_Calendar__create_event`
-on the public calendar id, using the approved draft exactly. Attach nothing
+on the public calendar id, using the approved draft exactly, with the
+event's time zone set to `America/New_York`. When you read it back, confirm
+the start and end are the same Eastern times as the draft. Attach nothing
 else, invite no one.
 
 ## The promo task
@@ -145,7 +153,7 @@ A second Linear issue in team `ZER`, labels `event-rollout`, title
 - [ ] Video teaser to YouTube Shorts
 ```
 
-Set its due date to six days before the event (when the announcement email
+Set its due date to six days before the event's New York `date` (when the announcement email
 goes out), or today if that has passed. Run it through steps 2–4 of *Draft
 and check* (checkers confirm the marker, title, date and every checklist
 item) before creating it.
