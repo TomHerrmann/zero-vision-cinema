@@ -48,7 +48,7 @@ export default function RefundDeclinedEmail({ eventName, orderNumber }: Props) {
           <Row label="Event" value={eventName} last />
         </Section>
       </Section>
-      <BrandFooter>
+      <BrandFooter kind="refund">
         <FooterLine>
           Support:{' '}
           <FooterLink href={`mailto:${ZVC_EMAIL_ADDRESS}`}>{ZVC_EMAIL_ADDRESS}</FooterLink>
