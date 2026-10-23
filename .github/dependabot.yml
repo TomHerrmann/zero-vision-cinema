@@ -1,0 +1,22 @@
+# Dependabot version updates. Security alerts and security-fix PRs are turned
+# on separately in repo Settings > Code security (Dependabot alerts and
+# Dependabot security updates).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: America/New_York
+    open-pull-requests-limit: 5
+    groups:
+      # One PR for all patch and minor bumps; majors still come one at a time.
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

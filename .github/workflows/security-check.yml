@@ -1,0 +1,61 @@
+name: Security check
+
+# Weekly check for:
+#   - high or critical advisories in production npm dependencies (npm audit)
+#   - new Node.js security releases or end of life for the pinned major
+# Any failure opens (or comments on) a "Security check failed" issue assigned
+# to the repo owner, so it shows up as a GitHub notification and email.
+
+on:
+  schedule:
+    - cron: "0 13 * * 1" # Mondays 9:00 ET (13:00 UTC in EDT)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Node.js security releases and end of life
+        id: node
+        continue-on-error: true
+        run: node .github/scripts/check-node-security.mjs
+
+      - name: npm audit (production dependencies, high and above)
+        id: audit
+        continue-on-error: true
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Open or update the alert issue
+        if: steps.node.outcome == 'failure' || steps.audit.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          NODE_OUTCOME: ${{ steps.node.outcome }}
+          AUDIT_OUTCOME: ${{ steps.audit.outcome }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          title="Security check failed"
+          body="Node.js check: ${NODE_OUTCOME}. npm audit: ${AUDIT_OUTCOME}. Details: ${RUN_URL}"
+          existing=$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number')
+          if [[ -n "$existing" ]]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body" --assignee "$OWNER"
+          fi
+
+      - name: Fail the run
+        if: steps.node.outcome == 'failure' || steps.audit.outcome == 'failure'
+        run: exit 1
