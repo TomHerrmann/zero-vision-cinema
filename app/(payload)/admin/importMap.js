@@ -26,6 +26,8 @@ import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997e
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { TicketsSoldCell as TicketsSoldCell_3e80904acd1ea5cfb0c12d6ba2b4a67d } from '../../../collections/components/TicketsSoldCell'
+import { OrderRefundRequest as OrderRefundRequest_cca3e67ee6ded7d94af5ea7a1bc0e438 } from '../../../components/admin/OrderRefundRequest'
+import { RefundDecision as RefundDecision_532f425d36a56704bd8d032af9ace479 } from '../../../components/admin/RefundDecision'
 import { FixedToolbarFeatureClient as FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { AdminIcon as AdminIcon_7be396d0766c6c490887ef074dd0ced4 } from '../../../components/admin/AdminIcon'
 import { AdminLogo as AdminLogo_27eed1898e8caadb2fd2266b54bb4509 } from '../../../components/admin/AdminLogo'
@@ -64,6 +66,8 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "/collections/components/TicketsSoldCell#TicketsSoldCell": TicketsSoldCell_3e80904acd1ea5cfb0c12d6ba2b4a67d,
+  "/components/admin/OrderRefundRequest#OrderRefundRequest": OrderRefundRequest_cca3e67ee6ded7d94af5ea7a1bc0e438,
+  "/components/admin/RefundDecision#RefundDecision": RefundDecision_532f425d36a56704bd8d032af9ace479,
   "@payloadcms/richtext-lexical/client#FixedToolbarFeatureClient": FixedToolbarFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "/components/admin/AdminIcon#AdminIcon": AdminIcon_7be396d0766c6c490887ef074dd0ced4,
   "/components/admin/AdminLogo#AdminLogo": AdminLogo_27eed1898e8caadb2fd2266b54bb4509,
