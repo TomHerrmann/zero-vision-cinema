@@ -19,6 +19,7 @@ import { Merch } from './collections/Merch';
 import { Authors } from './collections/Authors';
 import { Articles } from './collections/Articles';
 import { Rewards } from './collections/Rewards';
+import { RefundRequests } from './collections/RefundRequests';
 import { Settings } from './globals/Settings';
 import { CustomBroadcasts } from './collections/CustomBroadcasts';
 
@@ -62,6 +63,7 @@ export default buildConfig({
     Events,
     Locations,
     Orders,
+    RefundRequests,
     Rewards,
     Articles,
     Authors,

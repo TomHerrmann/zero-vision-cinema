@@ -13,6 +13,7 @@ import {
   maybeIssueReward,
   normalizeRewardCode,
   voidRewardForRefund,
+  voidUsableRewardsForCustomer,
 } from './loyalty';
 
 const NOW = new Date('2026-09-18T12:00:00.000Z');
@@ -223,6 +224,26 @@ describe('voidRewardForRefund', () => {
 
     expect(effect).toEqual({ kind: 'alreadyRedeemed', code: 'ZVC-7K3Q-M9XA' });
     expect(f.h.exec).toHaveBeenCalledTimes(1); // no release
+  });
+});
+
+describe('voidUsableRewardsForCustomer', () => {
+  it("voids the customer's unused codes except the one named, without releasing orders", async () => {
+    const f = fakePayload();
+    f.h.exec.mockResolvedValueOnce({ rows: [{ code: 'ZVC-AAAA-BBBB' }] });
+
+    const codes = await voidUsableRewardsForCustomer(f.payload, 'cus_1', {
+      exceptRewardId: 7,
+      reason: 'manual',
+    });
+
+    expect(codes).toEqual(['ZVC-AAAA-BBBB']);
+    expect(f.h.exec).toHaveBeenCalledTimes(1); // no order release
+    const { sql, params } = new PgDialect().sqlToQuery(f.h.exec.mock.calls[0][0]);
+    expect(sql).toContain('UPDATE "rewards"');
+    expect(sql).toContain('"redeemed_at" IS NULL');
+    expect(sql).toContain('"voided_at" IS NULL');
+    expect(params).toEqual(['manual', 'cus_1', 7]);
   });
 });
 

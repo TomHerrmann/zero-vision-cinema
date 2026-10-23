@@ -137,6 +137,18 @@ export const CustomBroadcasts: CollectionConfig = {
       ],
     },
     {
+      name: "broadcastPreview",
+      label: "Email preview",
+      type: "ui",
+      admin: {
+        position: "sidebar",
+        components: {
+          Field:
+            "/collections/components/BroadcastPreviewField#BroadcastPreviewField",
+        },
+      },
+    },
+    {
       name: "segment",
       type: "select",
       // Required with no default, so the audience is always a deliberate choice.

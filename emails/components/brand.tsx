@@ -17,6 +17,12 @@ import {
   EMAIL_FONT_BOOTZY_URL,
   EMAIL_LOGO_PRIMARY_WHITE_URL,
   LLC_NAME,
+  ZVC_BLUESKY_URL,
+  ZVC_INSTAGRAM_URL,
+  ZVC_SITE_URL,
+  ZVC_SUBSTACK_URL,
+  ZVC_TIKTOK_URL,
+  ZVC_YOUTUBE_SUBSCRIBE_URL,
 } from '@/app/contsants/constants';
 
 /**
@@ -204,19 +210,95 @@ export function OutlineButton({
   );
 }
 
+/** Which template a link came from, sent as utm_medium next to utm_source=email. */
+export type EmailKind =
+  'ticket' | 'refund' | 'reward' | 'broadcast' | 'custom-broadcast';
+
 /**
- * Footer with the postal address every email needs (CAN-SPAM requires it on
- * marketing mail). `children` are the extra lines: support links, unsubscribe.
+ * Tags a link so the visit counts as coming from an email: Vercel Analytics
+ * and Substack read the utm params, and a signup on /join stores the source on
+ * the Resend contact. Keeps any query the URL already has.
  */
-export function BrandFooter({ children }: { children?: React.ReactNode }) {
+export function emailLink(url: string, kind: EmailKind): string {
+  const u = new URL(url);
+  u.searchParams.set('utm_source', 'email');
+  u.searchParams.set('utm_medium', kind);
+  return u.toString();
+}
+
+/**
+ * One line under "Follow Us", in Tom and Mary's words. Left empty until they
+ * write it; the block simply skips the line.
+ */
+export const FOLLOW_US_BLURB = '';
+
+/** Same channels as the /join page, ZVC's own accounts first. */
+const FOLLOW_CHANNELS: { name: string; url: string }[] = [
+  { name: 'YouTube', url: ZVC_YOUTUBE_SUBSCRIBE_URL },
+  { name: 'Instagram', url: ZVC_INSTAGRAM_URL },
+  { name: 'TikTok', url: ZVC_TIKTOK_URL },
+  { name: 'Substack', url: new URL('subscribe', ZVC_SUBSTACK_URL).toString() },
+  { name: 'Bluesky', url: ZVC_BLUESKY_URL },
+];
+
+/**
+ * Follow Us block shown above the footer of every email. The buttons are
+ * inline-block so they wrap on their own in narrow clients, with no media
+ * query needed.
+ */
+export function FollowUs({ kind }: { kind: EmailKind }) {
+  const joinUrl = emailLink(`${ZVC_SITE_URL}/join`, kind);
   return (
-    <Section style={footerStyle}>
-      <Text style={footerName}>{LLC_NAME}</Text>
-      <Text style={footerText}>
-        {ADDRESS_LINE_1}, {ADDRESS_LINE_2}
-      </Text>
-      {children}
+    <Section className="zvc-pad" style={followWrapStyle}>
+      <Section style={followStyle}>
+        <h2 style={followTitleStyle}>Follow Us</h2>
+        {FOLLOW_US_BLURB && (
+          <Text style={mutedTextStyle}>{FOLLOW_US_BLURB}</Text>
+        )}
+        <Text style={followButtonsStyle}>
+          {FOLLOW_CHANNELS.filter((c) => c.url).map((c) => (
+            <Button
+              key={c.name}
+              href={emailLink(c.url, kind)}
+              style={followButtonStyle}
+            >
+              {c.name}
+            </Button>
+          ))}
+        </Text>
+        <Text style={followJoinStyle}>
+          <Link href={joinUrl} style={linkStyle}>
+            zerovisioncinema.com/join
+          </Link>
+        </Text>
+      </Section>
     </Section>
+  );
+}
+
+/**
+ * Follow Us block, then the footer with the postal address every email needs
+ * (CAN-SPAM requires it on marketing mail). `children` are the extra lines:
+ * support links, unsubscribe. `kind` tags the follow links for analytics.
+ */
+export function BrandFooter({
+  kind,
+  children,
+}: {
+  kind: EmailKind;
+  children?: React.ReactNode;
+}) {
+  return (
+    <>
+      <FollowUs kind={kind} />
+      <Section style={footerStyle}>
+        <Text style={footerName}>{LLC_NAME}</Text>
+        <Text style={footerText}>
+          {ADDRESS_LINE_1}, {ADDRESS_LINE_2}
+        </Text>
+        {children}
+      </Section>
+    </>
   );
 }
 
@@ -387,8 +469,34 @@ export const outlineButtonStyle: React.CSSProperties = {
   color: GLOW,
   border: `1px solid ${STATIC}`,
 };
+const followWrapStyle: React.CSSProperties = { padding: '44px 28px 0' };
+const followStyle: React.CSSProperties = {
+  padding: '26px 8px 22px',
+  backgroundColor: PANEL,
+  borderRadius: '6px',
+  textAlign: 'center',
+};
+const followTitleStyle: React.CSSProperties = {
+  ...sectionTitleStyle,
+  textAlign: 'center',
+};
+const followButtonsStyle: React.CSSProperties = {
+  margin: '0 0 6px',
+  lineHeight: '1',
+};
+const followButtonStyle: React.CSSProperties = {
+  ...outlineButtonStyle,
+  padding: '12px 16px',
+  margin: '0 3px 10px',
+};
+const followJoinStyle: React.CSSProperties = {
+  fontFamily: BODY_FONT,
+  fontSize: '16px',
+  lineHeight: '1.5',
+  margin: '4px 0 0',
+};
 const footerStyle: React.CSSProperties = {
-  marginTop: '44px',
+  marginTop: '32px',
   padding: '26px 28px 34px',
   borderTop: `1px solid ${HAIRLINE}`,
   textAlign: 'center',
