@@ -114,7 +114,7 @@ export default function RefundEmail({
         </Text>
       </Section>
 
-      <BrandFooter>
+      <BrandFooter kind="refund">
         <FooterLine>
           Support:{' '}
           <FooterLink href={`mailto:${ZVC_EMAIL_ADDRESS}`}>

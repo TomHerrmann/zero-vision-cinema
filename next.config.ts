@@ -37,12 +37,13 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        // Short link for the QR code shown before and after screenings. Points
-        // at the newsletter signup; the utm tags let Vercel Analytics count
-        // visits that came from a QR scan. Not permanent, so the target can
-        // change later without reprinting the QR.
+        // The QR code shown before and after screenings points at a bare
+        // /join. Tag those visits so Vercel Analytics and the signup's Resend
+        // source count them as QR scans. Links that already carry a
+        // utm_source (/join?utm_source=ig) go straight through.
         source: '/join',
-        destination: '/?utm_source=qr&utm_medium=event#newsletter',
+        missing: [{ type: 'query', key: 'utm_source' }],
+        destination: '/join?utm_source=qr&utm_medium=event',
         permanent: false,
       },
     ];

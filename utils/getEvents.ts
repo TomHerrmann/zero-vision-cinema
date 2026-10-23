@@ -7,6 +7,29 @@ const payload = await getPayload({ config: payloadConfig });
 const nowMinus30Minutes = new Date(Date.now() - 30 * 60 * 1000).toISOString();
 const now = new Date().toISOString();
 
+/**
+ * Every published event of every type that hasn't started yet (or started in
+ * the last 30 minutes), for the /events page.
+ */
+export const getUpcomingEvents = async () => {
+  const { docs } = await payload.find({
+    collection: 'events',
+    where: {
+      _status: {
+        equals: 'published',
+      },
+      datetime: {
+        greater_than: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+      },
+    },
+    sort: ['datetime'],
+    depth: 1,
+    pagination: false,
+  });
+
+  return docs;
+};
+
 export const getUpcomingZvcEvents = async () => {
   const { docs } = await payload.find({
     collection: 'events',

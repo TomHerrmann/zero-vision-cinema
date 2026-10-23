@@ -84,7 +84,7 @@ export default function RewardEmail({ code, expiresAt }: Props) {
         </Text>
       </Section>
 
-      <BrandFooter>
+      <BrandFooter kind="reward">
         <FooterLine>
           Support:{' '}
           <FooterLink href={`mailto:${ZVC_EMAIL_ADDRESS}`}>
