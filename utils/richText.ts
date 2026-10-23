@@ -12,3 +12,20 @@ export function richTextIsEmpty(value: unknown): boolean {
     return !node.children || node.children.length === 0;
   });
 }
+
+type LexicalNode = { type?: string; text?: string; children?: LexicalNode[] };
+
+/** Lexical richText → plain text, blocks separated by a blank line. */
+export function richTextToPlain(value: unknown): string {
+  const blocks = (value as { root?: { children?: LexicalNode[] } })?.root
+    ?.children;
+  if (!blocks) return '';
+  const textOf = (node: LexicalNode): string =>
+    node.type === 'linebreak'
+      ? '\n'
+      : (node.text ?? '') + (node.children ?? []).map(textOf).join('');
+  return blocks
+    .map((block) => textOf(block).trim())
+    .filter(Boolean)
+    .join('\n\n');
+}

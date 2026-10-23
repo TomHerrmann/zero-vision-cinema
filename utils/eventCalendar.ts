@@ -7,6 +7,8 @@
  * runtime is unknown (including book club events, which have no film).
  */
 
+import { EVENT_TIME_ZONE } from './easternTime';
+
 const MINUTE = 60 * 1000;
 
 export const PRE_SHOW_MINUTES = 15;
@@ -100,6 +102,8 @@ export function googleCalendarUrl(event: CalendarEvent): string {
     action: 'TEMPLATE',
     text: event.title,
     dates: `${utcStamp(event.start)}/${utcStamp(event.end)}`,
+    // Events are in NYC: show the entry in New York time, not the viewer's.
+    ctz: EVENT_TIME_ZONE,
   });
   if (event.location) params.set('location', event.location);
   if (event.description) params.set('details', event.description);
