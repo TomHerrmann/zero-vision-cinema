@@ -5,6 +5,7 @@ import { Button } from '../ui/button';
 import { useState } from 'react';
 import type { Event } from '@/payload-types';
 import { isSoldOut } from '@/utils/isSoldOut';
+import { eventTitle } from '@/utils/eventTypes';
 
 type Props = {
   events: Event[];
@@ -32,7 +33,7 @@ export default function EventList({ events }: Props) {
                 className="border p-1 md:p-4 gap-2 rounded bg-stone-800 flex flex-col md:flex-row justify-between"
               >
                 <div>
-                  <h2 className="text-xl font-semibold">{event.name}</h2>
+                  <h2 className="text-xl font-semibold">{eventTitle(event)}</h2>
                   <p>{event.datetime}</p>
                   <p>Tickets Sold: {event.ticketsSold}</p>
                   {isSoldOut(event) && <strong>SOLD OUT</strong>}
