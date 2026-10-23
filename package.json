@@ -15,7 +15,7 @@
     "broadcast:send": "PROD_ENV_FALLBACK=QSTASH_TOKEN scripts/with-prod-env.sh tsx --tsconfig tsconfig.scripts.json --env-file=.env.production.local scripts/send-broadcast-now.tsx",
     "orders:repair": "PROD_ENV_FALLBACK=QSTASH_TOKEN scripts/with-prod-env.sh tsx --tsconfig tsconfig.scripts.json --env-file=.env.production.local scripts/repair-stranded-orders.tsx",
     "build": "payload migrate && next build",
-    "postbuild": "next-sitemap",
+    "postbuild": "next-sitemap --config next-sitemap.config.cjs",
     "payload": "payload",
     "test": "vitest run",
     "start": "next start",
