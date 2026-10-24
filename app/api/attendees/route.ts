@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe';
 import payloadConfig from '@/payload.config';
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayload } from 'payload';
+import { eventTitle } from '@/utils/eventTypes';
 
 export async function GET(req: NextRequest) {
   try {
@@ -19,10 +20,12 @@ export async function GET(req: NextRequest) {
 
     const payload = await getPayload({ config: payloadConfig });
 
-    const { productId, name: eventName } = await payload.findByID({
+    const event = await payload.findByID({
       collection: 'events',
       id: eventId,
     });
+    const { productId } = event;
+    const eventName = eventTitle(event);
 
     if (!productId) {
       await logtail.error(

@@ -14,6 +14,7 @@ import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import TicketEmail from '@/emails/TicketEmail';
 import { getTicketEmailNotice, type LoyaltyNotice } from '@/lib/loyalty';
 import type { Event, Location, Media } from '@/payload-types';
+import { eventTitle } from '@/utils/eventTypes';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -154,11 +155,11 @@ export async function POST(req: Request) {
 
     const { error: sendError } = await resend.emails.send({
       from: ZVC_DISPLAY_NAME_EMAIL,
-      subject: `Your ZVC Ticket & Receipt: ${event_.name}`,
+      subject: `Your ZVC Ticket & Receipt: ${eventTitle(event_)}`,
       to: email,
       react: (
         <TicketEmail
-          eventName={event_.name}
+          eventName={eventTitle(event_)}
           eventImage={posterUrl}
           eventDate={event_.datetime}
           eventLocation={location.name}

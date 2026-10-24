@@ -81,3 +81,42 @@ export const nextDefaultDatetime = (
  */
 export const defaultVenueField = (eventType: EventType) =>
   `defaultVenue${eventType[0].toUpperCase()}${eventType.slice(1)}` as const;
+
+export type FilmFormat = NonNullable<Event['filmFormat']>;
+
+/** How a film is shown. Digital is the norm, so only the others are called out. */
+export const FILM_FORMAT_NAMES: Record<FilmFormat, string> = {
+  digital: 'Digital',
+  vhs: 'VHS',
+  '16mm': '16mm',
+};
+
+/** Every type but Book Club screens something, so only it has no film format. */
+export const hasFilmFormat = (eventType?: string | null): boolean =>
+  eventType !== 'bookclub';
+
+/** Rewind Wednesdays is a VHS night; everything else defaults to digital. */
+export const defaultFilmFormat = (eventType?: string | null): FilmFormat =>
+  eventType === 'rww' ? 'vhs' : 'digital';
+
+/**
+ * The event's name as people see it: "Scanners (1981) on VHS" for a VHS or
+ * 16mm showing, the stored name unchanged for digital (and for Book Club).
+ * The stored `name` stays bare so the admin edits only the title; this is
+ * applied wherever the name is shown — the site, emails, Stripe, calendars.
+ */
+export const eventTitle = (event: {
+  name: string;
+  eventType?: string | null;
+  filmFormat?: Event['filmFormat'];
+}): string => {
+  const format = event.filmFormat;
+  if (!hasFilmFormat(event.eventType) || !format || format === 'digital') {
+    return event.name;
+  }
+  const suffix = ` on ${FILM_FORMAT_NAMES[format]}`;
+  // Don't double up on a name that already says it.
+  return event.name.toLowerCase().endsWith(suffix.toLowerCase())
+    ? event.name
+    : `${event.name}${suffix}`;
+};
