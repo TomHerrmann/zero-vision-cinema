@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildIcs,
+  buildIcsFeed,
+  calendarTitle,
+  withYear,
   eventCalendarEnd,
   googleCalendarUrl,
   parseRuntimeMinutes,
@@ -79,5 +82,45 @@ describe('googleCalendarUrl', () => {
     );
     expect(url.searchParams.get('location')).toBe(event.location);
     expect(url.searchParams.get('ctz')).toBe('America/New_York');
+  });
+});
+
+describe('calendarTitle', () => {
+  it('puts FREE before the series for $0 events', () => {
+    expect(calendarTitle('The Thing (1982)', 'Astoria Horror Club', true)).toBe(
+      'The Thing (1982) | FREE | Astoria Horror Club'
+    );
+  });
+  it('leaves FREE out of paid events', () => {
+    expect(calendarTitle('The Thing (1982)', 'Zero Vision Cinema', false)).toBe(
+      'The Thing (1982) | Zero Vision Cinema'
+    );
+  });
+});
+
+describe('withYear', () => {
+  it('adds the year when the name has none', () => {
+    expect(withYear('The Thing', '1982')).toBe('The Thing (1982)');
+  });
+  it('keeps a name that already has a year', () => {
+    expect(withYear('The Thing (1982)', '1982')).toBe('The Thing (1982)');
+  });
+  it('takes the first year of an OMDB range and skips a missing one', () => {
+    expect(withYear('Twin Peaks', '1990–1991')).toBe('Twin Peaks (1990)');
+    expect(withYear('Bingo', null)).toBe('Bingo');
+  });
+});
+
+describe('buildIcsFeed', () => {
+  const feed = buildIcsFeed(
+    [event, { ...event, id: 11, title: 'Second' }],
+    new Date('2026-10-01T12:00:00.000Z')
+  );
+  it('names the calendar and holds every event', () => {
+    expect(feed).toContain('X-WR-CALNAME:Zero Vision Cinema Events');
+    expect(feed).toContain('X-WR-TIMEZONE:America/New_York');
+    expect(feed.match(/BEGIN:VEVENT/g)).toHaveLength(2);
+    expect(feed).toContain('UID:event-11@zerovisioncinema.com');
+    expect(feed.trim().endsWith('END:VCALENDAR')).toBe(true);
   });
 });

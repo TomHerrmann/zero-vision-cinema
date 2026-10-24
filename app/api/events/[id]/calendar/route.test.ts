@@ -6,7 +6,7 @@ vi.mock('payload', () => ({
   getPayload: vi.fn().mockResolvedValue({ find: h.find }),
 }));
 vi.mock('@payload-config', () => ({ default: {} }));
-vi.mock('@/lib/eventRuntime', () => ({ getEventRuntimeMinutes: h.runtime }));
+vi.mock('@/lib/omdb', () => ({ fetchMovieDataByImdbId: h.runtime }));
 
 import { GET } from './route';
 
@@ -26,7 +26,7 @@ const screening = {
 
 beforeEach(() => {
   h.find.mockReset().mockResolvedValue({ docs: [screening] });
-  h.runtime.mockReset().mockResolvedValue(85);
+  h.runtime.mockReset().mockResolvedValue({ year: '1981', runtime: '85 min' });
 });
 
 describe('GET /api/events/[id]/calendar', () => {
@@ -39,6 +39,20 @@ describe('GET /api/events/[id]/calendar', () => {
     expect(ics).toContain('DTEND:20261004T011000Z');
     expect(ics).toContain('LOCATION:The Bar\\, 12-34 Broadway');
     expect(ics).toContain('URL:https://zerovisioncinema.com/events/10');
+  });
+
+  it('titles a $0 event FREE with its series', async () => {
+    h.find.mockResolvedValue({
+      docs: [{ ...screening, eventType: 'ahc', name: 'The Evil Dead', price: 0 }],
+    });
+    const ics = await (await call('10')).text();
+    expect(ics).toContain('SUMMARY:The Evil Dead (1981) | FREE | Astoria Horror Club');
+  });
+
+  it('titles a paid event with its series and no FREE', async () => {
+    h.find.mockResolvedValue({ docs: [{ ...screening, price: 15 }] });
+    const ics = await (await call('10')).text();
+    expect(ics).toContain('SUMMARY:The Evil Dead (1981) | Zero Vision Cinema');
   });
 
   it('redirects to Google Calendar with ?format=google', async () => {

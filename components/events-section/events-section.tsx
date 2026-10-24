@@ -4,6 +4,7 @@ import { cn } from '@/utils/utils';
 import { ArrowRight, Film } from 'lucide-react';
 import Link from 'next/link';
 import SectionHeading from '../ui/section-heading';
+import SubscribeCalendar from '../subscribe-calendar/subscribe-calendar';
 
 /** Cards shown in the section; the rest are a click away on /events. */
 const MAX_CARDS = 3;
@@ -37,8 +38,12 @@ export default function EventsSection({ events, showMoreLink = false }: Props) {
           kicker="What's Playing"
           title="Upcoming Events"
           icon={Film}
-          className="mb-20"
+          className="mb-10"
         />
+
+        <div className="flex justify-center mb-16">
+          <SubscribeCalendar />
+        </div>
 
         {events.length === 0 ? (
           <div className="text-center py-20">
