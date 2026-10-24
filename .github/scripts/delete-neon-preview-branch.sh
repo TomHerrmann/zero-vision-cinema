@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Deletes the Neon database branch the Vercel integration made for one merged
+# Deletes the Neon database branch the Vercel integration made for one closed
 # PR's preview deployments ("preview/<git branch>"), and nothing else.
 #
 # Every guard below fails closed: if anything is unexpected, it deletes nothing.
@@ -8,7 +8,7 @@
 # Env:
 #   NEON_API_KEY     Neon API key (secret)
 #   NEON_PROJECT_ID  Neon project id
-#   HEAD_REF         The merged PR's head (source) branch name
+#   HEAD_REF         The closed PR's head (source) branch name
 #   NEON_API_URL     Optional override, for tests
 set -euo pipefail
 
