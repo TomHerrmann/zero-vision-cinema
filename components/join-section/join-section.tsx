@@ -15,6 +15,7 @@ import {
   TikTokIcon,
   YouTubeIcon,
 } from '@/components/ui/social-icons';
+import SubscribeCalendar from '@/components/subscribe-calendar/subscribe-calendar';
 import { cn } from '@/utils/utils';
 
 const SUBSTACK_SUBSCRIBE_URL = new URL('subscribe', ZVC_SUBSTACK_URL).toString();
@@ -158,6 +159,10 @@ export default function JoinSection({ as = 'h2' }: Props) {
         </div>
 
         <NewsletterSignupForm />
+
+        <div className="flex justify-center mt-10">
+          <SubscribeCalendar />
+        </div>
 
         <div className="grid gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-3 mt-16 md:mt-20">
           {CHANNELS.map((channel) => (

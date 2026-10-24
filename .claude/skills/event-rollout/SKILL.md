@@ -21,6 +21,10 @@ You are the orchestrator. Sub-agents draft and check; **you** make every write
 
 When the calendar id still reads `PUBLIC_CALENDAR_ID_NOT_SET`, skip the
 calendar step and say so in the approval issue; everything else still runs.
+The public calendar is now the site's own subscribable feed
+(https://zerovisioncinema.com/calendar.ics), which lists every published
+event by itself, so the id stays unset unless Tom or Mary also want a Google
+Calendar copy.
 
 "Auto-publish after" stays `never` unless Tom or Mary change it here. The
 project rule is that nothing is published without one of them approving that
