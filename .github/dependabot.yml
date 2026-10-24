@@ -12,6 +12,11 @@ updates:
       timezone: America/New_York
     open-pull-requests-limit: 5
     groups:
+      # react-stripe-js pins a stripe-js major as a peer, so bumping either
+      # alone fails npm install. Keep them in one PR. Listed first because a
+      # package joins the first group it matches.
+      stripe-js:
+        patterns: ["@stripe/stripe-js", "@stripe/react-stripe-js"]
       # One PR for all patch and minor bumps; majors still come one at a time.
       minor-and-patch:
         update-types: [minor, patch]
