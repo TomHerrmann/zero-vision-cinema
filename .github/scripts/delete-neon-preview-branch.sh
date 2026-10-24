@@ -40,14 +40,20 @@ TARGET="preview/${HEAD_REF}"
 
 auth=(-H "Authorization: Bearer ${NEON_API_KEY}" -H "Accept: application/json")
 
-branches_json="$(curl -fsS "${auth[@]}" "${API}/projects/${NEON_PROJECT_ID}/branches")" \
+# Ask for the API's maximum page size so no branch is left off the first page.
+branches_json="$(curl -fsS "${auth[@]}" "${API}/projects/${NEON_PROJECT_ID}/branches?limit=10000")" \
   || fail "Could not list Neon branches."
 
 # Exact name match only (the API's own search is a substring match).
 matches="$(jq -c --arg name "$TARGET" '[.branches[] | select(.name == $name)]' <<<"$branches_json")"
 count="$(jq 'length' <<<"$matches")"
 
-[[ "$count" -gt 0 ]] || skip "No Neon branch named '$TARGET'; nothing to delete."
+if [[ "$count" -eq 0 ]]; then
+  # Show what is there, so a naming mismatch is visible in the run log.
+  echo "Neon branches in this project:"
+  jq -r '.branches[] | "  \(.name)"' <<<"$branches_json"
+  skip "No Neon branch named '$TARGET'; nothing to delete."
+fi
 [[ "$count" -eq 1 ]] || fail "Found $count Neon branches named '$TARGET'; refusing to guess."
 
 branch="$(jq -c '.[0]' <<<"$matches")"
