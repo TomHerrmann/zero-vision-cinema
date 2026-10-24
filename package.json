@@ -44,7 +44,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.1.1",
-    "@stripe/react-stripe-js": "^3.7.0",
+    "@stripe/react-stripe-js": "^7.0.0",
     "@stripe/stripe-js": "^10.1.0",
     "@tailwindcss/typography": "^0.5.16",
     "@upstash/qstash": "^2.12.1",
