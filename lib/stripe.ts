@@ -11,11 +11,21 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
  * `paymentIntent.charges`) is unaffected.
  */
 export const stripeCheckout = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  // Runtime is stripe@18 (supports Embedded Checkout). The `as` cast sidesteps
+  // Runtime is stripe@23 (supports Embedded Checkout). The `as` cast sidesteps
   // a types clash from a nested stripe@10 copy under @payloadcms/plugin-stripe
   // that otherwise pins the apiVersion literal to an old version.
   apiVersion: '2025-08-27.basil' as Stripe.LatestApiVersion,
 });
+
+/**
+ * PaymentIntent with `latest_charge`. The nested stripe@10 under
+ * @payloadcms/plugin-stripe declares an ambient `stripe` module whose
+ * 2022-08-01 PaymentIntent (no `latest_charge`) shadows the stripe@23 type.
+ * The basil client above does return the field at runtime.
+ */
+export type PaymentIntentWithCharge = Stripe.PaymentIntent & {
+  latest_charge?: string | Stripe.Charge | null;
+};
 
 /**
  * Resolve a customer's email from Stripe by customer id. We store the Stripe
@@ -57,9 +67,9 @@ export type ReceiptDetails = {
 export async function getReceiptDetails(
   paymentIntentId: string
 ): Promise<ReceiptDetails> {
-  const pi = await stripeCheckout.paymentIntents.retrieve(paymentIntentId, {
+  const pi = (await stripeCheckout.paymentIntents.retrieve(paymentIntentId, {
     expand: ['latest_charge'],
-  });
+  })) as PaymentIntentWithCharge;
   const charge = (pi.latest_charge as Stripe.Charge | null) ?? null;
   const card = charge?.payment_method_details?.card ?? null;
   const brand = card?.brand;
