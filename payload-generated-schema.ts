@@ -33,6 +33,11 @@ export const enum_events_event_type = pgEnum("enum_events_event_type", [
   "bingo",
   "brunch",
 ]);
+export const enum_events_film_format = pgEnum("enum_events_film_format", [
+  "digital",
+  "vhs",
+  "16mm",
+]);
 export const enum_events_status = pgEnum("enum_events_status", [
   "draft",
   "published",
@@ -40,6 +45,10 @@ export const enum_events_status = pgEnum("enum_events_status", [
 export const enum__events_v_version_event_type = pgEnum(
   "enum__events_v_version_event_type",
   ["zvc", "ahc", "bookclub", "rww", "fri", "brew", "bingo", "brunch"],
+);
+export const enum__events_v_version_film_format = pgEnum(
+  "enum__events_v_version_film_format",
+  ["digital", "vhs", "16mm"],
 );
 export const enum__events_v_version_status = pgEnum(
   "enum__events_v_version_status",
@@ -100,6 +109,7 @@ export const events = pgTable(
   {
     id: serial("id").primaryKey(),
     eventType: enum_events_event_type("event_type").default("zvc"),
+    filmFormat: enum_events_film_format("film_format").default("digital"),
     name: varchar("name"),
     imdbId: varchar("imdb_id"),
     bookTitle: varchar("book_title"),
@@ -171,6 +181,9 @@ export const _events_v = pgTable(
     }),
     version_eventType:
       enum__events_v_version_event_type("version_event_type").default("zvc"),
+    version_filmFormat: enum__events_v_version_film_format(
+      "version_film_format",
+    ).default("digital"),
     version_name: varchar("version_name"),
     version_imdbId: varchar("version_imdb_id"),
     version_bookTitle: varchar("version_book_title"),
@@ -1489,8 +1502,10 @@ export const relations_settings = relations(settings, ({ one }) => ({
 
 type DatabaseSchema = {
   enum_events_event_type: typeof enum_events_event_type;
+  enum_events_film_format: typeof enum_events_film_format;
   enum_events_status: typeof enum_events_status;
   enum__events_v_version_event_type: typeof enum__events_v_version_event_type;
+  enum__events_v_version_film_format: typeof enum__events_v_version_film_format;
   enum__events_v_version_status: typeof enum__events_v_version_status;
   enum_refund_requests_status: typeof enum_refund_requests_status;
   enum_refund_requests_source: typeof enum_refund_requests_source;

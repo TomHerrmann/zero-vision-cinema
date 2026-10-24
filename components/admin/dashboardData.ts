@@ -1,4 +1,5 @@
 import { ANNOUNCE_DAYS_BEFORE } from '@/utils/broadcastSchedule';
+import { eventTitle } from '@/utils/eventTypes';
 
 const TZ = 'America/New_York';
 const DAY = 24 * 60 * 60 * 1000;
@@ -6,6 +7,8 @@ const DAY = 24 * 60 * 60 * 1000;
 type BroadcastEvent = {
   id: number | string;
   name: string;
+  eventType?: string | null;
+  filmFormat?: 'digital' | 'vhs' | '16mm' | null;
   datetime: string;
   _status?: 'draft' | 'published' | null;
   announcementSentAt?: string | null;
@@ -55,7 +58,7 @@ export function upcomingEmails(
     if (!event.reminderSentAt && eventDay.getTime() >= today) {
       emails.push({
         eventId: event.id,
-        eventName: event.name,
+        eventName: eventTitle(event),
         kind: 'reminder',
         sendsOn: eventDay,
       });
@@ -65,7 +68,7 @@ export function upcomingEmails(
     if (!event.announcementSentAt && announceDay.getTime() >= today) {
       emails.push({
         eventId: event.id,
-        eventName: event.name,
+        eventName: eventTitle(event),
         kind: 'announcement',
         sendsOn: announceDay,
       });

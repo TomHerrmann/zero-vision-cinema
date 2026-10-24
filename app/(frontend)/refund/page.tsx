@@ -4,6 +4,7 @@ import payloadConfig from '@payload-config';
 import { verifyRefundToken } from '@/lib/refundToken';
 import RefundConfirm from '@/components/refund/refund-confirm';
 import type { Event } from '@/payload-types';
+import { eventTitle } from '@/utils/eventTypes';
 
 export const metadata: Metadata = {
   title: 'Request a Refund — Zero Vision Cinema',
@@ -96,7 +97,7 @@ export default async function RefundPage({ searchParams }: Props) {
       <RefundConfirm
         orderId={orderId}
         token={token}
-        eventName={event_?.name ?? 'your event'}
+        eventName={event_ ? eventTitle(event_) : 'your event'}
         amount={orderDoc.amountPaid}
         withinWindow={withinWindow}
       />

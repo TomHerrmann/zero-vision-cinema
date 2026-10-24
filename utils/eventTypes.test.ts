@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { nextDefaultDatetime } from './eventTypes';
+import { defaultFilmFormat, eventTitle, nextDefaultDatetime } from './eventTypes';
 
 describe('nextDefaultDatetime', () => {
   // Wednesday Oct 7 2026, 5:39pm ET (EDT, UTC-4).
@@ -21,5 +21,36 @@ describe('nextDefaultDatetime', () => {
     expect(nextDefaultDatetime('rww', new Date('2026-10-28T15:00:00Z'))).toBe(
       '2026-11-05T00:30:00.000Z'
     );
+  });
+});
+
+describe('eventTitle', () => {
+  const scanners = { name: 'Scanners (1981)', eventType: 'zvc' as const };
+
+  it('adds the format for VHS and 16mm', () => {
+    expect(eventTitle({ ...scanners, filmFormat: 'vhs' })).toBe('Scanners (1981) on VHS');
+    expect(eventTitle({ ...scanners, filmFormat: '16mm' })).toBe('Scanners (1981) on 16mm');
+  });
+
+  it('leaves digital, unset and Book Club names alone', () => {
+    expect(eventTitle({ ...scanners, filmFormat: 'digital' })).toBe('Scanners (1981)');
+    expect(eventTitle(scanners)).toBe('Scanners (1981)');
+    expect(
+      eventTitle({ name: 'Carrie — Stephen King', eventType: 'bookclub', filmFormat: 'vhs' })
+    ).toBe('Carrie — Stephen King');
+  });
+
+  it('does not repeat a format already in the name', () => {
+    expect(eventTitle({ name: 'Scanners (1981) on VHS', eventType: 'rww', filmFormat: 'vhs' })).toBe(
+      'Scanners (1981) on VHS'
+    );
+  });
+});
+
+describe('defaultFilmFormat', () => {
+  it('is VHS for Rewind Wednesdays and digital otherwise', () => {
+    expect(defaultFilmFormat('rww')).toBe('vhs');
+    expect(defaultFilmFormat('zvc')).toBe('digital');
+    expect(defaultFilmFormat('ahc')).toBe('digital');
   });
 });
