@@ -12,6 +12,9 @@ import { plotToLexical, richTextIsBlank } from '@/utils/omdbFill';
 import { Location } from '@/payload-types';
 import {
   EVENT_TYPE_NAMES,
+  FILM_FORMAT_NAMES,
+  eventTitle,
+  hasFilmFormat,
   isPaidEventType,
   nextDefaultDatetime,
 } from '@/utils/eventTypes';
@@ -301,7 +304,11 @@ export const Events: CollectionConfig = {
             data.priceId = priceId;
 
             await stripe.products.update(productId, {
-              name: data.name,
+              name: eventTitle({
+                name: data.name,
+                eventType: data.eventType,
+                filmFormat: data.filmFormat,
+              }),
               description: formattedDescription,
               images: imageUrl ? [imageUrl] : undefined,
             });
@@ -350,7 +357,11 @@ export const Events: CollectionConfig = {
           } else {
             // Create new Stripe product, price and payment link
             const product = await stripe.products.create({
-              name: data.name,
+              name: eventTitle({
+                name: data.name,
+                eventType: data.eventType,
+                filmFormat: data.filmFormat,
+              }),
               description: formattedDescription,
               images: imageUrl ? [imageUrl] : undefined,
             });
@@ -408,6 +419,22 @@ export const Events: CollectionConfig = {
         components: {
           Field: '/components/admin/EventTypeField#EventTypeField',
         },
+      },
+    },
+    {
+      name: 'filmFormat',
+      type: 'select',
+      label: 'Film format',
+      // New events open as ZVC (digital). The type picker switches this to the
+      // chosen type's default, e.g. VHS for Rewind Wednesdays (utils/eventTypes).
+      defaultValue: 'digital',
+      options: (
+        Object.entries(FILM_FORMAT_NAMES) as [keyof typeof FILM_FORMAT_NAMES, string][]
+      ).map(([value, label]) => ({ label, value })),
+      admin: {
+        condition: (data) => hasFilmFormat(data.eventType),
+        description:
+          'VHS and 16mm are added to the name everywhere it shows, e.g. "Scanners (1981) on VHS". Digital adds nothing.',
       },
     },
     {
