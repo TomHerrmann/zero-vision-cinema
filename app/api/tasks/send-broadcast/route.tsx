@@ -19,7 +19,7 @@ import {
 } from '@/app/contsants/constants';
 import BroadcastEmail from '@/emails/BroadcastEmail';
 import type { Event, Location, Media } from '@/payload-types';
-import { EVENT_TYPE_NAMES, isPaidEventType } from '@/utils/eventTypes';
+import { EVENT_TYPE_NAMES, eventTitle, isPaidEventType } from '@/utils/eventTypes';
 
 type Body = { eventId?: number; kind?: BroadcastKind };
 
@@ -38,9 +38,9 @@ const SENT_FIELD = {
 // One line each: a newline in a subject header gets stripped or mangled.
 const SUBJECT = {
   announcement: (event_: Event) =>
-    `Coming up: ${event_.name} — ${EVENT_TYPE_NAMES[event_.eventType]}`,
+    `Coming up: ${eventTitle(event_)} — ${EVENT_TYPE_NAMES[event_.eventType]}`,
   reminder: (event_: Event) =>
-    `Today: ${event_.name} — ${EVENT_TYPE_NAMES[event_.eventType]}`,
+    `Today: ${eventTitle(event_)} — ${EVENT_TYPE_NAMES[event_.eventType]}`,
 };
 
 /**
@@ -156,7 +156,7 @@ export async function POST(req: Request) {
         eventType={event_.eventType}
         paid={isPaid}
         headerImage={headerFor(event_.eventType)}
-        eventName={event_.name}
+        eventName={eventTitle(event_)}
         eventImage={posterUrl ?? ''}
         eventDate={event_.datetime}
         eventLocation={location?.name ?? ''}

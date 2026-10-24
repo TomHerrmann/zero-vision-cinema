@@ -11,6 +11,7 @@ import RefundDeclinedEmail, {
   refundDeclinedEmailReady,
 } from '@/emails/RefundDeclinedEmail';
 import type { Event } from '@/payload-types';
+import { eventTitle } from '@/utils/eventTypes';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -81,7 +82,7 @@ export async function POST(req: Request) {
       to: email,
       subject: REFUND_DECLINED_COPY.subject,
       react: (
-        <RefundDeclinedEmail eventName={event_?.name ?? ''} orderNumber={order.id} />
+        <RefundDeclinedEmail eventName={event_ ? eventTitle(event_) : ''} orderNumber={order.id} />
       ),
     });
     if (sendError) {

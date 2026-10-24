@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import { FieldDescription, FieldLabel, useField } from '@payloadcms/ui';
 import type { SelectFieldClientComponent } from 'payload';
 import {
+  defaultFilmFormat,
   defaultVenueField,
   nextDefaultDatetime,
   type EventType,
@@ -33,7 +34,8 @@ const SUBTITLES: Record<string, string> = {
  * the same value the plain select did; only the control changes.
  *
  * Picking a type also swaps in that type's default venue (Settings → Default
- * venues) and next usual date and time, but each only while it is empty or
+ * venues), next usual date and time, and film format (VHS for Rewind
+ * Wednesdays, digital otherwise), but each only while it is empty or
  * still the previous type's default, so nothing the admin set by hand is
  * overwritten.
  */
@@ -41,6 +43,7 @@ export const EventTypeField: SelectFieldClientComponent = ({ field, path, readOn
   const { value, setValue, showError, disabled } = useField<string>({ path });
   const venue = useField<unknown>({ path: 'location' });
   const datetime = useField<string | null>({ path: 'datetime' });
+  const filmFormat = useField<string | null>({ path: 'filmFormat' });
   const locked = readOnly || disabled;
 
   const defaults = useRef<VenueDefaults | null>(null);
@@ -62,6 +65,11 @@ export const EventTypeField: SelectFieldClientComponent = ({ field, path, readOn
       const previousDefault = value ? at(nextDefaultDatetime(value as EventType)) : null;
       if (current == null || current === previousDefault) {
         datetime.setValue(nextDefaultDatetime(next as EventType));
+      }
+
+      const previousFormat = value ? defaultFilmFormat(value) : null;
+      if (!filmFormat.value || filmFormat.value === previousFormat) {
+        filmFormat.setValue(defaultFilmFormat(next));
       }
     }
 
