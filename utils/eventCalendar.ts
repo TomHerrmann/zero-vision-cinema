@@ -7,7 +7,8 @@
  * runtime is unknown (including book club events, which have no film).
  */
 
-import { EVENT_TIME_ZONE } from './easternTime';
+/** Every event is in NYC, so calendar entries are pinned to New York time. */
+export const EVENT_TIME_ZONE = 'America/New_York';
 
 const MINUTE = 60 * 1000;
 
@@ -75,13 +76,9 @@ function foldLine(line: string): string {
   return parts.join('\r\n ');
 }
 
-export function buildIcs(event: CalendarEvent, now: Date = new Date()): string {
-  const lines = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Zero Vision Cinema//Events//EN',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
+/** The VEVENT lines for one event (no calendar wrapper). */
+function veventLines(event: CalendarEvent, now: Date): string[] {
+  return [
     'BEGIN:VEVENT',
     `UID:event-${event.id}@zerovisioncinema.com`,
     `DTSTAMP:${utcStamp(now)}`,
@@ -92,9 +89,67 @@ export function buildIcs(event: CalendarEvent, now: Date = new Date()): string {
     event.description && `DESCRIPTION:${escapeText(event.description)}`,
     event.url && `URL:${event.url}`,
     'END:VEVENT',
-    'END:VCALENDAR',
   ].filter(Boolean) as string[];
-  return lines.map(foldLine).join('\r\n') + '\r\n';
+}
+
+const CALENDAR_HEADER = [
+  'BEGIN:VCALENDAR',
+  'VERSION:2.0',
+  'PRODID:-//Zero Vision Cinema//Events//EN',
+  'CALSCALE:GREGORIAN',
+  'METHOD:PUBLISH',
+];
+
+const serialize = (lines: string[]) =>
+  lines.map(foldLine).join('\r\n') + '\r\n';
+
+export function buildIcs(event: CalendarEvent, now: Date = new Date()): string {
+  return serialize([...CALENDAR_HEADER, ...veventLines(event, now), 'END:VCALENDAR']);
+}
+
+/** Name subscribers see for the all-events calendar. */
+export const CALENDAR_NAME = 'Zero Vision Cinema Events';
+
+/**
+ * The subscribable calendar: every event in one feed. The refresh hints ask
+ * apps to re-check every few hours (Google ignores them and polls on its own
+ * schedule, usually within a day).
+ */
+export function buildIcsFeed(
+  events: CalendarEvent[],
+  now: Date = new Date()
+): string {
+  return serialize([
+    ...CALENDAR_HEADER,
+    `X-WR-CALNAME:${escapeText(CALENDAR_NAME)}`,
+    `NAME:${escapeText(CALENDAR_NAME)}`,
+    `X-WR-CALDESC:${escapeText('Screenings, book club and horror nights around Astoria, from Zero Vision Cinema.')}`,
+    `X-WR-TIMEZONE:${EVENT_TIME_ZONE}`,
+    'REFRESH-INTERVAL;VALUE=DURATION:PT6H',
+    'X-PUBLISHED-TTL:PT6H',
+    ...events.flatMap((event) => veventLines(event, now)),
+    'END:VCALENDAR',
+  ]);
+}
+
+/**
+ * Calendar entry title: "Title (Year) | Series", with FREE before the series
+ * when the event costs nothing — "The Thing (1982) | FREE | Astoria Horror
+ * Club". Title first so it survives a narrow month view.
+ */
+export function calendarTitle(
+  title: string,
+  seriesName: string,
+  free: boolean
+): string {
+  return [title, free && 'FREE', seriesName].filter(Boolean).join(' | ');
+}
+
+/** "The Thing" + "1982" → "The Thing (1982)", unless the name already has a year. */
+export function withYear(name: string, year?: string | null): string {
+  if (/\(\d{4}\)/.test(name)) return name;
+  const y = year?.match(/\d{4}/)?.[0];
+  return y ? `${name} (${y})` : name;
 }
 
 export function googleCalendarUrl(event: CalendarEvent): string {

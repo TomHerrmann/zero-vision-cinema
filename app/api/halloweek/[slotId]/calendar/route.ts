@@ -1,19 +1,9 @@
 import { NextResponse } from 'next/server';
-import { ZVC_SITE_URL } from '@/app/contsants/constants';
-import {
-  HALLOWEEK_SCHEDULE,
-  HALLOWEEK_VENUES,
-} from '@/app/(frontend)/halloweek2026/halloweek.data';
-import {
-  buildIcs,
-  googleCalendarUrl,
-  HALLOWEEK_DURATION_MINUTES,
-  type CalendarEvent,
-} from '@/utils/eventCalendar';
+import { HALLOWEEK_SCHEDULE } from '@/app/(frontend)/halloweek2026/halloweek.data';
+import { halloweekCalendarEvent } from '@/lib/calendarEntries';
+import { buildIcs, googleCalendarUrl } from '@/utils/eventCalendar';
 
 type Params = { params: Promise<{ slotId: string }> };
-
-const PAGE_URL = `${ZVC_SITE_URL}/halloweek2026`;
 
 /**
  * "Add to calendar" for a Halloweek lineup slot. Same contract as
@@ -28,17 +18,7 @@ export async function GET(req: Request, { params }: Params) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  const venue = HALLOWEEK_VENUES.find((v) => v.name === slot.venueName);
-  const start = new Date(slot.datetime);
-  const calendarEvent: CalendarEvent = {
-    id: `halloweek2026-${slot.id}`,
-    title: `${slot.title} · Halloweek`,
-    start,
-    end: new Date(start.getTime() + HALLOWEEK_DURATION_MINUTES * 60 * 1000),
-    location: venue ? `${venue.name}, ${venue.address}` : slot.venueName,
-    description: `${slot.description}\n\nDetails: ${PAGE_URL}`,
-    url: PAGE_URL,
-  };
+  const calendarEvent = halloweekCalendarEvent(slot);
 
   if (new URL(req.url).searchParams.get('format') === 'google') {
     return NextResponse.redirect(googleCalendarUrl(calendarEvent), 302);
