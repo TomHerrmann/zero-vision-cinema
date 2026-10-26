@@ -7,7 +7,8 @@
  * runtime is unknown (including book club events, which have no film).
  */
 
-import { EVENT_TIME_ZONE } from './easternTime';
+/** Every event is in NYC, so calendar entries are pinned to New York time. */
+export const EVENT_TIME_ZONE = 'America/New_York';
 
 const MINUTE = 60 * 1000;
 
