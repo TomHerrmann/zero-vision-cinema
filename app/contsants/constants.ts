@@ -136,3 +136,8 @@ export const OPEN_LIBRARY_BASE_URL = 'https://openlibrary.org';
 export const OPEN_LIBRARY_COVER_BASE_URL = 'https://covers.openlibrary.org';
 
 export const RESEND_UNSUBSCRIBE_URL = '{{{RESEND_UNSUBSCRIBE_URL}}}';
+
+/** Subscribable calendar of every event (see app/calendar.ics). */
+export const ZVC_CALENDAR_FEED_URL = `${ZVC_SITE_URL}/calendar.ics`;
+/** Page with one-tap subscribe buttons; the link to use in emails and bios. */
+export const ZVC_CALENDAR_PAGE_URL = `${ZVC_SITE_URL}/calendar`;

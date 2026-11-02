@@ -19,6 +19,7 @@ import {
   LLC_NAME,
   ZVC_INSTAGRAM_URL,
   ZVC_SITE_URL,
+  ZVC_CALENDAR_PAGE_URL,
   ZVC_SUBSTACK_URL,
   ZVC_TIKTOK_URL,
   ZVC_YOUTUBE_SUBSCRIBE_URL,
@@ -237,6 +238,8 @@ const FOLLOW_CHANNELS: { name: string; url: string }[] = [
   { name: 'Instagram', url: ZVC_INSTAGRAM_URL },
   { name: 'TikTok', url: ZVC_TIKTOK_URL },
   { name: 'Substack', url: new URL('subscribe', ZVC_SUBSTACK_URL).toString() },
+  // A page, not the feed itself: mail clients strip webcal:// links.
+  { name: 'Event Calendar', url: ZVC_CALENDAR_PAGE_URL },
 ];
 
 /**

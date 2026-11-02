@@ -1,16 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import payloadConfig from '@payload-config';
-import type { Location } from '@/payload-types';
-import { AHC_SITE_URL, ZVC_SITE_URL } from '@/app/contsants/constants';
-import { getEventRuntimeMinutes } from '@/lib/eventRuntime';
-import {
-  buildIcs,
-  eventCalendarEnd,
-  googleCalendarUrl,
-  type CalendarEvent,
-} from '@/utils/eventCalendar';
-import { eventTitle, isPaidEventType } from '@/utils/eventTypes';
+import { payloadCalendarEvent } from '@/lib/calendarEntries';
+import { buildIcs, googleCalendarUrl } from '@/utils/eventCalendar';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -38,24 +30,7 @@ export async function GET(req: Request, { params }: Params) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  const location =
-    typeof event.location === 'object' ? (event.location as Location) : null;
-  const url =
-    isPaidEventType(event.eventType)
-      ? `${ZVC_SITE_URL}/events/${event.id}`
-      : AHC_SITE_URL;
-
-  const calendarEvent: CalendarEvent = {
-    id: event.id,
-    title: eventTitle(event),
-    start: new Date(event.datetime),
-    end: eventCalendarEnd(event.datetime, await getEventRuntimeMinutes(event)),
-    location: location
-      ? [location.name, location.address].filter(Boolean).join(', ')
-      : undefined,
-    description: `Details: ${url}`,
-    url,
-  };
+  const calendarEvent = await payloadCalendarEvent(event);
 
   if (new URL(req.url).searchParams.get('format') === 'google') {
     return NextResponse.redirect(googleCalendarUrl(calendarEvent), 302);
