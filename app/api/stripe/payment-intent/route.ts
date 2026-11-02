@@ -6,6 +6,7 @@ import { logtail } from '@/lib/logtail';
 import { formatAmountForStripe } from '@/utils/stripeUtils';
 import type { Location } from '@/payload-types';
 import { isEventClosed } from '@/utils/eventEnded';
+import { eventTitle } from '@/utils/eventTypes';
 
 /**
  * Creates (or updates) a PaymentIntent for an event ticket purchase and returns
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
     // A raw PaymentIntent has no line items, so the Stripe dashboard would show
     // only an amount. The description is what makes a payment identifiable there
     // (and on the buyer's receipt) without cross-referencing metadata.
-    const description = `${event.name} — ${qty} ticket${qty > 1 ? 's' : ''}`;
+    const description = `${eventTitle(event)} — ${qty} ticket${qty > 1 ? 's' : ''}`;
 
     // Update an in-progress PaymentIntent (quantity/newsletter changed) rather
     // than creating a new one, so the client secret — and any entered card /

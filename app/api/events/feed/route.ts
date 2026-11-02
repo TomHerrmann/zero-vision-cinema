@@ -17,7 +17,7 @@ import {
   easternTimeLabel,
   toEasternIso,
 } from '@/utils/easternTime';
-import { EVENT_TYPE_NAMES, isPaidEventType } from '@/utils/eventTypes';
+import { EVENT_TYPE_NAMES, eventTitle, isPaidEventType } from '@/utils/eventTypes';
 import { richTextIsEmpty, richTextToPlain } from '@/utils/richText';
 
 /**
@@ -97,7 +97,7 @@ export async function GET() {
         id: event.id,
         eventType: event.eventType,
         eventTypeName: EVENT_TYPE_NAMES[event.eventType],
-        name: event.name,
+        name: eventTitle(event),
         timeZone: EVENT_TIME_ZONE,
         date: easternDate(event.datetime),
         start: toEasternIso(event.datetime),

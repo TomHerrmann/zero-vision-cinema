@@ -13,6 +13,7 @@ import AddToCalendar from '@/components/add-to-calendar/add-to-calendar';
 import SoldOutStamp from '@/components/sold-out/sold-out-stamp';
 import { isSoldOut } from '@/utils/isSoldOut';
 import { isEventClosed } from '@/utils/eventEnded';
+import { eventTitle } from '@/utils/eventTypes';
 
 export const revalidate = 300;
 
@@ -25,8 +26,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : await getPaidEventById(Number(id));
   if (!event) return { title: 'Event Not Found' };
   return {
-    title: `${event.name} — Tickets`,
-    description: `Get tickets for ${event.name}.`,
+    title: `${eventTitle(event)} — Tickets`,
+    description: `Get tickets for ${eventTitle(event)}.`,
   };
 }
 
@@ -65,7 +66,7 @@ export default async function EventTicketPage({ params }: Props) {
 
   // Prefer the OMDB poster / summary when the event has none.
   const posterUrl = movie?.poster ?? image?.url ?? null;
-  const posterAlt = image?.alt || event.name;
+  const posterAlt = image?.alt || eventTitle(event);
   const descriptionIsEmpty = richTextIsEmpty(event.description);
 
   const date = new Date(event.datetime);
@@ -114,7 +115,7 @@ export default async function EventTicketPage({ params }: Props) {
 
             <span className="zvc-kicker block mb-3">Screening</span>
             <h1 className="zvc-heading text-4xl md:text-6xl mb-6">
-              {event.name}
+              {eventTitle(event)}
             </h1>
 
             <div className="space-y-3 mb-8">
@@ -207,7 +208,7 @@ export default async function EventTicketPage({ params }: Props) {
               ) : isPurchasable ? (
                 <CheckoutClient
                   eventId={event.id}
-                  eventName={event.name}
+                  eventName={eventTitle(event)}
                   price={price}
                   paymentLink={event.paymentLink}
                 />

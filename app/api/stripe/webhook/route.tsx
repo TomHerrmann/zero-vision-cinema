@@ -4,7 +4,11 @@ import { getPayload } from 'payload';
 import payloadConfig from '@payload-config';
 import { headers } from 'next/headers';
 import { logtail } from '@/lib/logtail';
-import { stripe, stripeCheckout } from '@/lib/stripe';
+import {
+  stripe,
+  stripeCheckout,
+  type PaymentIntentWithCharge,
+} from '@/lib/stripe';
 import { qstash, QSTASH_TARGET_BASE_URL } from '@/lib/qstash';
 import { addResendContact } from '@/lib/resend';
 import { enqueueRewardEmail, enqueueTicketEmail } from '@/lib/tasks';
@@ -103,9 +107,9 @@ export async function POST(req: Request) {
         }
 
         // Expand the latest charge for the receipt URL and billing details.
-        const full = await stripeCheckout.paymentIntents.retrieve(pi.id, {
+        const full = (await stripeCheckout.paymentIntents.retrieve(pi.id, {
           expand: ['latest_charge'],
-        });
+        })) as PaymentIntentWithCharge;
         const charge = (full.latest_charge as Stripe.Charge) ?? null;
         const receiptUrl = charge?.receipt_url ?? null;
         const email =

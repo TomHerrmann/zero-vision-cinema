@@ -13,6 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { getUpcomingZvcEvents } from '@/utils/getEvents';
 import { getLatestSubstackPosts } from '@/utils/getLatestSubstackPosts';
 import { isSoldOut } from '@/utils/isSoldOut';
+import { eventTitle } from '@/utils/eventTypes';
 import Link from 'next/link';
 
 // Revalidate every 5 minutes (300 seconds)
@@ -79,7 +80,7 @@ export default async function TreeLinkPage() {
   const eventLinks = events
     .filter((event) => !isSoldOut(event))
     .map((event) => ({
-      title: event.name,
+      title: eventTitle(event),
       url: `/events/${event.id}`,
     })) as LinkItem[];
 

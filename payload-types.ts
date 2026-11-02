@@ -150,6 +150,10 @@ export interface Event {
    */
   eventType: 'zvc' | 'ahc' | 'bookclub' | 'rww' | 'fri' | 'brew' | 'bingo' | 'brunch';
   /**
+   * VHS and 16mm are added to the name everywhere it shows, e.g. "Scanners (1981) on VHS". Digital adds nothing.
+   */
+  filmFormat?: ('digital' | 'vhs' | '16mm') | null;
+  /**
    * Optional — leave blank to auto-fill from the movie ("Title (Year)") or book ("Title — Author").
    */
   name: string;
@@ -582,6 +586,7 @@ export interface PayloadMigration {
  */
 export interface EventsSelect<T extends boolean = true> {
   eventType?: T;
+  filmFormat?: T;
   name?: T;
   imdbId?: T;
   bookTitle?: T;

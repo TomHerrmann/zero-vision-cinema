@@ -6,7 +6,7 @@ import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import { fetchBookDataByOpenLibraryId } from '@/lib/openlibrary';
 import { eventClosesAt } from '@/utils/eventEnded';
 import { CopyLinkButton } from './CopyLinkButton';
-import { isPaidEventType } from '@/utils/eventTypes';
+import { eventTitle, isPaidEventType } from '@/utils/eventTypes';
 import {
   dateBlock,
   daysUntil,
@@ -169,7 +169,7 @@ export async function AdminDashboard({ payload, user }: AdminViewServerProps) {
               <span className={`zvc-tag zvc-tag--${next.eventType}`}>{TYPE_LONG[next.eventType]}</span>
               {next._status === 'draft' && <span className="zvc-tag zvc-tag--draft">Draft</span>}
             </div>
-            <h2 className="zvc-next__name">{next.name}</h2>
+            <h2 className="zvc-next__name">{eventTitle(next)}</h2>
             <div className="zvc-next__facts">
               <span>
                 {formatDay(next.datetime)} · {formatTime(next.datetime)}
@@ -251,7 +251,7 @@ export async function AdminDashboard({ payload, user }: AdminViewServerProps) {
                 </span>
                 <span className="zvc-row__main">
                   <span className="zvc-row__name">
-                    {event.name}
+                    {eventTitle(event)}
                     {event._status === 'draft' && <em className="zvc-muted"> · draft</em>}
                   </span>
                   <span className="zvc-muted">

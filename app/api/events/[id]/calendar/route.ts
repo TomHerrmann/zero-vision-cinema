@@ -10,7 +10,7 @@ import {
   googleCalendarUrl,
   type CalendarEvent,
 } from '@/utils/eventCalendar';
-import { isPaidEventType } from '@/utils/eventTypes';
+import { eventTitle, isPaidEventType } from '@/utils/eventTypes';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -47,7 +47,7 @@ export async function GET(req: Request, { params }: Params) {
 
   const calendarEvent: CalendarEvent = {
     id: event.id,
-    title: event.name,
+    title: eventTitle(event),
     start: new Date(event.datetime),
     end: eventCalendarEnd(event.datetime, await getEventRuntimeMinutes(event)),
     location: location

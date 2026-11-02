@@ -6,6 +6,7 @@ import { qstash, QSTASH_TARGET_BASE_URL } from '@/lib/qstash';
 import { isQualifyingOrder, isRewardUsable, voidUsableRewardsForCustomer } from '@/lib/loyalty';
 import { refundDeclinedEmailReady } from '@/emails/RefundDeclinedEmail';
 import type { Event, Order, RefundRequest, Reward } from '@/payload-types';
+import { eventTitle } from '@/utils/eventTypes';
 
 /**
  * Refunds inside 48 hours of an event are approved by hand: a request is filed
@@ -329,7 +330,7 @@ export async function getRefundRequestSummary(
     amountPaid: order.amountPaid,
     quantity: order.quantity,
     orderRefundedAt: order.refundedAt ?? null,
-    eventName: event_?.name ?? null,
+    eventName: event_ ? eventTitle(event_) : null,
     eventDate: event_?.datetime ?? null,
     eventPassed: event_ ? new Date(event_.datetime).getTime() < now.getTime() : false,
     loyalty: {

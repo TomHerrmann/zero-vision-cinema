@@ -18,6 +18,7 @@ import {
   searchBookByTitleAuthor,
 } from '@/lib/openlibrary';
 import { richTextIsEmpty } from '@/utils/richText';
+import { eventTitle } from '@/utils/eventTypes';
 import SoldOutStamp from '@/components/sold-out/sold-out-stamp';
 import AddToCalendar from '@/components/add-to-calendar/add-to-calendar';
 
@@ -50,6 +51,7 @@ const EventCard = async ({
   id,
   name,
   eventType,
+  filmFormat,
   imdbId,
   openLibraryId,
   bookTitle,
@@ -63,6 +65,7 @@ const EventCard = async ({
   isSoldOut,
 }: Props) => {
   const date = new Date(datetime);
+  const title = eventTitle({ name, eventType, filmFormat });
 
   const imageObj = image && typeof image === 'object' ? image : null;
   const descriptionIsEmpty = richTextIsEmpty(description);
@@ -85,7 +88,7 @@ const EventCard = async ({
   const movie = needsOmdb ? await fetchMovieDataByImdbId(imdbId!) : null;
 
   const posterUrl = imageObj?.url ?? bookCover ?? movie?.poster ?? null;
-  const posterAlt = imageObj?.alt || name;
+  const posterAlt = imageObj?.alt || title;
   // Plain-text fallback shown when the stored richText description is empty.
   const fallbackText = book?.description ?? movie?.plot ?? null;
 
@@ -125,7 +128,7 @@ const EventCard = async ({
           <CardHeader className="p-0 pb-6">
             <CardTitle>
               <h2 className="zvc-heading text-4xl md:text-5xl line-clamp-2 pr-24">
-                {name}
+                {title}
               </h2>
             </CardTitle>
           </CardHeader>
@@ -219,7 +222,7 @@ const EventCard = async ({
       {/* Content Section */}
       <div className="flex flex-col flex-1 p-2 md:p-5">
         <h2 className="zvc-heading text-3xl md:text-5xl mb-4 line-clamp-2">
-          {name}
+          {title}
         </h2>
 
         <div className="space-y-3 mb-5">
