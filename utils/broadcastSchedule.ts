@@ -113,3 +113,27 @@ export function etDayRangeUtc(
     ),
   };
 }
+
+/**
+ * The week the Sunday email covers: from the start of today (ET) through the
+ * end of the sixth day after it, so a Sunday run spans Sunday–Saturday.
+ * Half-open, like `etDayRangeUtc`.
+ */
+export function etWeekRangeUtc(now: Date): { start: Date; end: Date } {
+  return {
+    start: etDayRangeUtc(now, 0).start,
+    end: etDayRangeUtc(now, 6).end,
+  };
+}
+
+/** True when `now` falls on a Sunday in New York. */
+export function isEtSunday(now: Date): boolean {
+  const { year, month, day } = zonedDateParts(now, TZ);
+  return new Date(Date.UTC(year, month - 1, day)).getUTCDay() === 0;
+}
+
+/** The ET calendar date of `now` as YYYY-MM-DD, used to key the weekly send. */
+export function etDateKey(now: Date): string {
+  const { year, month, day } = zonedDateParts(now, TZ);
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}

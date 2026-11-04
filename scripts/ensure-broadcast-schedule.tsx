@@ -1,5 +1,6 @@
 /**
- * Create (or update) the daily QStash schedule that drives event broadcasts.
+ * Create (or update) the daily 9am ET QStash schedule. It sends the Sunday
+ * weekly email and retires closed payment links.
  *
  *   npm run schedule:broadcasts -- --dry-run   # show the schedule + what exists
  *   npm run schedule:broadcasts                # upsert it
@@ -79,7 +80,7 @@ async function main() {
   });
 
   console.log(`${ours.length > 0 ? 'Updated' : 'Created'} ${res.scheduleId}.`);
-  console.log('Broadcasts now go out at 9:00am ET daily.');
+  console.log('The daily run now fires at 9:00am ET (weekly email on Sundays).');
 }
 
 main()
