@@ -315,3 +315,75 @@ export const customBroadcastSample = {
   } as unknown as SerializedEditorState,
   cta: { label: 'See the lineup', url: `${ZVC_SITE_URL}/events` },
 };
+
+/** WeeklyEmail — Sunday "This week at ZVC" with a mix of free and paid events. */
+export const weeklySample = {
+  weekStart: '2026-11-08T05:00:00.000Z',
+  weekEnd: '2026-11-14T05:00:00.000Z',
+  moreEventsUrl: `${ZVC_SITE_URL}/events`,
+  events: [
+    {
+      id: 51,
+      typeName: 'Horror Brunch',
+      title: ahcTitle,
+      datetime: '2026-11-08T16:00:00.000Z',
+      venue: 'Sanford’s',
+      posterUrl: ahcMovie.poster,
+      description: null,
+      fallbackDescription: ahcMovie.plot,
+      paid: false,
+      calendarUrl: `${ZVC_SITE_URL}/api/events/51/calendar`,
+    },
+    {
+      id: 52,
+      typeName: 'Astoria Horror Book Club',
+      title: bookTitle,
+      datetime: '2026-11-11T00:00:00.000Z',
+      venue: 'Sunswick 35/35',
+      posterUrl: bookInfo.cover,
+      description: null,
+      fallbackDescription: bookInfo.description,
+      paid: false,
+      calendarUrl: `${ZVC_SITE_URL}/api/events/52/calendar`,
+    },
+    {
+      id: 53,
+      typeName: 'Rewind Wednesdays',
+      title: 'Rewind Wednesdays',
+      datetime: '2026-11-12T00:30:00.000Z',
+      venue: 'The Gaf',
+      posterUrl: undefined,
+      description: sampleRichText(
+        'Free and open to all. Bring a friend and a favorite tape.'
+      ),
+      fallbackDescription: null,
+      paid: false,
+      calendarUrl: `${ZVC_SITE_URL}/api/events/53/calendar`,
+    },
+    {
+      id: 42,
+      typeName: 'Zero Vision Cinema',
+      title: zvcTitle,
+      datetime: '2026-11-15T00:30:00.000Z',
+      venue: 'The Astoria Vault',
+      posterUrl: zvcMovie.poster,
+      description: sampleRichText(
+        'A 35mm midnight screening of John Carpenter’s paranoid masterpiece. Limited seating — grab a ticket before it sells out.'
+      ),
+      fallbackDescription: zvcMovie.plot,
+      paid: true,
+      ticketUrl: `${ZVC_SITE_URL}/events/42`,
+      calendarUrl: `${ZVC_SITE_URL}/api/events/42/calendar`,
+    },
+  ],
+  video: {
+    title: 'Sample video title',
+    url: 'https://www.youtube.com/@zerovisioncinema',
+    imageUrl: zvcMovie.poster,
+  },
+  post: {
+    title: 'Sample Substack post title',
+    url: 'https://zerovisioncinema.substack.com/',
+    imageUrl: ahcMovie.poster,
+  },
+};

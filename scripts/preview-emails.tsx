@@ -16,6 +16,7 @@ import RefundEmail from '../emails/RefundEmail';
 import BroadcastEmail from '../emails/BroadcastEmail';
 import RewardEmail from '../emails/RewardEmail';
 import CustomBroadcastEmail from '../emails/CustomBroadcastEmail';
+import WeeklyEmail from '../emails/WeeklyEmail';
 import {
   ticketSample,
   ticketFreeSample,
@@ -29,6 +30,7 @@ import {
   broadcastBookClubSample,
   broadcastCommunitySample,
   customBroadcastSample,
+  weeklySample,
 } from '../emails/previews/sample-data';
 import {
   ZVC_DISPLAY_NAME_EMAIL,
@@ -99,6 +101,10 @@ async function main() {
     {
       subject: `[QA] Custom broadcast: ${customBroadcastSample.subject}`,
       react: <CustomBroadcastEmail {...customBroadcastSample} />,
+    },
+    {
+      subject: '[QA] This week at ZVC',
+      react: <WeeklyEmail {...weeklySample} />,
     },
   ];
 

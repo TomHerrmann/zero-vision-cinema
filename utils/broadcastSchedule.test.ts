@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { etDayRangeUtc, ANNOUNCE_DAYS_BEFORE } from './broadcastSchedule';
+import {
+  etDayRangeUtc,
+  ANNOUNCE_DAYS_BEFORE,
+  etWeekRangeUtc,
+  isEtSunday,
+  etDateKey,
+} from './broadcastSchedule';
 
 const HOURS = (ms: number) => ms / (60 * 60 * 1000);
 
@@ -74,5 +80,21 @@ describe('etDayRangeUtc', () => {
       const b = etDayRangeUtc(new Date('2026-03-05T17:00:00.000Z'), i + 1);
       expect(a.end.toISOString()).toBe(b.start.toISOString());
     }
+  });
+});
+
+describe('weekly helpers', () => {
+  it('spans Sunday through Saturday in ET across the DST change', () => {
+    // Sunday 2026-11-01, 9am ET, the day the clocks go back.
+    const { start, end } = etWeekRangeUtc(new Date('2026-11-01T14:00:00.000Z'));
+    expect(start.toISOString()).toBe('2026-11-01T04:00:00.000Z');
+    expect(end.toISOString()).toBe('2026-11-08T05:00:00.000Z');
+  });
+
+  it('knows Sunday in New York, not UTC', () => {
+    expect(isEtSunday(new Date('2026-11-08T14:00:00.000Z'))).toBe(true);
+    // Saturday 11pm ET is already Sunday in UTC.
+    expect(isEtSunday(new Date('2026-11-08T04:00:00.000Z'))).toBe(false);
+    expect(etDateKey(new Date('2026-11-08T04:00:00.000Z'))).toBe('2026-11-07');
   });
 });
