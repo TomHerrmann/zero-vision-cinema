@@ -9,6 +9,7 @@ import { HALLOWEEK_SCHEDULE } from '@/app/(frontend)/halloweek2026/halloweek.dat
 export const revalidate = 300;
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/join' },
   title: 'Join — Zero Vision Cinema',
   description:
     'A pop-up movie theater, screening niche movies, genre films, and cult favorites around NYC.',

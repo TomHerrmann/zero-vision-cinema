@@ -7,6 +7,7 @@ import {
 } from '@/app/contsants/constants';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/privacy' },
   title: 'Privacy Policy — Zero Vision Cinema',
   description:
     'How Zero Vision Cinema collects, uses, and protects your information.',

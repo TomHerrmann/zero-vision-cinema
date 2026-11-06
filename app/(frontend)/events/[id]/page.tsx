@@ -3,9 +3,13 @@ import { notFound, redirect } from 'next/navigation';
 import Image from 'next/image';
 import { RichText } from '@payloadcms/richtext-lexical/react';
 import { Calendar, MapPin, DollarSign, Star } from 'lucide-react';
-import { getPaidEventById } from '@/utils/getEvents';
+import { getEventPageById } from '@/utils/getEvents';
 import { Location, Media } from '@/payload-types';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
+import {
+  fetchBookDataByOpenLibraryId,
+  searchBookByTitleAuthor,
+} from '@/lib/openlibrary';
 import { richTextIsEmpty } from '@/utils/richText';
 import CheckoutClient from '@/components/checkout/checkout';
 import { cn } from '@/utils/utils';
@@ -13,7 +17,12 @@ import AddToCalendar from '@/components/add-to-calendar/add-to-calendar';
 import SoldOutStamp from '@/components/sold-out/sold-out-stamp';
 import { isSoldOut } from '@/utils/isSoldOut';
 import { isEventClosed } from '@/utils/eventEnded';
-import { eventTitle } from '@/utils/eventTypes';
+import {
+  EVENT_TYPE_NAMES,
+  eventTitle,
+  isIndexedEventType,
+} from '@/utils/eventTypes';
+import { eventJsonLd, jsonLdString } from '@/utils/eventJsonLd';
 
 export const revalidate = 300;
 
@@ -23,11 +32,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const event = Number.isNaN(Number(id))
     ? null
-    : await getPaidEventById(Number(id));
+    : await getEventPageById(Number(id));
   if (!event) return { title: 'Event Not Found' };
+  const isBook = event.eventType === 'bookclub';
   return {
-    title: `${eventTitle(event)} — Tickets`,
-    description: `Get tickets for ${eventTitle(event)}.`,
+    title: isBook
+      ? `${eventTitle(event)} — ${EVENT_TYPE_NAMES.bookclub}`
+      : `${eventTitle(event)} — Tickets`,
+    ...(isBook ? {} : { description: `Get tickets for ${eventTitle(event)}.` }),
+    alternates: { canonical: `/events/${event.id}` },
+    // Only ZVC screenings are meant to show up in search; other ticketed
+    // types (e.g. Brewscares) keep their page but stay out of the index.
+    ...(isIndexedEventType(event.eventType)
+      ? {}
+      : { robots: { index: false, follow: true } }),
   };
 }
 
@@ -47,7 +65,7 @@ export default async function EventTicketPage({ params }: Props) {
   const { id } = await params;
   const event = Number.isNaN(Number(id))
     ? null
-    : await getPaidEventById(Number(id));
+    : await getEventPageById(Number(id));
 
   if (!event) notFound();
 
@@ -64,8 +82,21 @@ export default async function EventTicketPage({ params }: Props) {
   const location =
     typeof event.location === 'object' ? (event.location as Location) : null;
 
+  // Book Club meetings pull cover/description from Open Library (cached).
+  const isBook = event.eventType === 'bookclub';
+  const book =
+    isBook && event.openLibraryId
+      ? await fetchBookDataByOpenLibraryId(event.openLibraryId)
+      : null;
+  let bookCover = book?.cover || null;
+  if (isBook && !bookCover && event.bookTitle && event.bookAuthor) {
+    bookCover =
+      (await searchBookByTitleAuthor(event.bookTitle, event.bookAuthor))
+        ?.cover || null;
+  }
+
   // Prefer the OMDB poster / summary when the event has none.
-  const posterUrl = movie?.poster ?? image?.url ?? null;
+  const posterUrl = movie?.poster ?? image?.url ?? bookCover ?? null;
   const posterAlt = image?.alt || eventTitle(event);
   const descriptionIsEmpty = richTextIsEmpty(event.description);
 
@@ -81,13 +112,31 @@ export default async function EventTicketPage({ params }: Props) {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-blackout">
+      {isIndexedEventType(event.eventType) && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: jsonLdString(
+              eventJsonLd(event, {
+                image: posterUrl,
+                description: movie?.plot ?? book?.description ?? null,
+              })
+            ),
+          }}
+        />
+      )}
       <div
         className="absolute inset-0 zvc-grain pointer-events-none"
         aria-hidden="true"
       />
 
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12 py-24 md:py-32 pt-32 md:pt-40">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+        <div
+          className={cn(
+            'grid gap-12 lg:gap-16 items-start',
+            price > 0 ? 'lg:grid-cols-2' : 'max-w-3xl'
+          )}
+        >
           {/* Left — poster + details */}
           <div>
             {posterUrl && (
@@ -113,7 +162,9 @@ export default async function EventTicketPage({ params }: Props) {
               </div>
             )}
 
-            <span className="zvc-kicker block mb-3">Screening</span>
+            <span className="zvc-kicker block mb-3">
+              {isBook ? EVENT_TYPE_NAMES.bookclub : 'Screening'}
+            </span>
             <h1 className="zvc-heading text-4xl md:text-6xl mb-6">
               {eventTitle(event)}
             </h1>
@@ -157,9 +208,9 @@ export default async function EventTicketPage({ params }: Props) {
               <div className="prose prose-invert zvc-article max-w-none mb-10">
                 <RichText data={event.description!} />
               </div>
-            ) : movie?.plot ? (
+            ) : movie?.plot || book?.description ? (
               <p className="zvc-body text-glow/80 leading-relaxed mb-10">
-                {movie.plot}
+                {movie?.plot ?? book?.description}
               </p>
             ) : null}
 
@@ -191,35 +242,37 @@ export default async function EventTicketPage({ params }: Props) {
             )}
           </div>
 
-          {/* Right — checkout */}
-          <div className="lg:sticky lg:top-28">
-            <div className="zvc-card p-6 md:p-8 zvc-logo-tab">
-              <h2 className="zvc-heading text-3xl mb-6">Get Tickets</h2>
+          {/* Right — checkout (ticketed events only; Book Club is free) */}
+          {price > 0 && (
+            <div className="lg:sticky lg:top-28">
+              <div className="zvc-card p-6 md:p-8 zvc-logo-tab">
+                <h2 className="zvc-heading text-3xl mb-6">Get Tickets</h2>
 
-              {isSoldOut(event) ? (
-                <div className="text-center py-10">
-                  <div className="zvc-stamp inline-block font-display text-destructive text-4xl md:text-5xl tracking-widest border-4 border-destructive px-4 py-1">
-                    SOLD OUT
+                {isSoldOut(event) ? (
+                  <div className="text-center py-10">
+                    <div className="zvc-stamp inline-block font-display text-destructive text-4xl md:text-5xl tracking-widest border-4 border-destructive px-4 py-1">
+                      SOLD OUT
+                    </div>
+                    <p className="zvc-body text-glow/60 mt-4">
+                      This screening is at capacity.
+                    </p>
                   </div>
-                  <p className="zvc-body text-glow/60 mt-4">
-                    This screening is at capacity.
+                ) : isPurchasable ? (
+                  <CheckoutClient
+                    eventId={event.id}
+                    eventName={eventTitle(event)}
+                    price={price}
+                    paymentLink={event.paymentLink}
+                  />
+                ) : (
+                  <p className="zvc-body text-glow/70">
+                    Tickets for this event aren&apos;t available for online
+                    purchase.
                   </p>
-                </div>
-              ) : isPurchasable ? (
-                <CheckoutClient
-                  eventId={event.id}
-                  eventName={eventTitle(event)}
-                  price={price}
-                  paymentLink={event.paymentLink}
-                />
-              ) : (
-                <p className="zvc-body text-glow/70">
-                  Tickets for this event aren&apos;t available for online
-                  purchase.
-                </p>
-              )}
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </main>

@@ -3,7 +3,7 @@ import { Geist, Crimson_Text } from 'next/font/google';
 import localFont from 'next/font/local';
 import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
-import { ZVC_SITE_URL } from '../contsants/constants';
+import { ZVC_CANONICAL_URL } from '../contsants/constants';
 import { cn } from '@/utils/utils';
 import Nav from '@/components/nav/nav';
 import Footer from '@/components/footer/footer';
@@ -53,10 +53,9 @@ export const metadata: Metadata = {
   title: 'Zero Vision Cinema',
   description:
     'A pop-up movie theater, screening niche movies, genre films, and cult favorites around NYC.',
-  metadataBase: new URL(ZVC_SITE_URL),
-  alternates: {
-    canonical: '/',
-  },
+  // Canonical URLs are set per page: a canonical here would be inherited by
+  // every page and tell search engines they're all duplicates of the homepage.
+  metadataBase: new URL(ZVC_CANONICAL_URL),
   // Preview image comes from opengraph-image.png in this folder. Title and
   // description are left out so child pages' own <title> still shows in shares.
   openGraph: {
