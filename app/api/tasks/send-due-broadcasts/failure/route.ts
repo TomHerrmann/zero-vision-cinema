@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { logtail } from '@/lib/logtail';
 import { verifyQstashRequest } from '@/lib/qstash';
+import { summarizeQstashFailure } from '@/lib/qstashFailure';
 
 /**
  * QStash `failureCallback` for the daily broadcast dispatcher. Fires once
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
 
   await logtail.error(
     `API /tasks/send-due-broadcasts: daily dispatch FAILED after all retries (dead-lettered) — no broadcasts went out this run`,
-    { failure, timestamp: new Date().toISOString() }
+    { failure: summarizeQstashFailure(failure), timestamp: new Date().toISOString() }
   );
 
   return NextResponse.json({ received: true }, { status: 200 });
