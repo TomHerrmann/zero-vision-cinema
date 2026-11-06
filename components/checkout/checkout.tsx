@@ -495,7 +495,9 @@ export function CheckoutForm({
             </button>
           </div>
           {codeError && (
-            <p className="zvc-body text-cult-classic text-sm">{codeError}</p>
+            <p role="alert" className="zvc-body text-cult-classic text-sm">
+              {codeError}
+            </p>
           )}
         </div>
       ) : (
@@ -585,7 +587,9 @@ export function CheckoutForm({
 
 
       {message && (
-        <p className="zvc-body text-cult-classic text-sm">{message}</p>
+        <p role="alert" className="zvc-body text-cult-classic text-sm">
+          {message}
+        </p>
       )}
 
       <button
@@ -616,7 +620,7 @@ export function CheckoutForm({
 
 function CheckoutError({ paymentLink }: { paymentLink?: string | null }) {
   return (
-    <div className="text-center py-8">
+    <div role="alert" className="text-center py-8">
       <p className="zvc-body text-glow/70 mb-5">
         We couldn&apos;t start checkout right now.
       </p>
