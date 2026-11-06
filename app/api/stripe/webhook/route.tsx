@@ -161,7 +161,7 @@ export async function POST(req: Request) {
             await addResendContact({ email, firstName, lastName });
           } catch (subErr) {
             await logtail.error(
-              `API /stripe/webhook: newsletter opt-in failed for ${email}: ${subErr}`
+              `API /stripe/webhook: newsletter opt-in failed for payment_intent ${pi.id}: ${subErr}`
             );
           }
         }
