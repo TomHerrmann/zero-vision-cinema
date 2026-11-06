@@ -3,7 +3,7 @@ import {
   AHC_INSTAGRAM_URL,
   ZVC_TIKTOK_URL,
   DISCORD_ICON_SVG_URL,
-} from '../../../contsants/constants';
+} from '../../../constants/constants';
 import Image from 'next/image';
 
 export default function SocialLinks() {

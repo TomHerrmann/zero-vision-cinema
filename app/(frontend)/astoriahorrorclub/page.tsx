@@ -2,7 +2,7 @@ import Image from 'next/image';
 import '../globals.css';
 import { cn } from '@/utils/utils';
 import { Creepster } from 'next/font/google';
-import { AHC_LOGO_PNG_URL } from '@/app/contsants/constants';
+import { AHC_LOGO_PNG_URL } from '@/app/constants/constants';
 import { BookOpen, Users, Calendar, Heart, Mail } from 'lucide-react';
 import {
   getUpcomingAhcEvents,

@@ -1,5 +1,5 @@
 import type { Event, Location } from '@/payload-types';
-import { ZVC_CANONICAL_URL } from '@/app/contsants/constants';
+import { ZVC_CANONICAL_URL } from '@/app/constants/constants';
 import { eventTitle } from '@/utils/eventTypes';
 import { isSoldOut } from '@/utils/isSoldOut';
 

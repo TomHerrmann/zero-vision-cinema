@@ -99,8 +99,8 @@ Everything is managed from the **admin dashboard at `/admin`** (e.g.
 
 ### Newsletter
 
-Newsletter sign-ups (site footer and checkout opt-in) are pushed to **MailerLite**
-automatically.
+Newsletter sign-ups (site footer and checkout opt-in) are added as **Resend**
+contacts and opted in to the "This week at ZVC" topic (`lib/resend.ts`).
 
 ---
 
@@ -118,7 +118,7 @@ admin, deployed on **Vercel**.
 | Payments                 | Stripe — PaymentIntents + Stripe Elements / Express Checkout; `@payloadcms/plugin-stripe` |
 | Background jobs / queue  | Upstash QStash (durable ticket-email delivery, retries, DLQ)                              |
 | Transactional email      | Resend + React Email templates (`emails/`)                                                |
-| Newsletter               | MailerLite                                                                                |
+| Newsletter               | Resend contacts + topics                                                                  |
 | Film / book metadata     | OMDB (movies), Open Library (books)                                                       |
 | Logging                  | BetterStack (Logtail)                                                                     |
 | Analytics                | Vercel Analytics + Speed Insights                                                         |
@@ -176,7 +176,7 @@ and calls the failure endpoint (logged to BetterStack).
 | `POST /api/tasks/send-refund-request-email`   | QStash worker: emails us about a new refund request                     |
 | `POST /api/tasks/send-due-broadcasts`         | QStash schedule (daily 9am ET): dispatches the broadcasts due that day  |
 | `POST /api/tasks/send-broadcast`              | QStash worker: sends one event announcement/reminder broadcast          |
-| `POST /api/subscribe`                         | Newsletter sign-up → MailerLite                                         |
+| `POST /api/subscribe`                         | Newsletter sign-up → Resend contact                                     |
 | `POST /api/contact`                           | Contact form                                                            |
 | `/api/omdb-lookup`, `/api/openlibrary-lookup` | Admin metadata auto-fill                                                |
 
@@ -237,7 +237,6 @@ browser; everything else is server-only.
 | Var | What it's for |
 |---|---|
 | `RESEND_API_KEY` | Transactional email (Resend) |
-| `MAILER_LITE_ACCESS_TOKEN` / `MAILERLITE_GROUP_ID` | Newsletter (MailerLite) |
 
 **Media (Vercel Blob)**
 | Var | What it's for |
@@ -373,9 +372,8 @@ Requires the project to be linked — `vercel link` if the pull fails.
 > ⚠️ `NODE_ENV=production` is not cosmetic. `payload.config.ts` passes no `push`
 > option to `vercelPostgresAdapter`, so without it Payload treats the connection as
 > a dev database and tries to **push schema changes** — aimed at production, that
-> means offering to DROP columns before the script does any work. Reuse
-> `with-prod-env.sh` for anything that opens the prod database; the older
-> `scripts/backfill-*/` route-style helpers predate it and carry the original risk.
+> means offering to DROP columns before the script does any work. Use
+> `with-prod-env.sh` for anything that opens the prod database.
 
 > ⚠️ Env vars marked **Sensitive** in Vercel cannot be pulled — `vercel env pull`
 > returns the literal string `[SENSITIVE]`, and whatever needs them fails as though

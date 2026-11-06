@@ -11,7 +11,7 @@ import {
   ZVC_YOUTUBE_URL,
   PARTIFUL_URL,
   AHC_DISCORD_URL,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 import { cn } from '@/utils/utils';
 import { Mail, MapPin } from 'lucide-react';
 import SubstackIcon from '@/components/ui/substack-icon';

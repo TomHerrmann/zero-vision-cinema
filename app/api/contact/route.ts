@@ -5,7 +5,7 @@ import {
   ZVC_DISPLAY_NAME_EMAIL,
   ZVC_EMAIL_ADDRESS,
   ZVC_PRESS_EMAIL_ADDRESS,
-} from "@/app/contsants/constants";
+} from "@/app/constants/constants";
 import { logtail } from "@/lib/logtail";
 
 const resend = new Resend(process.env.RESEND_API_KEY);

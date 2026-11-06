@@ -7,7 +7,7 @@ import {
   LLC_NAME,
   ZVC_EMAIL_ADDRESS,
   ZVC_SITE_URL,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 import { richTextIsEmpty } from '@/utils/richText';
 import type { MovieData } from '@/lib/omdb';
 import type { LoyaltyNotice } from '@/lib/loyalty';
