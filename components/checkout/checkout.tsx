@@ -546,10 +546,10 @@ export function CheckoutForm({
         />
         <span className="zvc-body leading-snug">
           <span className="block text-glow text-base font-bold">
-            Join the community.
+            Join the newsletter.
           </span>
           <span className="block text-glow/80 text-sm mt-1">
-            Get the week’s screenings, book club, and more with our newsletter.
+            Get the week’s screenings, book club, and more community events.
           </span>
         </span>
       </label>
