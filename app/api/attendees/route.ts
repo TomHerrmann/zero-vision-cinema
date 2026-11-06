@@ -7,6 +7,14 @@ import { eventTitle } from '@/utils/eventTypes';
 
 export async function GET(req: NextRequest) {
   try {
+    const payload = await getPayload({ config: payloadConfig });
+
+    // Admin-only: the roster contains customer names and emails from Stripe.
+    const { user } = await payload.auth({ headers: req.headers });
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const searchParams = req.nextUrl.searchParams;
     const eventId = searchParams.get('eventid');
 
@@ -17,8 +25,6 @@ export async function GET(req: NextRequest) {
       });
       return NextResponse.json({ error: 'Missing eventId' }, { status: 400 });
     }
-
-    const payload = await getPayload({ config: payloadConfig });
 
     const event = await payload.findByID({
       collection: 'events',

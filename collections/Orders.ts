@@ -11,7 +11,9 @@ export const Orders: CollectionConfig = {
   access: {
     create: () => false,
     delete: () => false,
-    read: () => true,
+    // Admins only: each order carries a Stripe customer ID, which must not be
+    // publicly listable via the REST/GraphQL API.
+    read: ({ req }) => Boolean(req.user),
     update: () => false,
   },
   hooks: {

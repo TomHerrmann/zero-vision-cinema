@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { headers } from 'next/headers';
 import NoAccess from '../notice';
 
 import EventList from '@/components/event-list/event-list';
@@ -6,14 +6,13 @@ import { getPayload } from 'payload';
 import payloadConfig from '@/payload.config';
 
 export default async function AttendeesPage() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('payload-token')?.value;
+  const payload = await getPayload({ config: payloadConfig });
 
-  if (!token) {
+  // Validate the session, not just the presence of a cookie.
+  const { user } = await payload.auth({ headers: await headers() });
+  if (!user) {
     return <NoAccess />;
   }
-
-  const payload = await getPayload({ config: payloadConfig });
 
   const { docs: events } = await payload.find({
     collection: 'events',
