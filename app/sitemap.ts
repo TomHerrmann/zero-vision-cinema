@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { getPayload } from 'payload';
 import payloadConfig from '@payload-config';
-import { ZVC_CANONICAL_URL } from '@/app/contsants/constants';
+import { ZVC_CANONICAL_URL } from '@/app/constants/constants';
 import { INDEXED_EVENT_TYPES } from '@/utils/eventTypes';
 import { CLOSES_AFTER_MINUTES } from '@/utils/eventEnded';
 

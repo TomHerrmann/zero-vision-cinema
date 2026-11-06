@@ -1,4 +1,4 @@
-import { ZVC_SUBSTACK_URL } from '@/app/contsants/constants';
+import { ZVC_SUBSTACK_URL } from '@/app/constants/constants';
 
 export type SubstackPost = {
   title: string;

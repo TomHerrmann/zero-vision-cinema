@@ -3,7 +3,7 @@ import { Geist, Crimson_Text } from 'next/font/google';
 import localFont from 'next/font/local';
 import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
-import { ZVC_CANONICAL_URL } from '../contsants/constants';
+import { ZVC_CANONICAL_URL } from '../constants/constants';
 import { cn } from '@/utils/utils';
 import Nav from '@/components/nav/nav';
 import Footer from '@/components/footer/footer';

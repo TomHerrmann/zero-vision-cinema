@@ -9,7 +9,7 @@ import { signRefundToken } from '@/lib/refundToken';
 import {
   ZVC_DISPLAY_NAME_EMAIL,
   ZVC_SITE_URL,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import TicketEmail from '@/emails/TicketEmail';
 import { getTicketEmailNotice, type LoyaltyNotice } from '@/lib/loyalty';

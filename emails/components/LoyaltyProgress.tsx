@@ -3,7 +3,7 @@ import {
   EMAIL_EYEBALL_PNG_URL,
   EMAIL_EYEBALL_SLASHED_PNG_URL,
   ZVC_SITE_URL,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 import { REWARD_PURCHASES, WINDOW_DAYS, type LoyaltyNotice } from '@/lib/loyalty';
 import {
   BLACKOUT,

@@ -10,7 +10,7 @@ import {
   RESEND_BROADCASTS_API_URL,
   RESEND_EMAILS_API_URL,
   ZVC_DISPLAY_NAME_EMAIL,
-} from "@/app/contsants/constants";
+} from "@/app/constants/constants";
 import type { CustomBroadcastImage } from "@/emails/CustomBroadcastEmail";
 
 /**
