@@ -8,6 +8,7 @@ import {
 } from '@/app/contsants/constants';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/terms' },
   title: 'Terms of Service & Refund Policy — Zero Vision Cinema',
   description:
     'Terms of Service, refund, and cancellation policy for Zero Vision Cinema ticket purchases.',
