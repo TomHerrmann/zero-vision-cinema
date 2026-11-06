@@ -34,7 +34,7 @@ export function MobileNav({ menu }: Props) {
       <SheetTrigger asChild>
         <Button
           variant="secondary"
-          className="px-0 border text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
+          className="px-0 border text-base hover:bg-transparent focus-visible:bg-transparent md:hidden"
         >
           <Menu />
           <span className="sr-only">Toggle Menu</span>
