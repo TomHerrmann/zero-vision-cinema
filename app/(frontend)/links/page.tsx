@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import {
   AHC_DISCORD_URL,
   AHC_INSTAGRAM_URL,
@@ -15,6 +16,8 @@ import { getLatestSubstackPosts } from '@/utils/getLatestSubstackPosts';
 import { isSoldOut } from '@/utils/isSoldOut';
 import { eventTitle } from '@/utils/eventTypes';
 import Link from 'next/link';
+
+export const metadata: Metadata = { alternates: { canonical: '/links' } };
 
 // Revalidate every 5 minutes (300 seconds)
 export const revalidate = 300;

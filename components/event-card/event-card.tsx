@@ -18,7 +18,7 @@ import {
   searchBookByTitleAuthor,
 } from '@/lib/openlibrary';
 import { richTextIsEmpty } from '@/utils/richText';
-import { eventTitle } from '@/utils/eventTypes';
+import { eventTitle, hasEventPage } from '@/utils/eventTypes';
 import SoldOutStamp from '@/components/sold-out/sold-out-stamp';
 import AddToCalendar from '@/components/add-to-calendar/add-to-calendar';
 
@@ -95,6 +95,14 @@ const EventCard = async ({
   // Paid events route to the on-site ticket page by id. Free events (incl. the
   // static Eventbrite event) render no ticket button.
   const ticketHref = `/events/${id}`;
+  // Events with their own page (ticketed types, Book Club) link the title to it.
+  const titleNode = hasEventPage(eventType) ? (
+    <Link href={ticketHref} className="hover:text-blue-light transition-colors">
+      {title}
+    </Link>
+  ) : (
+    title
+  );
   const showTicketButton = (price ?? 0) > 0;
 
   if (orientation === 'horz') {
@@ -128,7 +136,7 @@ const EventCard = async ({
           <CardHeader className="p-0 pb-6">
             <CardTitle>
               <h2 className="zvc-heading text-4xl md:text-5xl line-clamp-2 pr-24">
-                {title}
+                {titleNode}
               </h2>
             </CardTitle>
           </CardHeader>
@@ -222,7 +230,7 @@ const EventCard = async ({
       {/* Content Section */}
       <div className="flex flex-col flex-1 p-2 md:p-5">
         <h2 className="zvc-heading text-3xl md:text-5xl mb-4 line-clamp-2">
-          {title}
+          {titleNode}
         </h2>
 
         <div className="space-y-3 mb-5">

@@ -32,6 +32,21 @@ export const PAID_EVENT_TYPES = ['zvc', 'brew'] as const;
 export const isPaidEventType = (eventType?: string | null): boolean =>
   (PAID_EVENT_TYPES as readonly string[]).includes(eventType ?? '');
 
+/** Event types with their own page at /events/[id]. */
+export const EVENT_PAGE_TYPES = [...PAID_EVENT_TYPES, 'bookclub'] as const;
+
+export const hasEventPage = (eventType?: string | null): boolean =>
+  (EVENT_PAGE_TYPES as readonly string[]).includes(eventType ?? '');
+
+/**
+ * Event types that should appear in search engines (own page indexed, in the
+ * sitemap, with Event structured data). Everything else is kept out.
+ */
+export const INDEXED_EVENT_TYPES = ['zvc', 'bookclub'] as const;
+
+export const isIndexedEventType = (eventType?: string | null): boolean =>
+  (INDEXED_EVENT_TYPES as readonly string[]).includes(eventType ?? '');
+
 /** Full name of each event type, as subscribers and the admin see it. */
 export const EVENT_TYPE_NAMES: Record<EventType, string> = {
   zvc: 'Zero Vision Cinema',

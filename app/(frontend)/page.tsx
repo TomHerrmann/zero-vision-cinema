@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import About from '@/components/about/about';
 import EventsSection from '@/components/events-section/events-section';
 import ContactSection from '@/components/contact-section/contact-section';
@@ -8,6 +9,8 @@ import { getUpcomingEvents } from '@/utils/getEvents';
 import { buildEventListing } from '@/utils/eventsListing';
 import { HALLOWEEK_SCHEDULE } from '@/app/(frontend)/halloweek2026/halloweek.data';
 import { getLatestSubstackPosts } from '@/utils/getLatestSubstackPosts';
+
+export const metadata: Metadata = { alternates: { canonical: '/' } };
 
 // Revalidate every 5 minutes (300 seconds)
 export const revalidate = 300;

@@ -1,6 +1,10 @@
 import payloadConfig from '@/payload.config';
 import { getPayload } from 'payload';
-import { COMMUNITY_EVENT_TYPES, PAID_EVENT_TYPES } from '@/utils/eventTypes';
+import {
+  COMMUNITY_EVENT_TYPES,
+  EVENT_PAGE_TYPES,
+  PAID_EVENT_TYPES,
+} from '@/utils/eventTypes';
 
 const payload = await getPayload({ config: payloadConfig });
 
@@ -51,14 +55,17 @@ export const getUpcomingZvcEvents = async () => {
   return docs;
 };
 
-/** A published ticketed event (ZVC or Brewscares), for its ticket page. */
-export const getPaidEventById = async (id: number) => {
+/**
+ * A published event that has its own page: ticketed types (ZVC, Brewscares)
+ * plus Book Club meetings (free, no checkout).
+ */
+export const getEventPageById = async (id: number) => {
   const { docs } = await payload.find({
     collection: 'events',
     where: {
       _status: { equals: 'published' },
       id: { equals: id },
-      eventType: { in: [...PAID_EVENT_TYPES] },
+      eventType: { in: [...EVENT_PAGE_TYPES] },
     },
     // depth 2 resolves image + location.
     depth: 2,
