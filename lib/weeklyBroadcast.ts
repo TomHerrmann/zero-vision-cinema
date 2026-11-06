@@ -1,7 +1,7 @@
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import { fetchBookDataByOpenLibraryId } from '@/lib/openlibrary';
-import { ZVC_SITE_URL } from '@/app/contsants/constants';
+import { ZVC_SITE_URL } from '@/app/constants/constants';
 import type { WeeklyEvent } from '@/emails/WeeklyEmail';
 import type { Event, Location, Media } from '@/payload-types';
 import { EVENT_TYPE_NAMES, eventTitle, isPaidEventType } from '@/utils/eventTypes';

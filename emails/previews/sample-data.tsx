@@ -16,7 +16,7 @@ import {
   EMAIL_HEADER_IMAGE_BOOKCLUB_URL,
   ZVC_SITE_URL,
   AHC_SITE_URL,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 import { zvcMovie, ahcMovie, bookInfo } from './fixtures.generated';
 import type { LoyaltyNotice } from '@/lib/loyalty';
 

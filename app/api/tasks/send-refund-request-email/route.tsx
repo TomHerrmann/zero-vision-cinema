@@ -9,7 +9,7 @@ import {
   ZVC_DISPLAY_NAME_EMAIL,
   ZVC_EMAIL_ADDRESS,
   ZVC_SITE_URL,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 import RefundRequestEmail from '@/emails/RefundRequestEmail';
 
 const resend = new Resend(process.env.RESEND_API_KEY);

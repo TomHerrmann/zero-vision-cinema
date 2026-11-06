@@ -5,7 +5,7 @@ import {
   EMAIL_HEADER_IMAGE_ZVC_URL,
   LLC_NAME,
   RESEND_UNSUBSCRIBE_URL,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 import { richTextIsEmpty } from '@/utils/richText';
 import {
   BLACKOUT,

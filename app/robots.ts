@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { ZVC_CANONICAL_URL } from '@/app/contsants/constants';
+import { ZVC_CANONICAL_URL } from '@/app/constants/constants';
 
 export default function robots(): MetadataRoute.Robots {
   return {

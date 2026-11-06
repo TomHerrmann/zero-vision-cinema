@@ -10,7 +10,7 @@
  *
  */
 
-import { ZERO_VISION_BLOB_URL } from '@/app/contsants/constants';
+import { ZERO_VISION_BLOB_URL } from '@/app/constants/constants';
 
 const HALLOWEEK_BLOB = `${ZERO_VISION_BLOB_URL}/halloweek2026`;
 

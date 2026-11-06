@@ -4,7 +4,7 @@ import {
   ZVC_EMAIL_ADDRESS,
   ZVC_SITE_URL,
   EMAIL_EYEBALL_SLASHED_PNG_URL,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 import { REWARD_PURCHASES, WINDOW_DAYS } from '@/lib/loyalty';
 import {
   BODY_FONT,

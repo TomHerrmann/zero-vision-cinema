@@ -22,7 +22,7 @@ import {
   ZVC_SUBSTACK_URL,
   ZVC_TIKTOK_URL,
   ZVC_YOUTUBE_SUBSCRIBE_URL,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 
 /**
  * Shared look for every ZVC email, from the brand guide

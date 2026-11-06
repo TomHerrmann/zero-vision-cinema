@@ -8,7 +8,7 @@ import {
   ZVC_SITE_URL,
   ZVC_SUBSTACK_URL,
   ZVC_YOUTUBE_URL,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { getUpcomingZvcEvents } from '@/utils/getEvents';

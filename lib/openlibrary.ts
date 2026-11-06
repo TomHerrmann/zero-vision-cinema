@@ -7,7 +7,7 @@
 import {
   OPEN_LIBRARY_BASE_URL,
   OPEN_LIBRARY_COVER_BASE_URL,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 
 export type BookSearchResult = {
   workId: string; // e.g. "OL81633W"

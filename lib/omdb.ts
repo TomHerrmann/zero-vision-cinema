@@ -2,7 +2,7 @@
  * OMDB API helper.
  */
 
-import { OMDB_API_URL } from '@/app/contsants/constants';
+import { OMDB_API_URL } from '@/app/constants/constants';
 
 export type MovieData = {
   title: string;

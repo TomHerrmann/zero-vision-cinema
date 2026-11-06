@@ -5,7 +5,7 @@ import { Resend } from 'resend';
 import { logtail } from '@/lib/logtail';
 import { verifyQstashRequest } from '@/lib/qstash';
 import { getCustomerEmail } from '@/lib/stripe';
-import { ZVC_EMAIL_ADDRESS } from '@/app/contsants/constants';
+import { ZVC_EMAIL_ADDRESS } from '@/app/constants/constants';
 import RewardEmail from '@/emails/RewardEmail';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
