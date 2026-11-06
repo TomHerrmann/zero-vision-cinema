@@ -1,48 +1,54 @@
 import { CreateContactOptions, Resend } from 'resend';
 import { logtail } from './logtail';
-import { topicIdForEventType } from './broadcasts';
-import { EVENT_TYPE_NAMES, type EventType } from '@/utils/eventTypes';
-
-const EVENT_TYPES = Object.keys(EVENT_TYPE_NAMES) as EventType[];
 
 export const resend = new Resend(process.env.RESEND_FULL_API_KEY);
 
 /**
  * Add (or update) a newsletter contact in the Resend audience segment, opted in
- * to every event-type topic (recipients can unsubscribe per topic later).
- * Throws on failure so callers decide how to handle it — the Resend SDK reports
- * API errors on the returned object rather than throwing, so we surface them.
+ * to the weekly "This week at ZVC" topic (RESEND_TOPIC_ID_WEEKLY), which is the
+ * only newsletter email now sent.
+ *
+ * Topic assignment is best-effort: if Resend rejects the topic (for example a
+ * stale topic ID in the env), the contact is created without it rather than
+ * losing the signup. Throws only if the contact itself can't be created.
+ *
+ * Never log the email or name here: customer data lives in Resend, not logs.
  */
 export async function addResendContact({
   email,
   firstName,
   lastName,
 }: CreateContactOptions) {
-  console.log(`Adding Resend contact: ${email}, ${firstName}, ${lastName}`);
-  const { data, error } = await resend.contacts.create({
+  const base = {
     email,
     firstName,
     lastName,
     unsubscribed: false,
     segments: [{ id: process.env.RESEND_SEGMENT_ID as string }],
-    // A topic whose env var isn't set yet is left out rather than sent as an
-    // empty id, which would fail the whole signup.
-    topics: EVENT_TYPES.map(topicIdForEventType)
-      .filter((id): id is string => Boolean(id))
-      .map((id) => ({ id, subscription: 'opt_in' as const })),
-  });
+  };
+  const weeklyTopicId = process.env.RESEND_TOPIC_ID_WEEKLY;
 
-  console.log(`Resend contact create response: ${JSON.stringify(data)}`);
+  let { data, error } = await resend.contacts.create(
+    weeklyTopicId
+      ? {
+          ...base,
+          topics: [{ id: weeklyTopicId, subscription: 'opt_in' as const }],
+        }
+      : base
+  );
+
+  if (error && weeklyTopicId) {
+    await logtail.warn(
+      `Resend contact create with weekly topic failed (${error.message ?? 'unknown error'}); retrying without topics. Check RESEND_TOPIC_ID_WEEKLY.`,
+      { timestamp: new Date().toISOString() }
+    );
+    ({ data, error } = await resend.contacts.create(base));
+  }
 
   if (error) {
-    logtail.error(
+    await logtail.error(
       `Resend contact create failed: ${error.message ?? JSON.stringify(error)}`,
-      {
-        email,
-        firstName,
-        lastName,
-        timestamp: new Date().toISOString(),
-      }
+      { timestamp: new Date().toISOString() }
     );
     throw new Error(
       `Resend contact create failed: ${error.message ?? JSON.stringify(error)}`
@@ -69,7 +75,6 @@ export async function setResendContactSource(email: string, source: string) {
     if (error) throw new Error(error.message ?? JSON.stringify(error));
   } catch (err) {
     await logtail.warn(`Resend signup source tag failed: ${err}`, {
-      email,
       source,
       timestamp: new Date().toISOString(),
     });
