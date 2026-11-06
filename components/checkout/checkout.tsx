@@ -544,9 +544,13 @@ export function CheckoutForm({
           disabled={submitting}
           className="mt-0.5 size-5 border-blue-light data-[state=checked]:bg-blue-light data-[state=checked]:border-blue-light"
         />
-        <span className="zvc-body text-glow text-base leading-relaxed">
-          Subscribe to the ZVC newsletter for upcoming screenings and cult film
-          picks.
+        <span className="zvc-body leading-snug">
+          <span className="block text-glow text-base font-bold">
+            Join the community.
+          </span>
+          <span className="block text-glow/80 text-sm mt-1">
+            Get the week’s screenings, book club, and more with our newsletter.
+          </span>
         </span>
       </label>
 
