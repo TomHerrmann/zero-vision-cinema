@@ -8,8 +8,11 @@ import {
 
 const payload = await getPayload({ config: payloadConfig });
 
-const nowMinus30Minutes = new Date(Date.now() - 30 * 60 * 1000).toISOString();
-const now = new Date().toISOString();
+// Functions, not constants: this module stays loaded between requests, so a
+// timestamp taken at import time would freeze and let past events linger.
+const nowMinus30Minutes = () =>
+  new Date(Date.now() - 30 * 60 * 1000).toISOString();
+const now = () => new Date().toISOString();
 
 /**
  * Every published event of every type that hasn't started yet (or started in
@@ -45,7 +48,7 @@ export const getUpcomingZvcEvents = async () => {
         equals: 'zvc',
       },
       datetime: {
-        greater_than: nowMinus30Minutes,
+        greater_than: nowMinus30Minutes(),
       },
     },
     sort: ['datetime'],
@@ -104,7 +107,7 @@ export const getPastZvcEvents = async () => {
         equals: 'zvc',
       },
       datetime: {
-        less_than: now,
+        less_than: now(),
       },
     },
     sort: ['-datetime'],
@@ -126,7 +129,7 @@ export const getUpcomingAhcEvents = async () => {
         equals: 'ahc',
       },
       datetime: {
-        greater_than: nowMinus30Minutes,
+        greater_than: nowMinus30Minutes(),
       },
     },
     sort: ['datetime'],
@@ -148,7 +151,7 @@ export const getUpcomingBookClubEvents = async () => {
         equals: 'bookclub',
       },
       datetime: {
-        greater_than: nowMinus30Minutes,
+        greater_than: nowMinus30Minutes(),
       },
     },
     sort: ['datetime'],
@@ -173,7 +176,7 @@ export const getUpcomingCommunityEvents = async () => {
         in: [...COMMUNITY_EVENT_TYPES],
       },
       datetime: {
-        greater_than: nowMinus30Minutes,
+        greater_than: nowMinus30Minutes(),
       },
     },
     sort: ['datetime'],
