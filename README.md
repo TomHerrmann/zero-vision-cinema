@@ -84,12 +84,11 @@ Everything is managed from the **admin dashboard at `/admin`** (e.g.
 > event shows a "Sold Out" stamp and checkout is disabled. Leave capacity at `0`
 > to treat an event as unlimited.
 
-### Orders & attendees
+### Orders
 
 - **Orders** (under the admin) are created automatically after a successful
   payment — they record the buyer, amount, quantity, and Stripe receipt. Orders
   are read-only.
-- **Attendee lists** for an event are available at `/attendees` for check-in.
 
 ### Content
 
@@ -179,7 +178,6 @@ and calls the failure endpoint (logged to BetterStack).
 | `POST /api/tasks/send-broadcast`              | QStash worker: sends one event announcement/reminder broadcast          |
 | `POST /api/subscribe`                         | Newsletter sign-up → MailerLite                                         |
 | `POST /api/contact`                           | Contact form                                                            |
-| `GET  /api/attendees`                         | Attendee data for check-in                                              |
 | `/api/omdb-lookup`, `/api/openlibrary-lookup` | Admin metadata auto-fill                                                |
 
 ---
@@ -493,7 +491,7 @@ with sample content — so send it **to yourself, not a customer list**. Require
 ```
 app/
   (frontend)/            Public site: home, events, /events/[id], links,
-                         astoriahorrorclub, editorials, reviews, attendees
+                         astoriahorrorclub, editorials, reviews
   (payload)/             Payload admin (/admin) + Payload's own API
   api/                   Route handlers (stripe, tasks, subscribe, contact, lookups)
 collections/             Payload collections (Events, Orders, Locations, Merch, …)

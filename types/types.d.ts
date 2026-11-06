@@ -11,9 +11,3 @@ type FakeEvent = {
 type EventSelection = 'future' | 'past' | 'all';
 type EventOrder = 'dsc' | 'asc';
 
-type Attendee = {
-  eventName: string;
-  customerName: string;
-  customerEmail: string;
-  createdAt: string;
-};
