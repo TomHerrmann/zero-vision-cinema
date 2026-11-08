@@ -102,7 +102,6 @@ export default function RootLayout({
             href="#main-content"
             className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 zvc-btn text-sm px-4 py-2"
           >
-            {/* TODO(Tom/Mary): confirm skip-link wording */}
             Skip to content
           </a>
           <header className="relative">
