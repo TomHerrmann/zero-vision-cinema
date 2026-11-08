@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getPayload } from 'payload';
 import payloadConfig from '@payload-config';
 import type { Location, Media } from '@/payload-types';
-import { AHC_SITE_URL, ZVC_SITE_URL } from '@/app/contsants/constants';
+import { AHC_SITE_URL, ZVC_SITE_URL } from '@/app/constants/constants';
 import { getEventRuntimeMinutes } from '@/lib/eventRuntime';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import {

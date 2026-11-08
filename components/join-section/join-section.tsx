@@ -6,7 +6,7 @@ import {
   ZVC_SUBSTACK_URL,
   ZVC_TIKTOK_URL,
   ZVC_YOUTUBE_SUBSCRIBE_URL,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 import { NewsletterSignupForm } from '@/components/newsletter-signup/newsletter-signup-form';
 import SubstackIcon from '@/components/ui/substack-icon';
 import {

@@ -1,5 +1,5 @@
 import { Client, Receiver } from '@upstash/qstash';
-import { ZVC_SITE_URL } from '@/app/contsants/constants';
+import { ZVC_SITE_URL } from '@/app/constants/constants';
 
 /**
  * QStash message-queue client. Used to enqueue durable, retried background work

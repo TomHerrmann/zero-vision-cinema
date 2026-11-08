@@ -35,7 +35,7 @@ import {
 import {
   ZVC_DISPLAY_NAME_EMAIL,
   ZVC_EMAIL_ADDRESS,
-} from '../app/contsants/constants';
+} from '../app/constants/constants';
 
 async function main() {
   const to = process.argv[2] ?? process.env.EMAIL_QA_TO;

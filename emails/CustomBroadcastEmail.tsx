@@ -4,7 +4,7 @@ import {
   type JSXConvertersFunction,
 } from '@payloadcms/richtext-lexical/react';
 import { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical';
-import { RESEND_UNSUBSCRIBE_URL } from '@/app/contsants/constants';
+import { RESEND_UNSUBSCRIBE_URL } from '@/app/constants/constants';
 import { richTextIsEmpty } from '@/utils/richText';
 import {
   BLUE_LIGHT,

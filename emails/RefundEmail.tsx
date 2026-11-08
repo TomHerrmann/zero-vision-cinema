@@ -3,7 +3,7 @@ import {
   LLC_NAME,
   ZVC_EMAIL_ADDRESS,
   ZVC_SITE_URL,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 import type { LoyaltyNotice } from '@/lib/loyalty';
 import LoyaltyProgress from './components/LoyaltyProgress';
 import {

@@ -13,7 +13,7 @@ import {
   RESEND_BROADCASTS_API_URL,
   ZVC_DISPLAY_NAME_EMAIL,
   ZVC_SITE_URL,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 import WeeklyEmail, {
   weekRangeLabel,
   type WeeklyMedia,

@@ -24,7 +24,6 @@
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
     "@logtail/node": "^0.5.12",
-    "@mailerlite/mailerlite-nodejs": "^1.8.0",
     "@payloadcms/db-vercel-postgres": "^3.92.0",
     "@payloadcms/drizzle": "^3.92.0",
     "@payloadcms/email-resend": "^3.92.0",

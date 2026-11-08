@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 
-import { SITE_NAME } from '@/app/contsants/constants';
+import { SITE_NAME } from '@/app/constants/constants';
 
 import { useState } from 'react';
 

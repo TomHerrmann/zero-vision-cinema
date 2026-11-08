@@ -5,7 +5,7 @@ import { Resend } from 'resend';
 import { logtail } from '@/lib/logtail';
 import { verifyQstashRequest } from '@/lib/qstash';
 import { getCustomerEmail } from '@/lib/stripe';
-import { ZVC_DISPLAY_NAME_EMAIL } from '@/app/contsants/constants';
+import { ZVC_DISPLAY_NAME_EMAIL } from '@/app/constants/constants';
 import RefundDeclinedEmail, {
   REFUND_DECLINED_COPY,
   refundDeclinedEmailReady,

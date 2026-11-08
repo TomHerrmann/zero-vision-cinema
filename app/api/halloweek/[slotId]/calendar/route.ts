@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { ZVC_SITE_URL } from '@/app/contsants/constants';
+import { ZVC_SITE_URL } from '@/app/constants/constants';
 import {
   HALLOWEEK_SCHEDULE,
   HALLOWEEK_VENUES,
