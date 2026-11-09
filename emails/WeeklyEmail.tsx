@@ -12,6 +12,7 @@ import {
   BLUE_LIGHT,
   BODY_FONT,
   BrandFooter,
+  CONTENT_WIDTH,
   CULT_CLASSIC,
   EmailShell,
   FooterLine,
@@ -189,6 +190,13 @@ export default function WeeklyEmail({
   );
 }
 
+/**
+ * One event: a date line, then the poster and the details side by side on
+ * desktop. The two columns are inline-blocks with max-widths (220 + 324 = the
+ * 544px content width), so they wrap onto separate lines on a phone even in
+ * clients that drop the <style> block; where media queries work, the poster
+ * then grows to the full column width (see .zvc-week-poster in brand.tsx).
+ */
 function EventRow({ ev }: { ev: WeeklyEvent }) {
   const { dow, day, time } = etParts(ev.datetime);
   const hasDescription = !richTextIsEmpty(ev.description ?? undefined);
@@ -202,55 +210,64 @@ function EventRow({ ev }: { ev: WeeklyEvent }) {
       style={rowStyle}
     >
       <tr>
-        <td width="64" style={dateCell}>
-          <Text style={dowStyle}>{dow}</Text>
-          <Text style={dayStyle}>{day}</Text>
+        <td style={dateCell}>
+          <Text style={dateLine}>
+            <span style={dowStyle}>{dow}</span>{' '}
+            <span style={dayStyle}>{day}</span>
+          </Text>
         </td>
-        {ev.posterUrl && (
-          <td width="114" style={{ verticalAlign: 'top', paddingRight: '18px' }}>
-            <Img
-              src={ev.posterUrl}
-              width="96"
-              alt={ev.title}
-              className="zvc-week-poster"
-              style={posterStyle}
-            />
-          </td>
-        )}
-        <td style={{ verticalAlign: 'top' }}>
-          <Text style={typeLine}>
-            <span style={eventTypeInline}>{ev.typeName}</span>
-            {!ev.paid && (
-              <>
-                {' '}
-                <span style={freeTag}>FREE</span>
-              </>
-            )}
-          </Text>
-          <Text style={eventTitle}>{ev.title}</Text>
-          <Text style={whenWhere}>
-            {time}
-            {ev.venue ? ` · ${ev.venue}` : ''}
-          </Text>
-          {hasDescription ? (
-            <div style={description}>
-              <RichText data={ev.description!} />
+      </tr>
+      <tr>
+        <td style={columnsCell}>
+          {ev.posterUrl && (
+            <div className="zvc-week-poster-col" style={posterCol}>
+              <Img
+                src={ev.posterUrl}
+                width={POSTER_WIDTH}
+                alt={ev.title}
+                className="zvc-week-poster"
+                style={posterStyle}
+              />
             </div>
-          ) : ev.fallbackDescription ? (
-            <Text style={description}>{ev.fallbackDescription}</Text>
-          ) : null}
-          <Text style={buttonRow}>
-            {ev.paid && ev.ticketUrl && (
-              <>
-                <Link href={ev.ticketUrl} style={ticketButton}>
-                  Get Tickets
-                </Link>{' '}
-              </>
-            )}
-            <Link href={ev.calendarUrl} style={calendarButton}>
-              Add to Calendar
-            </Link>
-          </Text>
+          )}
+          <div
+            className="zvc-week-details"
+            style={ev.posterUrl ? detailsCol : detailsColFull}
+          >
+            <Text style={typeLine}>
+              <span style={eventTypeInline}>{ev.typeName}</span>
+              {!ev.paid && (
+                <>
+                  {' '}
+                  <span style={freeTag}>FREE</span>
+                </>
+              )}
+            </Text>
+            <Text style={eventTitle}>{ev.title}</Text>
+            <Text style={whenWhere}>
+              {time}
+              {ev.venue ? ` · ${ev.venue}` : ''}
+            </Text>
+            {hasDescription ? (
+              <div style={description}>
+                <RichText data={ev.description!} />
+              </div>
+            ) : ev.fallbackDescription ? (
+              <Text style={description}>{ev.fallbackDescription}</Text>
+            ) : null}
+            <Text style={buttonRow}>
+              {ev.paid && ev.ticketUrl && (
+                <>
+                  <Link href={ev.ticketUrl} style={ticketButton}>
+                    Get Tickets
+                  </Link>{' '}
+                </>
+              )}
+              <Link href={ev.calendarUrl} style={calendarButton}>
+                Add to Calendar
+              </Link>
+            </Text>
+          </div>
         </td>
       </tr>
     </table>
@@ -293,33 +310,55 @@ const introText: React.CSSProperties = {
 };
 const listStyle: React.CSSProperties = { padding: '20px 28px 0' };
 const rowStyle: React.CSSProperties = { borderTop: `1px solid ${HAIRLINE}` };
-const dateCell: React.CSSProperties = {
-  verticalAlign: 'top',
-  textAlign: 'center',
-  padding: '22px 18px 22px 0',
-};
+/** Desktop poster width; the details column gets the rest of the 544px. */
+const POSTER_WIDTH = 220;
+const POSTER_GUTTER = 24;
+const dateCell: React.CSSProperties = { padding: '26px 0 14px' };
+const dateLine: React.CSSProperties = { margin: 0, lineHeight: '1' };
 const dowStyle: React.CSSProperties = {
   fontFamily: LABEL_FONT,
   fontWeight: 700,
-  fontSize: '12px',
+  fontSize: '14px',
   letterSpacing: '2px',
   color: RETRO_BLUE,
-  margin: '0 0 2px',
+  verticalAlign: 'middle',
 };
 const dayStyle: React.CSSProperties = {
   fontFamily: HEADLINE_FONT,
   fontWeight: 700,
-  fontSize: '40px',
+  fontSize: '34px',
   lineHeight: '1',
   color: GLOW,
-  margin: 0,
+  verticalAlign: 'middle',
+  paddingLeft: '4px',
+};
+// font-size 0 removes the whitespace gap between the two inline-block columns.
+const columnsCell: React.CSSProperties = { fontSize: 0, paddingBottom: '18px' };
+const posterCol: React.CSSProperties = {
+  display: 'inline-block',
+  verticalAlign: 'top',
+  width: '100%',
+  maxWidth: `${POSTER_WIDTH + POSTER_GUTTER}px`,
+  paddingRight: `${POSTER_GUTTER}px`,
+  paddingBottom: '18px',
+  boxSizing: 'border-box',
 };
 const posterStyle: React.CSSProperties = {
   display: 'block',
-  width: '96px',
-  maxWidth: '100%',
+  width: '100%',
+  maxWidth: `${POSTER_WIDTH}px`,
   height: 'auto',
-  marginTop: '22px',
+  border: `1px solid ${HAIRLINE}`,
+};
+const detailsCol: React.CSSProperties = {
+  display: 'inline-block',
+  verticalAlign: 'top',
+  width: '100%',
+  maxWidth: `${CONTENT_WIDTH - POSTER_WIDTH - POSTER_GUTTER}px`,
+};
+const detailsColFull: React.CSSProperties = {
+  display: 'block',
+  width: '100%',
 };
 const eventType: React.CSSProperties = {
   fontFamily: LABEL_FONT,
@@ -330,7 +369,7 @@ const eventType: React.CSSProperties = {
   color: RETRO_BLUE,
   margin: '0 0 6px',
 };
-const typeLine: React.CSSProperties = { ...eventType, margin: '22px 0 6px' };
+const typeLine: React.CSSProperties = { ...eventType, margin: '0 0 8px' };
 const eventTypeInline: React.CSSProperties = { verticalAlign: 'middle' };
 const freeTag: React.CSSProperties = {
   display: 'inline-block',
