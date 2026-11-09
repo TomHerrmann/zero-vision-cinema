@@ -73,7 +73,7 @@ a { color: ${BLUE_LIGHT}; }
   .zvc-title { font-size: 40px !important; }
   .zvc-poster { width: 120px !important; height: auto !important; }
   .zvc-week-poster-col { max-width: 100% !important; padding-right: 0 !important; }
-  .zvc-week-poster { max-width: 100% !important; width: 100% !important; height: auto !important; }
+  .zvc-week-poster { max-width: 60% !important; width: 60% !important; height: auto !important; }
   .zvc-week-details { max-width: 100% !important; }
 }
 /* Outlook.com / Outlook apps in dark mode: keep the Glow ticket light. */

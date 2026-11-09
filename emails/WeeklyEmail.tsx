@@ -195,7 +195,7 @@ export default function WeeklyEmail({
  * desktop. The two columns are inline-blocks with max-widths (220 + 324 = the
  * 544px content width), so they wrap onto separate lines on a phone even in
  * clients that drop the <style> block; where media queries work, the poster
- * then grows to the full column width (see .zvc-week-poster in brand.tsx).
+ * then takes 60% of the phone's column width (see .zvc-week-poster in brand.tsx).
  */
 function EventRow({ ev }: { ev: WeeklyEvent }) {
   const { dow, day, time } = etParts(ev.datetime);
