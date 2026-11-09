@@ -3,6 +3,7 @@ import { getPayload } from 'payload';
 import payloadConfig from '@payload-config';
 import { findUsableReward } from '@/lib/loyalty';
 import { logtail } from '@/lib/logtail';
+import { blockBots } from '@/lib/botProtection';
 
 const INVALID_CODE_MESSAGE =
   'That code is invalid, expired, or already used.';
@@ -13,6 +14,9 @@ const INVALID_CODE_MESSAGE =
  * it belongs to. Ownership (the buyer's email) is checked by /api/rewards/redeem.
  */
 export async function POST(req: NextRequest) {
+  const blocked = await blockBots('API /rewards/validate');
+  if (blocked) return blocked;
+
   try {
     const { code } = await req.json();
     if (typeof code !== 'string' || !code.trim()) {

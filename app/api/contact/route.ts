@@ -7,6 +7,7 @@ import {
   ZVC_PRESS_EMAIL_ADDRESS,
 } from "@/app/constants/constants";
 import { logtail } from "@/lib/logtail";
+import { blockBots } from "@/lib/botProtection";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -16,6 +17,9 @@ const INBOX_ADDRESSES = {
 };
 
 export async function POST(request: NextRequest) {
+  const blocked = await blockBots("API /contact");
+  if (blocked) return blocked;
+
   try {
     const body = await request.json();
     const validatedData = contactEmailSchema.parse(body);
