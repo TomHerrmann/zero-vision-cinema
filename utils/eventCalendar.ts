@@ -52,7 +52,7 @@ const utcStamp = (date: Date) =>
 const escapeText = (value: string) =>
   value
     .replace(/\\/g, '\\\\')
-    .replace(/;/g, '\;')
+    .replace(/;/g, '\\;')
     .replace(/,/g, '\\,')
     .replace(/\r?\n/g, '\\n');
 

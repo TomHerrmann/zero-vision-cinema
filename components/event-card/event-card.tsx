@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Ticket, Film } from 'lucide-react';
-import { Event, Location } from '@/payload-types';
+import { Event } from '@/payload-types';
 import { RichText } from '@payloadcms/richtext-lexical/react';
 import { cn } from '@/utils/utils';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';

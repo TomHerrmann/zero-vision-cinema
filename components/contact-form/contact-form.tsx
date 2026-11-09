@@ -78,7 +78,7 @@ export default function ContactForm({
 
       form.reset();
       toast.success('Your message was sent!');
-    } catch (err) {
+    } catch {
       toast.error('Email failed to send. Please try again later.');
     } finally {
       setInFlight(false);

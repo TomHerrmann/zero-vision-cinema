@@ -68,7 +68,7 @@ export function NewsletterSignupForm({ inputClassName, buttonClassName }: Props)
 
       toast.success('You have been subscribed to our newsletter.');
       form.reset();
-    } catch (err) {
+    } catch {
       toast.error('Failed to subscribe. Please try again later.');
     } finally {
       setInFlight(false);

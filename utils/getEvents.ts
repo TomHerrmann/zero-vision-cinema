@@ -3,7 +3,6 @@ import { getPayload } from 'payload';
 import {
   COMMUNITY_EVENT_TYPES,
   EVENT_PAGE_TYPES,
-  PAID_EVENT_TYPES,
 } from '@/utils/eventTypes';
 
 const payload = await getPayload({ config: payloadConfig });

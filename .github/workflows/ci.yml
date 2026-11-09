@@ -1,6 +1,6 @@
 name: CI
 
-# Runs the typecheck and the test suite on every pull request, and on pushes
+# Runs lint, the typecheck and the test suite on every pull request, and on pushes
 # to main, so problems show up before merge.
 
 on:
@@ -16,6 +16,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
   typecheck:
     name: Typecheck
     runs-on: ubuntu-latest
