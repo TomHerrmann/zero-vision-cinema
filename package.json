@@ -22,7 +22,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.0.1",
+    "@hookform/resolvers": "^7.0.3",
     "@logtail/node": "^0.6.1",
     "@payloadcms/db-vercel-postgres": "^3.93.0",
     "@payloadcms/drizzle": "^3.93.0",
