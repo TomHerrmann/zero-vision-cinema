@@ -7,6 +7,7 @@ import { formatAmountForStripe } from '@/utils/stripeUtils';
 import type { Location } from '@/payload-types';
 import { isEventClosed } from '@/utils/eventEnded';
 import { eventTitle } from '@/utils/eventTypes';
+import { blockBots } from '@/lib/botProtection';
 
 /**
  * Creates (or updates) a PaymentIntent for an event ticket purchase and returns
@@ -17,6 +18,9 @@ import { eventTitle } from '@/utils/eventTypes';
  * influence the price.
  */
 export async function POST(req: NextRequest) {
+  const blocked = await blockBots('API /stripe/payment-intent');
+  if (blocked) return blocked;
+
   try {
     const { eventId, quantity, newsletter, paymentIntentId } = await req.json();
 

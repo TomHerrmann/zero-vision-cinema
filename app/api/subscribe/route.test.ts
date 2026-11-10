@@ -10,6 +10,7 @@ vi.mock('@/lib/logtail', () => ({
   logtail: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
 }));
 
+import { checkBotId } from 'botid/server';
 import { POST } from './route';
 
 const req = (body: unknown) =>
@@ -24,6 +25,13 @@ beforeEach(() => {
 });
 
 describe('POST /api/subscribe', () => {
+  it('403s a request BotID flags as a bot, without calling Resend', async () => {
+    vi.mocked(checkBotId).mockResolvedValueOnce({ isBot: true } as never);
+    const res = await POST(req({ email: 'fan@example.com' }));
+    expect(res.status).toBe(403);
+    expect(h.add).not.toHaveBeenCalled();
+  });
+
   it('200s and adds the contact on a valid email', async () => {
     const res = await POST(req({ email: 'fan@example.com' }));
     expect(res.status).toBe(200);

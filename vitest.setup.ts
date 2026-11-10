@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
 // Deterministic secret for signing tests (refund tokens, etc.).
@@ -12,3 +13,9 @@ class ResizeObserverStub {
 }
 globalThis.ResizeObserver =
   globalThis.ResizeObserver ?? (ResizeObserverStub as unknown as typeof ResizeObserver);
+
+// BotID: every request passes by default. Tests that cover the block path
+// override this with vi.mocked(checkBotId).mockResolvedValueOnce(...).
+vi.mock('botid/server', () => ({
+  checkBotId: vi.fn().mockResolvedValue({ isBot: false }),
+}));

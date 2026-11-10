@@ -3,11 +3,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import subscribeSchema from '../../(frontend)/(schemas)/subscribeSchema';
 import { logtail } from '@/lib/logtail';
 import { addResendContact, setResendContactSource } from '@/lib/resend';
+import { blockBots } from '@/lib/botProtection';
 
 // Signups with no utm_source came straight from the website.
 const DEFAULT_SOURCE = 'website';
 
 export async function POST(request: NextRequest) {
+  const blocked = await blockBots('API /subscribe');
+  if (blocked) return blocked;
+
   try {
     const body = await request.json();
     const validatedData = subscribeSchema.parse(body);

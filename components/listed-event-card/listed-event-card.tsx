@@ -10,6 +10,8 @@ type Props = {
   item: ListedEvent;
   /** `horz` for the /events list, `vert` for the home page grid. */
   orientation: 'horz' | 'vert';
+  /** Load the poster eagerly; pass for the first card in a list. */
+  preload?: boolean;
 };
 
 /**
@@ -21,7 +23,7 @@ type Props = {
  * Render it inside a flex column: the card sits in a `flex-1` box so that,
  * in a grid row, cards still stretch to the tallest one below their labels.
  */
-export default function ListedEventCard({ item, orientation }: Props) {
+export default function ListedEventCard({ item, orientation, preload }: Props) {
   if (item.kind === 'event') {
     return (
       <>
@@ -33,6 +35,7 @@ export default function ListedEventCard({ item, orientation }: Props) {
             {...item.event}
             orientation={orientation}
             isSoldOut={isSoldOut(item.event)}
+            preload={preload}
           />
         </div>
       </>

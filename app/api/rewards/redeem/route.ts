@@ -10,6 +10,7 @@ import {
   releaseRewardClaim,
 } from '@/lib/loyalty';
 import type { Location } from '@/payload-types';
+import { blockBots } from '@/lib/botProtection';
 
 const SOURCE = 'API /rewards/redeem';
 const INVALID_CODE_MESSAGE = 'That code is invalid, expired, or already used.';
@@ -33,6 +34,9 @@ async function customerIdsForEmail(email: string): Promise<Set<string>> {
  * atomic update, so it can't be spent twice.
  */
 export async function POST(req: NextRequest) {
+  const blocked = await blockBots('API /rewards/redeem');
+  if (blocked) return blocked;
+
   try {
     const { eventId, code, email: rawEmail } = await req.json();
     const email = typeof rawEmail === 'string' ? rawEmail.trim() : '';

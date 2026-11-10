@@ -63,7 +63,7 @@ export default async function EventsPage() {
                 )}
                 style={{ animationDelay: `${idx * 100}ms` }}
               >
-                <ListedEventCard item={item} orientation="horz" />
+                <ListedEventCard item={item} orientation="horz" preload={idx === 0} />
               </div>
             ))}
           </div>
