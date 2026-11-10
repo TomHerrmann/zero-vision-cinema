@@ -56,7 +56,7 @@ describe('buildIcs', () => {
   });
 
   it('escapes text values', () => {
-    expect(ics).toContain('LOCATION:The Bar\\, 12-34 Broadway\; Astoria\r\n');
+    expect(ics).toContain('LOCATION:The Bar\\, 12-34 Broadway\\; Astoria\r\n');
   });
 
   it('folds lines longer than 75 octets', () => {

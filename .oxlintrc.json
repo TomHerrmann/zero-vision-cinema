@@ -1,0 +1,37 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "typescript",
+    "react",
+    "react-hooks",
+    "nextjs",
+    "jsx-a11y",
+    "import"
+  ],
+  "categories": {
+    "correctness": "error"
+  },
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "ignorePatterns": [
+    ".next/**",
+    "payload-types.ts",
+    "payload-generated-schema.ts",
+    "app/(payload)/admin/importMap.js",
+    "migrations/**"
+  ],
+  "rules": {
+    "react/purity": "warn",
+    "react/error-boundaries": "warn",
+    "react/refs": "warn",
+    "react/set-state-in-effect": "warn",
+    "jsx-a11y/click-events-have-key-events": "warn",
+    "jsx-a11y/control-has-associated-label": "warn",
+    "jsx-a11y/label-has-associated-control": "warn",
+    "jsx-a11y/no-noninteractive-element-interactions": "warn",
+    "jsx-a11y/no-static-element-interactions": "warn",
+    "jsx-a11y/prefer-tag-over-role": "warn"
+  }
+}

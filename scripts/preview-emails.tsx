@@ -34,7 +34,6 @@ import {
 } from '../emails/previews/sample-data';
 import {
   ZVC_DISPLAY_NAME_EMAIL,
-  ZVC_EMAIL_ADDRESS,
 } from '../app/constants/constants';
 
 async function main() {

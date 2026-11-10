@@ -8,7 +8,6 @@ import { topicIdForEventType, type BroadcastKind } from '@/lib/broadcasts';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import { fetchBookDataByOpenLibraryId } from '@/lib/openlibrary';
 import {
-  ZVC_EMAIL_ADDRESS,
   ZVC_SITE_URL,
   AHC_SITE_URL,
   EMAIL_HEADER_IMAGE_ZVC_URL,
