@@ -1,5 +1,5 @@
 import type { Event, Location } from '@/payload-types';
-import { AHC_SITE_URL, ZVC_SITE_URL } from '@/app/contsants/constants';
+import { AHC_SITE_URL, ZVC_SITE_URL } from '@/app/constants/constants';
 import {
   HALLOWEEK_VENUES,
   type HalloweekSlot,

@@ -1,4 +1,4 @@
-import { ZVC_CALENDAR_FEED_URL } from '@/app/contsants/constants';
+import { ZVC_CALENDAR_FEED_URL } from '@/app/constants/constants';
 import { CALENDAR_NAME } from '@/utils/eventCalendar';
 
 /**
