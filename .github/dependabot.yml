@@ -11,6 +11,12 @@ updates:
       time: "09:00"
       timezone: America/New_York
     open-pull-requests-limit: 5
+    ignore:
+      # Payload 3 declares graphql ^16 as a peer (payload, @payloadcms/next,
+      # @payloadcms/graphql), so a graphql 17 bump fails npm install with
+      # ERESOLVE. Drop this once Payload supports graphql 17.
+      - dependency-name: graphql
+        update-types: ["version-update:semver-major"]
     groups:
       # react-stripe-js pins a stripe-js major as a peer, so bumping either
       # alone fails npm install. Keep them in one PR. Listed first because a
