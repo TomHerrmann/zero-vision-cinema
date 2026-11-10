@@ -1,11 +1,17 @@
 import payloadConfig from '@/payload.config';
 import { getPayload } from 'payload';
-import { COMMUNITY_EVENT_TYPES, PAID_EVENT_TYPES } from '@/utils/eventTypes';
+import {
+  COMMUNITY_EVENT_TYPES,
+  EVENT_PAGE_TYPES,
+} from '@/utils/eventTypes';
 
 const payload = await getPayload({ config: payloadConfig });
 
-const nowMinus30Minutes = new Date(Date.now() - 30 * 60 * 1000).toISOString();
-const now = new Date().toISOString();
+// Functions, not constants: this module stays loaded between requests, so a
+// timestamp taken at import time would freeze and let past events linger.
+const nowMinus30Minutes = () =>
+  new Date(Date.now() - 30 * 60 * 1000).toISOString();
+const now = () => new Date().toISOString();
 
 /**
  * Every published event of every type that hasn't started yet (or started in
@@ -41,7 +47,7 @@ export const getUpcomingZvcEvents = async () => {
         equals: 'zvc',
       },
       datetime: {
-        greater_than: nowMinus30Minutes,
+        greater_than: nowMinus30Minutes(),
       },
     },
     sort: ['datetime'],
@@ -51,14 +57,17 @@ export const getUpcomingZvcEvents = async () => {
   return docs;
 };
 
-/** A published ticketed event (ZVC or Brewscares), for its ticket page. */
-export const getPaidEventById = async (id: number) => {
+/**
+ * A published event that has its own page: ticketed types (ZVC, Brewscares)
+ * plus Book Club meetings (free, no checkout).
+ */
+export const getEventPageById = async (id: number) => {
   const { docs } = await payload.find({
     collection: 'events',
     where: {
       _status: { equals: 'published' },
       id: { equals: id },
-      eventType: { in: [...PAID_EVENT_TYPES] },
+      eventType: { in: [...EVENT_PAGE_TYPES] },
     },
     // depth 2 resolves image + location.
     depth: 2,
@@ -97,7 +106,7 @@ export const getPastZvcEvents = async () => {
         equals: 'zvc',
       },
       datetime: {
-        less_than: now,
+        less_than: now(),
       },
     },
     sort: ['-datetime'],
@@ -119,7 +128,7 @@ export const getUpcomingAhcEvents = async () => {
         equals: 'ahc',
       },
       datetime: {
-        greater_than: nowMinus30Minutes,
+        greater_than: nowMinus30Minutes(),
       },
     },
     sort: ['datetime'],
@@ -141,7 +150,7 @@ export const getUpcomingBookClubEvents = async () => {
         equals: 'bookclub',
       },
       datetime: {
-        greater_than: nowMinus30Minutes,
+        greater_than: nowMinus30Minutes(),
       },
     },
     sort: ['datetime'],
@@ -166,7 +175,7 @@ export const getUpcomingCommunityEvents = async () => {
         in: [...COMMUNITY_EVENT_TYPES],
       },
       datetime: {
-        greater_than: nowMinus30Minutes,
+        greater_than: nowMinus30Minutes(),
       },
     },
     sort: ['datetime'],

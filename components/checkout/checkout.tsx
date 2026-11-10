@@ -495,7 +495,9 @@ export function CheckoutForm({
             </button>
           </div>
           {codeError && (
-            <p className="zvc-body text-cult-classic text-sm">{codeError}</p>
+            <p role="alert" className="zvc-body text-cult-classic text-sm">
+              {codeError}
+            </p>
           )}
         </div>
       ) : (
@@ -533,6 +535,27 @@ export function CheckoutForm({
         />
       )}
 
+      {/* Newsletter opt-in. Sits above the wallet buttons so Apple Pay /
+          Google Pay buyers see it before their payment sheet opens. */}
+      <label
+        className={`flex items-start gap-3 cursor-pointer select-none border-2 border-blue-light/40 bg-blue-light/5 px-4 py-3 transition-colors hover:border-blue-light has-[[data-state=checked]]:border-blue-light ${rewardCode ? 'hidden' : ''}`}
+      >
+        <Checkbox
+          checked={newsletter}
+          onCheckedChange={(v) => handleNewsletter(v === true)}
+          disabled={submitting}
+          className="mt-0.5 size-5 border-blue-light data-[state=checked]:bg-blue-light data-[state=checked]:border-blue-light"
+        />
+        <span className="zvc-body leading-snug">
+          <span className="block text-glow text-base font-bold">
+            Join the newsletter.
+          </span>
+          <span className="block text-glow/80 text-sm mt-1">
+            Get the week’s screenings, book club, and more community events.
+          </span>
+        </span>
+      </label>
+
       {/* Wallet buttons (Apple Pay / Google Pay / Link). Hidden entirely when no
           wallet is available so the divider below doesn't dangle. */}
       <div className={walletAvailable && !rewardCode ? 'space-y-5' : 'hidden'}>
@@ -562,23 +585,11 @@ export function CheckoutForm({
         <PaymentElement options={{ layout: 'tabs' }} />
       </div>
 
-      <label
-        className={`flex items-start gap-3 cursor-pointer select-none ${rewardCode ? 'hidden' : ''}`}
-      >
-        <Checkbox
-          checked={newsletter}
-          onCheckedChange={(v) => handleNewsletter(v === true)}
-          disabled={submitting}
-          className="mt-1 border-blue-light data-[state=checked]:bg-blue-light data-[state=checked]:border-blue-light"
-        />
-        <span className="zvc-body text-glow/80 text-sm leading-relaxed">
-          Subscribe to the ZVC newsletter for upcoming screenings and cult film
-          picks.
-        </span>
-      </label>
 
       {message && (
-        <p className="zvc-body text-cult-classic text-sm">{message}</p>
+        <p role="alert" className="zvc-body text-cult-classic text-sm">
+          {message}
+        </p>
       )}
 
       <button
@@ -609,7 +620,7 @@ export function CheckoutForm({
 
 function CheckoutError({ paymentLink }: { paymentLink?: string | null }) {
   return (
-    <div className="text-center py-8">
+    <div role="alert" className="text-center py-8">
       <p className="zvc-body text-glow/70 mb-5">
         We couldn&apos;t start checkout right now.
       </p>

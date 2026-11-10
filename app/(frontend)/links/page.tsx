@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import {
   AHC_DISCORD_URL,
   AHC_INSTAGRAM_URL,
@@ -7,7 +8,7 @@ import {
   ZVC_SITE_URL,
   ZVC_SUBSTACK_URL,
   ZVC_YOUTUBE_URL,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { getUpcomingZvcEvents } from '@/utils/getEvents';
@@ -15,6 +16,8 @@ import { getLatestSubstackPosts } from '@/utils/getLatestSubstackPosts';
 import { isSoldOut } from '@/utils/isSoldOut';
 import { eventTitle } from '@/utils/eventTypes';
 import Link from 'next/link';
+
+export const metadata: Metadata = { alternates: { canonical: '/links' } };
 
 // Revalidate every 5 minutes (300 seconds)
 export const revalidate = 300;

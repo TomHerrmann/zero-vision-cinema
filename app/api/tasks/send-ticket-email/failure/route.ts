@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { logtail } from '@/lib/logtail';
 import { verifyQstashRequest } from '@/lib/qstash';
+import { summarizeQstashFailure } from '@/lib/qstashFailure';
 
 /**
  * QStash `failureCallback` target for the ticket-email task. Invoked once QStash
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
 
   await logtail.error(
     `API /tasks/send-ticket-email: ticket email delivery FAILED after all retries (dead-lettered)`,
-    { failure, timestamp: new Date().toISOString() }
+    { failure: summarizeQstashFailure(failure), timestamp: new Date().toISOString() }
   );
 
   // Ack so QStash doesn't retry the callback itself.

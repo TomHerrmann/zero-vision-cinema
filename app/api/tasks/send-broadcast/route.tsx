@@ -8,7 +8,6 @@ import { topicIdForEventType, type BroadcastKind } from '@/lib/broadcasts';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import { fetchBookDataByOpenLibraryId } from '@/lib/openlibrary';
 import {
-  ZVC_EMAIL_ADDRESS,
   ZVC_SITE_URL,
   AHC_SITE_URL,
   EMAIL_HEADER_IMAGE_ZVC_URL,
@@ -16,7 +15,7 @@ import {
   EMAIL_HEADER_IMAGE_BOOKCLUB_URL,
   RESEND_BROADCASTS_API_URL,
   ZVC_DISPLAY_NAME_EMAIL,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 import BroadcastEmail from '@/emails/BroadcastEmail';
 import type { Event, Location, Media } from '@/payload-types';
 import { EVENT_TYPE_NAMES, eventTitle, isPaidEventType } from '@/utils/eventTypes';

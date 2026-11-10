@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { logtail } from '@/lib/logtail';
 import { verifyQstashRequest } from '@/lib/qstash';
+import { summarizeQstashFailure } from '@/lib/qstashFailure';
 
 /**
  * QStash `failureCallback` for the reward-email task. Fires once retries are
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
 
   await logtail.error(
     `API /tasks/send-reward-email: reward email delivery FAILED after all retries (dead-lettered)`,
-    { failure, timestamp: new Date().toISOString() }
+    { failure: summarizeQstashFailure(failure), timestamp: new Date().toISOString() }
   );
 
   return NextResponse.json({ received: true }, { status: 200 });

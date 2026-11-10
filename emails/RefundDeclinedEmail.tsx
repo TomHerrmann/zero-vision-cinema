@@ -1,5 +1,5 @@
 import { Section, Text } from '@react-email/components';
-import { LLC_NAME, ZVC_EMAIL_ADDRESS } from '@/app/contsants/constants';
+import { LLC_NAME, ZVC_EMAIL_ADDRESS } from '@/app/constants/constants';
 import {
   BrandFooter,
   BrandHeader,

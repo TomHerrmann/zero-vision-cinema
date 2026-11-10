@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { getUpcomingEvents } from '@/utils/getEvents';
 import { buildEventListing } from '@/utils/eventsListing';
 import { HALLOWEEK_SCHEDULE } from '../halloweek2026/halloweek.data';
@@ -7,6 +8,8 @@ import { cn } from '@/utils/utils';
 import { Film } from 'lucide-react';
 import SectionHeading from '@/components/ui/section-heading';
 import SubscribeCalendar from '@/components/subscribe-calendar/subscribe-calendar';
+
+export const metadata: Metadata = { alternates: { canonical: '/events' } };
 
 // Revalidate every 5 minutes (300 seconds)
 export const revalidate = 300;
@@ -65,7 +68,7 @@ export default async function EventsPage() {
                 )}
                 style={{ animationDelay: `${idx * 100}ms` }}
               >
-                <ListedEventCard item={item} orientation="horz" />
+                <ListedEventCard item={item} orientation="horz" preload={idx === 0} />
               </div>
             ))}
           </div>

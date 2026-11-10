@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { cn } from '@/utils/utils';
 import { useEffect, useState } from 'react';
-import { WEB_PAGE_HEADER_IMAGE_ZVC_URL } from '@/app/contsants/constants';
+import { WEB_PAGE_HEADER_IMAGE_ZVC_URL } from '@/app/constants/constants';
 
 export default function Hero() {
   const [scrollY, setScrollY] = useState(0);

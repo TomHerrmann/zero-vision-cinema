@@ -5,7 +5,7 @@ import { Resend } from 'resend';
 import { logtail } from '@/lib/logtail';
 import { verifyQstashRequest } from '@/lib/qstash';
 import { getCustomerEmail, getReceiptDetails } from '@/lib/stripe';
-import { ZVC_DISPLAY_NAME_EMAIL } from '@/app/contsants/constants';
+import { ZVC_DISPLAY_NAME_EMAIL } from '@/app/constants/constants';
 import RefundEmail from '@/emails/RefundEmail';
 import { getRefundEmailNotice, type LoyaltyNotice } from '@/lib/loyalty';
 import type { Event } from '@/payload-types';

@@ -1,6 +1,6 @@
 import { CollectionConfig, CollectionSlug, ValidationError } from 'payload';
 import { formatEventDescription } from '../utils/formatDate';
-import { ZVC_SITE_URL } from '../app/contsants/constants';
+import { ZVC_SITE_URL } from '../app/constants/constants';
 import { logtail } from '@/lib/logtail';
 import { stripe } from '@/lib/stripe';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';

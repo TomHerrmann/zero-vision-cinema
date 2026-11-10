@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Ticket, Film } from 'lucide-react';
-import { Event, Location } from '@/payload-types';
+import { Event } from '@/payload-types';
 import { RichText } from '@payloadcms/richtext-lexical/react';
 import { cn } from '@/utils/utils';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
@@ -18,7 +18,7 @@ import {
   searchBookByTitleAuthor,
 } from '@/lib/openlibrary';
 import { richTextIsEmpty } from '@/utils/richText';
-import { eventTitle } from '@/utils/eventTypes';
+import { eventTitle, hasEventPage } from '@/utils/eventTypes';
 import SoldOutStamp from '@/components/sold-out/sold-out-stamp';
 import AddToCalendar from '@/components/add-to-calendar/add-to-calendar';
 
@@ -27,6 +27,11 @@ type Orientation = 'vert' | 'horz';
 type Props = Event & {
   orientation?: Orientation;
   isSoldOut?: boolean;
+  /**
+   * Load the poster right away instead of lazily. Set it on the first card of
+   * a list, whose poster is usually the largest thing on screen at load.
+   */
+  preload?: boolean;
 };
 
 function PriceTag({ price }: { price: number }) {
@@ -63,6 +68,7 @@ const EventCard = async ({
   location,
   orientation = 'vert',
   isSoldOut,
+  preload = false,
 }: Props) => {
   const date = new Date(datetime);
   const title = eventTitle({ name, eventType, filmFormat });
@@ -95,6 +101,14 @@ const EventCard = async ({
   // Paid events route to the on-site ticket page by id. Free events (incl. the
   // static Eventbrite event) render no ticket button.
   const ticketHref = `/events/${id}`;
+  // Events with their own page (ticketed types, Book Club) link the title to it.
+  const titleNode = hasEventPage(eventType) ? (
+    <Link href={ticketHref} className="hover:text-blue-light transition-colors">
+      {title}
+    </Link>
+  ) : (
+    title
+  );
   const showTicketButton = (price ?? 0) > 0;
 
   if (orientation === 'horz') {
@@ -111,7 +125,12 @@ const EventCard = async ({
                 'object-cover object-center px-4',
                 isSoldOut ? 'grayscale opacity-30' : 'group-hover:brightness-90'
               )}
-              loading="lazy"
+              // Full width on phones; a fixed 450px column from md up (the
+              // wrapper's md:min-w-[450px]). Without this the browser assumes
+              // 100vw and downloads a far larger poster than it shows.
+              sizes="(max-width: 767px) 100vw, 450px"
+              preload={preload}
+              loading={preload ? undefined : 'lazy'}
             />
           ) : (
             <PosterPlaceholder />
@@ -128,7 +147,7 @@ const EventCard = async ({
           <CardHeader className="p-0 pb-6">
             <CardTitle>
               <h2 className="zvc-heading text-4xl md:text-5xl line-clamp-2 pr-24">
-                {title}
+                {titleNode}
               </h2>
             </CardTitle>
           </CardHeader>
@@ -211,7 +230,8 @@ const EventCard = async ({
               isSoldOut ? 'grayscale opacity-30' : 'group-hover:brightness-90'
             )}
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            loading="lazy"
+            preload={preload}
+            loading={preload ? undefined : 'lazy'}
           />
         ) : (
           <PosterPlaceholder />
@@ -222,7 +242,7 @@ const EventCard = async ({
       {/* Content Section */}
       <div className="flex flex-col flex-1 p-2 md:p-5">
         <h2 className="zvc-heading text-3xl md:text-5xl mb-4 line-clamp-2">
-          {title}
+          {titleNode}
         </h2>
 
         <div className="space-y-3 mb-5">

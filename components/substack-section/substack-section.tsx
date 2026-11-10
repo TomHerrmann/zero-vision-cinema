@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { ArrowUpRight, Newspaper } from 'lucide-react';
-import { ZVC_SUBSTACK_URL } from '@/app/contsants/constants';
+import { ZVC_SUBSTACK_URL } from '@/app/constants/constants';
 import { cn } from '@/utils/utils';
 import type { SubstackPost } from '@/utils/getLatestSubstackPosts';
 import SectionHeading from '../ui/section-heading';

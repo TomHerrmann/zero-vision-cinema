@@ -4,9 +4,10 @@ import {
   ZVC_EMAIL_ADDRESS,
   ADDRESS_LINE_1,
   ADDRESS_LINE_2,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/privacy' },
   title: 'Privacy Policy — Zero Vision Cinema',
   description:
     'How Zero Vision Cinema collects, uses, and protects your information.',

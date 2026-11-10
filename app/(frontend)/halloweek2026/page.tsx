@@ -6,7 +6,6 @@ import {
   Ghost,
   HelpCircle,
   Handshake,
-  MapPin,
 } from 'lucide-react';
 import SectionHeading from '@/components/ui/section-heading';
 import { Button } from '@/components/ui/button';

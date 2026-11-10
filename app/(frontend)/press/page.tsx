@@ -3,6 +3,7 @@ import { Disc3, Megaphone, Video } from 'lucide-react';
 import ContactForm from '@/components/contact-form/contact-form';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/press' },
   title: 'Press — Zero Vision Cinema',
   description:
     'A pop-up movie theater, screening niche movies, genre films, and cult favorites around NYC.',

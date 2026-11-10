@@ -5,9 +5,10 @@ import {
   ZVC_EMAIL_ADDRESS,
   ADDRESS_LINE_1,
   ADDRESS_LINE_2,
-} from '@/app/contsants/constants';
+} from '@/app/constants/constants';
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/terms' },
   title: 'Terms of Service & Refund Policy — Zero Vision Cinema',
   description:
     'Terms of Service, refund, and cancellation policy for Zero Vision Cinema ticket purchases.',

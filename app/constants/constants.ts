@@ -1,6 +1,12 @@
 export const SITE_NAME = 'Zero Vision Cinema';
 export const LLC_NAME = 'Zero Vision Cinema LLC';
 export const ZVC_SITE_URL = 'https://zerovisioncinema.com';
+/**
+ * The host the site is actually served from (the apex 308-redirects here).
+ * Canonical URLs, the sitemap and structured data must use it so search
+ * engines don't see every URL as a redirect.
+ */
+export const ZVC_CANONICAL_URL = 'https://www.zerovisioncinema.com';
 export const ZVC_NEWSLETTER_URL = `${ZVC_SITE_URL}#newsletter`;
 export const ZVC_EMAIL_ADDRESS = 'info@zerovisioncinema.com';
 export const ZVC_PRESS_EMAIL_ADDRESS = 'press@zerovisioncinema.com';
