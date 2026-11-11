@@ -7,6 +7,7 @@ import '../globals.css';
 import { cn } from '@/utils/utils';
 import { Film } from 'lucide-react';
 import SectionHeading from '@/components/ui/section-heading';
+import SubscribeCalendar from '@/components/subscribe-calendar/subscribe-calendar';
 
 export const metadata: Metadata = { alternates: { canonical: '/events' } };
 
@@ -33,8 +34,12 @@ export default async function EventsPage() {
           kicker="All Screenings"
           title="Upcoming Events"
           icon={Film}
-          className="mb-20"
+          className="mb-10"
         />
+
+        <div className="flex justify-center mb-16">
+          <SubscribeCalendar />
+        </div>
 
         {events.length === 0 ? (
           <div className="text-center py-20">
