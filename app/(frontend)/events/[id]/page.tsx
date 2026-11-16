@@ -21,6 +21,7 @@ import {
   EVENT_TYPE_NAMES,
   eventTitle,
   isIndexedEventType,
+  isPaidEventType,
 } from '@/utils/eventTypes';
 import { eventJsonLd, jsonLdString } from '@/utils/eventJsonLd';
 
@@ -34,12 +35,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? null
     : await getEventPageById(Number(id));
   if (!event) return { title: 'Event Not Found' };
-  const isBook = event.eventType === 'bookclub';
+  // Free types (AHC, Book Club) sell no tickets: name the series instead.
+  const isPaid = isPaidEventType(event.eventType);
   return {
-    title: isBook
-      ? `${eventTitle(event)} — ${EVENT_TYPE_NAMES.bookclub}`
-      : `${eventTitle(event)} — Tickets`,
-    ...(isBook ? {} : { description: `Get tickets for ${eventTitle(event)}.` }),
+    title: isPaid
+      ? `${eventTitle(event)} — Tickets`
+      : `${eventTitle(event)} — ${EVENT_TYPE_NAMES[event.eventType]}`,
+    ...(isPaid ? { description: `Get tickets for ${eventTitle(event)}.` } : {}),
     alternates: { canonical: `/events/${event.id}` },
     // Only ZVC screenings are meant to show up in search; other ticketed
     // types (e.g. Brewscares) keep their page but stay out of the index.
