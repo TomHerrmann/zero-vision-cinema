@@ -77,6 +77,25 @@ export const getEventPageById = async (id: number) => {
   return docs[0] ?? null;
 };
 
+/**
+ * The type of a published event, whatever the type, or null. Lets
+ * /events/[id] send links to events without their own page somewhere useful.
+ */
+export const getPublishedEventTypeById = async (id: number) => {
+  const { docs } = await payload.find({
+    collection: 'events',
+    where: {
+      _status: { equals: 'published' },
+      id: { equals: id },
+    },
+    depth: 0,
+    limit: 1,
+    select: { eventType: true },
+  });
+
+  return docs[0]?.eventType ?? null;
+};
+
 export const getAllZvcEvents = async () => {
   const { docs } = await payload.find({
     collection: 'events',

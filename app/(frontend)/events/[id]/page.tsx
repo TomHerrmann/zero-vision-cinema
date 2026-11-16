@@ -3,7 +3,10 @@ import { notFound, redirect } from 'next/navigation';
 import Image from 'next/image';
 import { RichText } from '@payloadcms/richtext-lexical/react';
 import { Calendar, MapPin, DollarSign, Star } from 'lucide-react';
-import { getEventPageById } from '@/utils/getEvents';
+import {
+  getEventPageById,
+  getPublishedEventTypeById,
+} from '@/utils/getEvents';
 import { Location, Media } from '@/payload-types';
 import { fetchMovieDataByImdbId } from '@/lib/omdb';
 import {
@@ -67,7 +70,17 @@ export default async function EventTicketPage({ params }: Props) {
     ? null
     : await getEventPageById(Number(id));
 
-  if (!event) notFound();
+  if (!event) {
+    // Astoria Horror Club events have no page of their own; links to them
+    // (shared or typed by hand) go to the club's page instead of a 404.
+    if (
+      !Number.isNaN(Number(id)) &&
+      (await getPublishedEventTypeById(Number(id))) === 'ahc'
+    ) {
+      redirect('/astoriahorrorclub');
+    }
+    notFound();
+  }
 
   // Old links (announcement emails, socials) keep pointing here after the
   // screening; an hour after the start, send them to what's coming up instead.
