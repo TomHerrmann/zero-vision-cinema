@@ -32,8 +32,11 @@ export const PAID_EVENT_TYPES = ['zvc', 'brew'] as const;
 export const isPaidEventType = (eventType?: string | null): boolean =>
   (PAID_EVENT_TYPES as readonly string[]).includes(eventType ?? '');
 
-/** Event types with their own page at /events/[id]. */
-export const EVENT_PAGE_TYPES = [...PAID_EVENT_TYPES, 'bookclub'] as const;
+/**
+ * Event types with their own page at /events/[id]. Free types (AHC, Book Club)
+ * get a page without checkout; only INDEXED_EVENT_TYPES are shown to search.
+ */
+export const EVENT_PAGE_TYPES = [...PAID_EVENT_TYPES, 'ahc', 'bookclub'] as const;
 
 export const hasEventPage = (eventType?: string | null): boolean =>
   (EVENT_PAGE_TYPES as readonly string[]).includes(eventType ?? '');

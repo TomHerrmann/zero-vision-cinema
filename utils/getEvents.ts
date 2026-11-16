@@ -59,7 +59,7 @@ export const getUpcomingZvcEvents = async () => {
 
 /**
  * A published event that has its own page: ticketed types (ZVC, Brewscares)
- * plus Book Club meetings (free, no checkout).
+ * plus free Astoria Horror Club screenings and Book Club meetings (no checkout).
  */
 export const getEventPageById = async (id: number) => {
   const { docs } = await payload.find({
